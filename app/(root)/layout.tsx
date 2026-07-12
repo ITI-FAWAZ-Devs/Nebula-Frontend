@@ -1,3 +1,4 @@
+import { Nav } from "@/components/landing/Nav";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -12,7 +13,10 @@ export default function RootLayout({
 }>) {
   return (
     <html>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <Nav/>
+        {children}
+        </body>
     </html>
   );
 }

@@ -1,9 +1,5 @@
-import React from 'react'
+import { NebulaLanding } from "@/components/landing/NebulaLanding";
 
-const page = () => {
-  return (
-    <div>page</div>
-  )
+export default function Home() {
+  return <NebulaLanding />;
 }
-
-export default page

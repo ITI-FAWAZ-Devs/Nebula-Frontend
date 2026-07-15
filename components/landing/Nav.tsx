@@ -4,14 +4,40 @@ import { motion } from "motion/react";
 import { FiGithub } from "react-icons/fi";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { useAuthStore } from "@/lib/store";
+import { useLogoutMutation } from "@/hooks/use-auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export function Nav() {
+  const user = useAuthStore((state) => state.user);
+  const logoutMutation = useLogoutMutation();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+      toast.success("Successfully logged out");
+      router.push("/");
+    } catch (err: any) {
+      toast.error("Logout failed.");
+    }
+  };
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4, duration: 0.6 }}
-      className="fixed left-0 right-0 top-0 z-40 "
+      className="fixed left-0 right-0 top-0 z-40"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 mt-3 pill card-soft backdrop-blur rounded-full overflow-x-auto">
         <div className="flex items-center gap-2">
@@ -23,7 +49,7 @@ export function Nav() {
               boxShadow: "0 0 12px oklch(0.72 0.18 265 / 0.9)",
             }}
           />
-          <Link href="/" className="font-display text-lg font-semibold tracking-tight">
+          <Link href="/" className="font-display text-lg font-semibold tracking-tight text-white">
             Nebula
           </Link>
         </div>
@@ -34,19 +60,57 @@ export function Nav() {
           <Link className="transition-colors hover:text-white" href="/pricing">Pricing</Link>
         </nav>
         <div className="flex items-center gap-3">
-          <Link className="hidden text-sm text-white/70 transition-colors hover:text-white sm:block" href="#">
-            Sign in
-          </Link>
-          <Button
-            className="inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-xs font-medium text-primary-foreground"
-            style={{
-              background:
-                "linear-gradient(135deg, oklch(0.82 0.14 210), oklch(0.72 0.18 265))",
-              boxShadow: "0 6px 24px -8px oklch(0.72 0.18 265 / 0.9)",
-            }}
-          >
-            <FiGithub className="h-3.5 w-3.5" /> Launch
-          </Button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger className="outline-none">
+                <button className="flex items-center gap-2 rounded-full p-0.5 border border-white/10 hover:border-white/20 hover:bg-white/3 transition-colors outline-none cursor-pointer">
+                  <Avatar size="sm">
+                    <AvatarImage src={user.avatar || undefined} alt={user.fullName || "User"} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-semibold">
+                      {(user.fullName || user.email).substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 glass-panel border border-white/10 bg-popover/90 backdrop-blur p-1 mt-1 text-white">
+                <div className="px-2 py-1.5">
+                  <p className="text-xs font-semibold truncate">{user.fullName || "User"}</p>
+                  <p className="text-[10px] text-white/50 truncate font-mono">{user.email}</p>
+                </div>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem className="hover:bg-white/5 text-white/80 focus:bg-white/5 cursor-pointer rounded-md">
+                  <Link href="/settings" className="flex items-center w-full">
+                    Settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="text-destructive focus:bg-destructive/10 hover:bg-destructive/10 cursor-pointer rounded-md"
+                >
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Link className="hidden text-sm text-white/70 transition-colors hover:text-white sm:block" href="/login">
+                Sign in
+              </Link>
+              <Link href="/login">
+                <Button
+                  className="inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-xs font-medium text-primary-foreground"
+                  style={{
+                    background:
+                      "linear-gradient(135deg, oklch(0.82 0.14 210), oklch(0.72 0.18 265))",
+                    boxShadow: "0 6px 24px -8px oklch(0.72 0.18 265 / 0.9)",
+                  }}
+                >
+                  <FiGithub className="h-3.5 w-3.5" /> Launch
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </motion.header>

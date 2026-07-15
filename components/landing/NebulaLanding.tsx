@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
 import { BootSequence } from "./BootSequence";
 import { NebulaBackdrop } from "./NebulaBackdrop";
@@ -15,15 +15,28 @@ import { SectionFeatures } from "./SectionFeatures";
 import { FinalCTA } from "./FinalCTA";
 
 export function NebulaLanding() {
-  const [booting, setBooting] = useState(true);
+  const [booting, setBooting] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
   const beamY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
+  useEffect(() => {
+    // Check if the user has already visited the site
+    const hasBooted = localStorage.getItem("nebula_booted");
+    if (!hasBooted) {
+      setBooting(true);
+    }
+  }, []);
+
+  const handleBootDone = () => {
+    localStorage.setItem("nebula_booted", "true");
+    setBooting(false);
+  };
+
   return (
     <>
       <AnimatePresence>
-        {booting && <BootSequence key="boot" onDone={() => setBooting(false)} />}
+        {booting && <BootSequence key="boot" onDone={handleBootDone} />}
       </AnimatePresence>
 
       <NebulaBackdrop />

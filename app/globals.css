@@ -95,7 +95,7 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    scroll-behavior: smooth;
+    /* scroll-behavior: smooth; */
     -webkit-font-smoothing: antialiased;
   }
 
@@ -116,6 +116,31 @@
   box-shadow: var(--shadow-panel);
   border-radius: var(--radius-lg);
 }
+
+@utility premium-panel {
+  background: linear-gradient(
+    180deg,
+    oklch(1 0 0 / 0.04),
+    oklch(1 0 0 / 0.015)
+  );
+  border: 1px solid oklch(1 0 0 / 0.08);
+  box-shadow: var(--shadow-panel);
+  border-radius: var(--radius-lg);
+}
+
+.pause-animations *,
+.pause-animations {
+  animation-play-state: paused !important;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 
 @utility text-gradient {
   background: var(--gradient-hero);

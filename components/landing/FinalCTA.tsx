@@ -13,7 +13,7 @@ export function FinalCTA() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="relative overflow-hidden glass-panel px-8 py-20 sm:px-16"
+          className="relative overflow-hidden premium-panel px-8 py-20 sm:px-16"
         >
           <div
             className="pointer-events-none absolute inset-0 opacity-70"

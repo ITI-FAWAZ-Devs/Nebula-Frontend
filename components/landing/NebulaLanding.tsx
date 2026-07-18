@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
 import { BootSequence } from "./BootSequence";
 import { NebulaBackdrop } from "./NebulaBackdrop";
@@ -28,10 +28,10 @@ export function NebulaLanding() {
     }
   }, []);
 
-  const handleBootDone = () => {
+  const handleBootDone = useCallback(() => {
     localStorage.setItem("nebula_booted", "true");
     setBooting(false);
-  };
+  }, []);
 
   return (
     <>

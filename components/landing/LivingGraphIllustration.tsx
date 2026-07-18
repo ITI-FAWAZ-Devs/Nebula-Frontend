@@ -26,7 +26,7 @@ export function LivingGraphIllustration() {
   ];
 
   return (
-    <div className="relative aspect-4/3 w-full overflow-hidden glass-panel">
+    <div className="relative aspect-4/3 w-full overflow-hidden premium-panel">
       <div className="absolute inset-0 nebula-bg opacity-40" />
       <svg viewBox="0 0 400 360" className="relative h-full w-full">
         <defs>

@@ -16,7 +16,7 @@ export function AgentsPanel() {
       initial={{ opacity: 0, x: 30 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.8, duration: 0.8 }}
-      className="glass-panel w-70 p-5"
+      className="premium-panel w-70 p-5"
     >
       <div className="mb-4 flex items-center justify-between font-mono">
         <span className="text-[10px] uppercase tracking-[0.3em] text-nebula-purple">

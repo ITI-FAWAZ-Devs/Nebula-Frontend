@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "motion/react";
+import { useEffect, useState, useRef } from "react";
+import { motion, useInView } from "motion/react";
 
 type Planet = {
   name: string;
@@ -24,6 +24,9 @@ const PLANETS: Planet[] = [
 
 export function HeroGalaxy() {
   const [visible, setVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(containerRef, { margin: "100px" });
+
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 200);
     return () => clearTimeout(t);
@@ -34,7 +37,8 @@ export function HeroGalaxy() {
 
   return (
     <div
-      className="relative mx-auto"
+      ref={containerRef}
+      className={`relative mx-auto ${!inView ? "pause-animations" : ""}`}
       style={{ width: size, height: size, maxWidth: "100%" }}
     >
       {/* Glow */}

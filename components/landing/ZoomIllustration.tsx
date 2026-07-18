@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "motion/react";
+import { useEffect, useState, useRef } from "react";
+import { motion, useInView } from "motion/react";
 import { Starfield } from "./Starfield";
 
 type AuthNode = {
@@ -39,6 +39,9 @@ const KIND_LABEL: Record<AuthNode["kind"], string> = {
 
 export function ZoomIllustration() {
   const [visible, setVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inView = useInView(containerRef, { margin: "100px" });
+
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 200);
     return () => clearTimeout(t);
@@ -48,7 +51,10 @@ export function ZoomIllustration() {
   const center = size / 2;
 
   return (
-    <div className="relative aspect-square w-full overflow-hidden glass-panel">
+    <div
+      ref={containerRef}
+      className={`relative aspect-square w-full overflow-hidden premium-panel ${!inView ? "pause-animations" : ""}`}
+    >
       {/* Nebula backdrop */}
       <div className="absolute inset-0 nebula-bg opacity-60" />
       <Starfield count={40} />

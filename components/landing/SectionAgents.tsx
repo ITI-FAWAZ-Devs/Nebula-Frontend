@@ -55,7 +55,7 @@ export function SectionAgents() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-80px" }}
               transition={{ delay: i * 0.08, duration: 0.6 }}
-              className="group relative glass-panel overflow-hidden p-6 transition-transform duration-500 hover:-translate-y-1"
+              className="group relative premium-panel overflow-hidden p-6 transition-transform duration-500 hover:-translate-y-1"
             >
               <div
                 className="absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-40 blur-2xl transition-opacity group-hover:opacity-70"

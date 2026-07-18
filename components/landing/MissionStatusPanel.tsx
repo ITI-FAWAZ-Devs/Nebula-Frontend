@@ -8,7 +8,13 @@ export function MissionStatusPanel() {
   const [progress, setProgress] = useState(0);
   useEffect(() => {
     const iv = setInterval(() => {
-      setProgress((p) => (p >= 100 ? 100 : p + 2));
+      setProgress((p) => {
+        if (p >= 100) {
+          clearInterval(iv);
+          return 100;
+        }
+        return p + 2;
+      });
     }, 60);
     return () => clearInterval(iv);
   }, []);
@@ -26,7 +32,7 @@ export function MissionStatusPanel() {
       initial={{ opacity: 0, x: -30 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.6, duration: 0.8 }}
-      className="glass-panel w-70 p-5 font-mono text-xs"
+      className="premium-panel w-70 p-5 font-mono text-xs"
     >
       <div className="mb-4 flex items-center justify-between">
         <span className="text-[10px] uppercase tracking-[0.3em] text-nebula-cyan">

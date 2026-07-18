@@ -28,7 +28,7 @@ export function SectionAskArchitect() {
           </p>
         </div>
 
-        <div className="mt-16 glass-panel p-8 sm:p-10">
+        <div className="mt-16 premium-panel p-8 sm:p-10">
           <div className="mb-8 flex items-start gap-4">
             {/* <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/3 text-xs text-white/60">
               You

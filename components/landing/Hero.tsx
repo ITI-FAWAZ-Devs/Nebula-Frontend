@@ -17,16 +17,6 @@ export function Hero() {
         </div>
 
         <div className="order-1 flex flex-col items-center text-center lg:order-2">
-          {/* <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-mono text-[10px] uppercase tracking-[0.3em] text-white/60 backdrop-blur"
-          >
-            <span className="h-1.5 w-1.5 rounded-full bg-nebula-cyan animate-pulse-glow" />
-            Nebula OS · System Online
-          </motion.div> */}
-
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -63,7 +53,7 @@ export function Hero() {
               className="group inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-medium text-primary-foreground"
               style={{
                 background:
-                  "linear-gradient(135deg, oklch(0.82 0.14 210), oklch(0.72 0.18 265), oklch(0.65 0.22 300))",
+                  "#4493F8",
                 boxShadow: "0 10px 30px -10px oklch(0.72 0.18 265 / 0.8)",
               }}
             >
@@ -82,7 +72,7 @@ export function Hero() {
         </div>
       </div>
 
-      
+
     </section>
   );
 }

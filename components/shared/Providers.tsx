@@ -29,7 +29,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <AuthInitializer>
         {children}
       </AuthInitializer>
-      <Toaster closeButton position="top-right" />
+      <Toaster closeButton position="bottom-right" />
     </QueryClientProvider>
   );
 }

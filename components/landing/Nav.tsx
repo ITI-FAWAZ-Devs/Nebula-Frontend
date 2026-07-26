@@ -48,8 +48,8 @@ export function Nav() {
             className="h-6 w-6 rounded-full"
             style={{
               background:
-                "radial-gradient(circle at 30% 30%, white, oklch(0.72 0.18 265) 60%, oklch(0.4 0.15 285))",
-              boxShadow: "0 0 12px oklch(0.72 0.18 265 / 0.9)",
+                "#4493F8",
+              boxShadow: "0 0 12px #4493F8e6",
             }}
           />
           <Link href="/" className="font-display text-lg font-semibold tracking-tight text-white">
@@ -65,7 +65,7 @@ export function Nav() {
         <div className="flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-2">
-              <Link className="transition-colors text-white/60 hover:text-white" href="/hangar">Hangar</Link>
+              <Link className="transition-colors text-white/60 hover:text-white" href="/launch">Launch</Link>
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 rounded-full p-0.5 border border-white/10 hover:border-white/20 hover:bg-white/3 transition-colors outline-none cursor-pointer">
                   <Avatar size="sm">
@@ -106,8 +106,8 @@ export function Nav() {
                   className="inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-xs font-medium text-primary-foreground"
                   style={{
                     background:
-                      "linear-gradient(135deg, oklch(0.82 0.14 210), oklch(0.72 0.18 265))",
-                    boxShadow: "0 6px 24px -8px oklch(0.72 0.18 265 / 0.9)",
+                      "#4493F8",
+                    boxShadow: "0 6px 24px -8px #4493F8e6",
                   }}
                 >
                   <FiGithub className="h-3.5 w-3.5" /> Launch

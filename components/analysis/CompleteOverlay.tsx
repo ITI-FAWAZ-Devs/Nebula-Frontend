@@ -28,9 +28,9 @@ export function CompleteOverlay({ complete }: CompleteOverlayProps) {
                 transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
                 className="absolute inset-0 rounded-full border border-white/10" 
               />
-              <div className="absolute inset-4 rounded-full bg-gradient-to-br from-nebula-blue via-nebula-purple to-nebula-pink shadow-[0_0_60px_var(--nebula-purple)]" />
+              <div className="absolute inset-4 rounded-full bg-primary shadow-[0_0_60px_#4493F8]" />
             </div>
-            <div className="mt-8 font-mono text-[10px] uppercase tracking-[0.3em] text-nebula-cyan">Galaxy online</div>
+            <div className="mt-8 font-mono text-[10px] uppercase tracking-[0.3em] text-primary">Galaxy online</div>
             <div className="mt-2 font-display text-3xl text-white">Entering workspace…</div>
             <ArrowRight className="mt-4 h-5 w-5 animate-pulse text-muted-foreground" />
           </motion.div>

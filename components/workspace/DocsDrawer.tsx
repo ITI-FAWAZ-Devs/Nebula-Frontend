@@ -53,8 +53,8 @@ export interface Client {
             )) : <span className="text-muted-foreground">No internal dependencies.</span>}
           </div>
         </section>
-        <section className="rounded-lg border border-nebula-purple/20 bg-nebula-purple/[0.06] p-4">
-          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-nebula-cyan"><Sparkles className="h-3 w-3" /> Documentarian note</div>
+        <section className="rounded-lg border border-primary/20 bg-primary/[0.06] p-4">
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-primary"><Sparkles className="h-3 w-3" /> Documentarian note</div>
           <p className="mt-2 text-sm text-foreground/80">3 new public exports were added in the last 24h. Documentation was regenerated automatically.</p>
         </section>
       </div>

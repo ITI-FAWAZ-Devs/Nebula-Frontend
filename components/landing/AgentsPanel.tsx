@@ -19,7 +19,7 @@ export function AgentsPanel() {
       className="premium-panel w-70 p-5"
     >
       <div className="mb-4 flex items-center justify-between font-mono">
-        <span className="text-[10px] uppercase tracking-[0.3em] text-nebula-purple">
+        <span className="text-[10px] uppercase tracking-[0.3em] text-primary">
           AI Agents
         </span>
         <span className="text-[10px] text-white/60">4 ACTIVE</span>
@@ -34,10 +34,10 @@ export function AgentsPanel() {
               className="relative flex h-8 w-8 items-center justify-center rounded-md"
               style={{
                 background:
-                  "linear-gradient(135deg, oklch(0.72 0.18 265 / 0.2), oklch(0.65 0.22 300 / 0.2))",
+                  "#4493F833",
               }}
             >
-              <a.icon className="h-4 w-4 text-nebula-cyan" />
+              <a.icon className="h-4 w-4 text-primary" />
               <span
                 className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full animate-pulse-glow"
                 style={{
@@ -56,7 +56,7 @@ export function AgentsPanel() {
               {[3, 6, 4, 8, 5].map((h, k) => (
                 <span
                   key={k}
-                  className="w-0.5 rounded-full bg-nebula-cyan/70 animate-pulse-glow"
+                  className="w-0.5 rounded-full bg-primary/70 animate-pulse-glow"
                   style={{ height: h, animationDelay: `${k * 0.15}s` }}
                 />
               ))}

@@ -70,10 +70,11 @@ export default function WorkspacePage() {
           </Link>
           <span className="mx-2 h-4 w-px bg-white/10" />
           <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/50">acme/orion-core · main</span>
+          <div className="ml-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> 4 agents online
+          </div>
         </div>
         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-white/50">
-          <Activity className="h-3 w-3 text-emerald-400" /> 4 agents online
-          <span className="mx-1 h-3 w-px bg-white/10" />
           <Cpu className="h-3 w-3" /> galaxy synced 2s ago
         </div>
       </header>
@@ -93,9 +94,9 @@ export default function WorkspacePage() {
                   initial={{ scale: 0 }} 
                   animate={{ scale: 1 }} 
                   transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                  className="mx-auto h-24 w-24 rounded-full bg-gradient-to-br from-nebula-blue via-nebula-purple to-nebula-pink shadow-[0_0_80px_var(--nebula-purple)]" 
+                  className="mx-auto h-24 w-24 rounded-full bg-primary shadow-[0_0_80px_#4493F8]" 
                 />
-                <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-nebula-cyan">Welcome to the galaxy</div>
+                <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-primary">Welcome to the galaxy</div>
               </div>
             </motion.div>
           )}
@@ -147,7 +148,7 @@ export default function WorkspacePage() {
               <p className="mt-2 text-xs text-muted-foreground">{planet.desc}</p>
               <button 
                 onClick={() => setDrawer("docs")}
-                className="mt-3 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-nebula-cyan hover:text-white cursor-pointer"
+                className="mt-3 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-primary hover:text-white cursor-pointer"
               >
                 Open docs <ChevronRight className="h-3 w-3" />
               </button>

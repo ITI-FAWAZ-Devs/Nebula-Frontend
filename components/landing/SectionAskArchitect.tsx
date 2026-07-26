@@ -44,7 +44,7 @@ export function SectionAskArchitect() {
               className="absolute left-5 top-0 h-full w-px"
               style={{
                 background:
-                  "linear-gradient(to bottom, transparent, oklch(0.72 0.18 265 / 0.6), oklch(0.65 0.22 300 / 0.6), transparent)",
+                  "linear-gradient(to bottom, transparent, #4493F880, transparent)",
               }}
             />
             <ul className="space-y-3">
@@ -61,12 +61,12 @@ export function SectionAskArchitect() {
                     className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/10"
                     style={{
                       background:
-                        "linear-gradient(135deg, oklch(0.15 0.05 265), oklch(0.1 0.03 265))",
+                        "oklch(0.12 0.03 265)",
                       boxShadow:
-                        "0 0 20px oklch(0.72 0.18 265 / 0.2)",
+                        "0 0 20px #4493F833",
                     }}
                   >
-                    <s.icon className="h-4 w-4 text-nebula-cyan" />
+                    <s.icon className="h-4 w-4 text-primary" />
                   </div>
                   <div className="flex-1 border-b border-dashed border-white/6 py-3">
                     <div className="font-display text-base text-white/90">
@@ -86,21 +86,21 @@ export function SectionAskArchitect() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 1, duration: 0.6 }}
-            className="mt-8 rounded-lg border border-nebula-cyan/20 bg-nebula-cyan/4 p-5"
+            className="mt-8 rounded-lg border border-primary/20 bg-primary/4 p-5"
           >
-            <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-nebula-cyan">
+            <div className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-primary">
               <Bot className="h-3 w-3" /> Nebula
             </div>
             <p className="text-white/85">
               JWT is issued in{" "}
-              <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-sm text-nebula-cyan">
+              <code className="rounded bg-white/5 px-1.5 py-0.5 font-mono text-sm text-primary">
                 auth/jwt.ts
               </code>{" "}
-              via <code className="font-mono text-nebula-cyan">signAccessToken()</code>,
-              consumed by <code className="font-mono text-nebula-cyan">middleware/verify.ts</code>{" "}
-              and re-exported from the <code className="font-mono text-nebula-cyan">auth</code>{" "}
-              module used by <code className="font-mono text-nebula-cyan">users</code> and{" "}
-              <code className="font-mono text-nebula-cyan">payments</code>.
+              via <code className="font-mono text-primary">signAccessToken()</code>,
+              consumed by <code className="font-mono text-primary">middleware/verify.ts</code>{" "}
+              and re-exported from the <code className="font-mono text-primary">auth</code>{" "}
+              module used by <code className="font-mono text-primary">users</code> and{" "}
+              <code className="font-mono text-primary">payments</code>.
             </p>
           </motion.div>
         </div>

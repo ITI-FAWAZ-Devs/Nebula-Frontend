@@ -66,8 +66,8 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20 gap-4 text-muted-foreground animate-pulse">
             <div className="relative flex items-center justify-center">
-              <div className="h-11 w-11 rounded-full border-2 border-t-nebula-cyan border-white/10 animate-spin" />
-              <Loader2 className="absolute h-4.5 w-4.5 text-nebula-purple animate-pulse" />
+              <div className="h-11 w-11 rounded-full border-2 border-t-primary border-white/10 animate-spin" />
+              <Loader2 className="absolute h-4.5 w-4.5 text-primary animate-pulse" />
             </div>
             <div className="text-center">
               <span className="text-xs font-mono tracking-widest uppercase text-white/70">Ingesting Telemetry...</span>
@@ -79,7 +79,7 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
         {!isGitHubLinked && (
           <div className="flex flex-col items-center justify-center py-12 px-6 text-center border border-white/5 bg-white/[0.02] rounded-xl my-2">
             <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-white/5 border border-white/5 mb-4">
-              <div className="absolute inset-0 rounded-full border border-dashed border-nebula-purple/30 animate-spin-slow" />
+              <div className="absolute inset-0 rounded-full border border-dashed border-primary/30 animate-spin-slow" />
               <FiGithub className="h-7 w-7 text-white/80" />
             </div>
             <h3 className="font-display text-sm font-semibold text-white">GitHub Account Offline</h3>
@@ -87,9 +87,9 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
               Authentication is required to query active payloads. Grant read permissions to import codebases.
             </p>
             <Button
-              className="mt-6 rounded-full px-7 h-10 font-mono text-xs uppercase tracking-widest text-primary-foreground cursor-pointer transition-all hover:scale-105 hover:shadow-[0_0_20px_oklch(0.72_0.18_265/0.5)]"
+              className="mt-6 rounded-full px-7 h-10 font-mono text-xs uppercase tracking-widest text-white cursor-pointer transition-all hover:scale-105 hover:shadow-[0_0_20px_#4493F880]"
               style={{
-                background: "linear-gradient(135deg, oklch(0.82 0.14 210), oklch(0.72 0.18 265))",
+                background: "#4493F8",
               }}
               onClick={() => {
                 window.location.href = `${apiBaseUrl}/auth/github`;
@@ -107,7 +107,7 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
             <p className="text-xs text-muted-foreground max-w-xs">
               {(error as any)?.response?.data?.message || error.message || "Failed to load repositories from GitHub."}
             </p>
-            <Button variant="ghost" className="mt-3 text-xs text-nebula-cyan border border-white/5 cursor-pointer" onClick={() => refetch()}>
+            <Button variant="ghost" className="mt-3 text-xs text-primary border border-white/5 cursor-pointer" onClick={() => refetch()}>
               Retry Uplink
             </Button>
           </div>
@@ -129,7 +129,7 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
                   className="group/item flex items-center justify-between py-3.5 px-4 rounded-xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/10 hover:translate-x-1 duration-200 transition-all cursor-pointer data-selected:bg-white/5 data-selected:border-white/10 data-selected:translate-x-1 mb-2.5 last:mb-0"
                 >
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5 border border-white/5 group-hover/item:border-nebula-cyan/20 group-hover/item:bg-white/10 transition-colors">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/5 border border-white/5 group-hover/item:border-primary/20 group-hover/item:bg-white/10 transition-colors">
                       <FiGithub className="h-4.5 w-4.5 text-white/70 group-hover/item:text-white transition-colors" />
                     </div>
                     <div className="text-left min-w-0">
@@ -157,10 +157,10 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
                     </span>
 
                     {isImporting ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-nebula-cyan" />
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     ) : (
                       <div className="opacity-0 group-hover/item:opacity-100 transition-opacity duration-200">
-                        <span className="text-[10px] font-mono text-nebula-cyan uppercase tracking-wider flex items-center gap-1">
+                        <span className="text-[10px] font-mono text-primary uppercase tracking-wider flex items-center gap-1">
                           Import <span className="translate-x-0 group-hover/item:translate-x-0.5 transition-transform">→</span>
                         </span>
                       </div>

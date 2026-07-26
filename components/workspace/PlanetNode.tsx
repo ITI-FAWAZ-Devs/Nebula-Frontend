@@ -23,7 +23,7 @@ export function PlanetNode({ p, selected, onSelect, index }: PlanetNodeProps) {
     >
       {/* halo */}
       <span className="absolute inset-0 animate-pulse-glow rounded-full"
-        style={{ background: `radial-gradient(circle, ${p.color}66, transparent 70%)`, width: p.r * 3, height: p.r * 3, left: -p.r * 1.5, top: -p.r * 1.5 }} />
+        style={{ background: `${p.color}22`, width: p.r * 3, height: p.r * 3, left: -p.r * 1.5, top: -p.r * 1.5 }} />
       {/* orbit ring when selected */}
       {selected && (
         <motion.span
@@ -35,8 +35,8 @@ export function PlanetNode({ p, selected, onSelect, index }: PlanetNodeProps) {
       <span className="relative block rounded-full"
         style={{
           width: p.r, height: p.r,
-          background: `radial-gradient(circle at 30% 30%, white, ${p.color} 55%, black 130%)`,
-          boxShadow: `0 0 ${p.r}px ${p.color}, inset -4px -6px ${p.r / 2}px rgba(0,0,0,0.5)`,
+          background: p.color,
+          boxShadow: `0 0 ${p.r}px ${p.color}cc, inset -4px -6px ${p.r / 2}px rgba(0,0,0,0.4)`,
         }} />
       <span className="absolute left-1/2 top-full mt-3 -translate-x-1/2 whitespace-nowrap text-center">
         <span className="block font-display text-xs font-medium text-white">{p.name}</span>

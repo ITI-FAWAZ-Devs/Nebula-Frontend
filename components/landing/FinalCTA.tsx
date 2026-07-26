@@ -17,15 +17,15 @@ export function FinalCTA() {
         >
           <div
             className="pointer-events-none absolute inset-0 opacity-70"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, oklch(0.72 0.18 265 / 0.3), transparent 60%)",
-            }}
+            // style={{
+            //   background:
+            //     "radial-gradient(ellipse at center, #4493F84d, transparent 60%)",
+            // }}
           />
           <div className="relative">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/3 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.3em] text-white/60">
-              <Rocket className="h-3 w-3 text-nebula-cyan" /> Ready for launch
-            </div>
+            {/* <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/3 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.3em] text-white/60">
+              <Rocket className="h-3 w-3 text-primary" /> Ready for launch
+            </div> */}
             <h2 className="font-display text-5xl leading-[1.02] tracking-tight sm:text-7xl">
               Your software deserves a{" "}
               <span className="text-gradient">living architecture.</span>
@@ -37,12 +37,7 @@ export function FinalCTA() {
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <button
                 className="group relative inline-flex h-12 items-center gap-2 rounded-full px-6 text-sm font-medium text-primary-foreground transition-transform hover:-translate-y-0.5"
-                style={{
-                  background:
-                    "linear-gradient(135deg, oklch(0.82 0.14 210), oklch(0.72 0.18 265), oklch(0.65 0.22 300))",
-                  boxShadow:
-                    "0 10px 40px -10px oklch(0.72 0.18 265 / 0.8)",
-                }}
+                style={{ background:"#4493F8"}}
               >
                 <FiGithub className="h-4 w-4" />
                 Connect GitHub

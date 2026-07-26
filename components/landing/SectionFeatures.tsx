@@ -50,13 +50,13 @@ export function SectionFeatures() {
               transition={{ delay: i * 0.04, duration: 0.4 }}
               className="group relative flex flex-col items-start gap-5 bg-background p-6 transition-colors hover:bg-white/2"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/3 transition-all group-hover:border-nebula-cyan/40 group-hover:shadow-[0_0_24px_oklch(0.72_0.18_265/0.5)]">
-                <f.icon className="h-4.5 w-4.5 text-nebula-cyan" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/3 transition-all group-hover:border-primary/40 group-hover:shadow-[0_0_24px_oklch(0.72_0.18_265/0.5)]">
+                <f.icon className="h-4.5 w-4.5 text-primary" />
               </div>
               <div className="font-display text-[15px] leading-tight text-white/90">
                 {f.name}
               </div>
-              <ArrowRight className="mt-auto h-4 w-4 text-white/20 transition-all group-hover:translate-x-1 group-hover:text-nebula-cyan" />
+              <ArrowRight className="mt-auto h-4 w-4 text-white/20 transition-all group-hover:translate-x-1 group-hover:text-primary" />
             </motion.div>
           ))}
         </div>

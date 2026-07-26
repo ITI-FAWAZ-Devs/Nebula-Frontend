@@ -45,40 +45,28 @@
   --card-foreground: oklch(0.98 0.005 250);
   --popover: oklch(0.12 0.03 265);
   --popover-foreground: oklch(0.98 0.005 250);
-  --primary: oklch(0.72 0.18 265);
+  --primary: #4493F8;
   --primary-foreground: oklch(0.08 0.02 265);
   --secondary: oklch(0.2 0.04 265);
   --secondary-foreground: oklch(0.98 0.005 250);
   --muted: oklch(0.18 0.03 265);
   --muted-foreground: oklch(0.68 0.03 260);
-  --accent: oklch(0.65 0.22 300);
+  --accent: #4493F8;
   --accent-foreground: oklch(0.98 0.005 250);
   --destructive: oklch(0.65 0.24 25);
   --destructive-foreground: oklch(0.98 0.005 250);
   --border: oklch(0.98 0.005 250 / 0.08);
   --input: oklch(0.98 0.005 250 / 0.1);
-  --ring: oklch(0.72 0.18 265);
+  --ring: #4493F8;
 
-  --nebula-blue: oklch(0.72 0.18 260);
+  --nebula-blue: #4493F8;
   --nebula-purple: oklch(0.65 0.22 300);
   --nebula-cyan: oklch(0.82 0.14 210);
   --nebula-pink: oklch(0.72 0.2 340);
 
-  --gradient-nebula: radial-gradient(
-      ellipse at 20% 30%,
-      oklch(0.5 0.25 280 / 0.35),
-      transparent 55%
-    ),
-    radial-gradient(ellipse at 80% 70%, oklch(0.55 0.22 220 / 0.28), transparent 55%),
-    radial-gradient(ellipse at 50% 50%, oklch(0.5 0.2 320 / 0.18), transparent 60%);
-  --gradient-hero: linear-gradient(
-    135deg,
-    oklch(0.72 0.18 260),
-    oklch(0.65 0.22 300),
-    oklch(0.82 0.14 210)
-  );
-  --shadow-glow-blue: 0 0 40px oklch(0.72 0.18 260 / 0.5),
-    0 0 80px oklch(0.72 0.18 260 / 0.25);
+  --special-text: #F48C50;
+  --shadow-glow-blue: 0 0 40px #4493F840,
+    0 0 80px #4493F828;
   --shadow-glow-purple: 0 0 40px oklch(0.65 0.22 300 / 0.5),
     0 0 80px oklch(0.65 0.22 300 / 0.25);
   --shadow-panel: 0 20px 60px -20px oklch(0 0 0 / 0.6),
@@ -100,17 +88,13 @@
   }
 
   ::selection {
-    background: oklch(0.72 0.18 260 / 0.35);
+    background: #4493F840;
     color: white;
   }
 }
 
 @utility glass-panel {
-  background: linear-gradient(
-    180deg,
-    oklch(1 0 0 / 0.04),
-    oklch(1 0 0 / 0.015)
-  );
+  background: oklch(1 0 0 / 0.03);
   border: 1px solid oklch(1 0 0 / 0.08);
   backdrop-filter: blur(20px) saturate(140%);
   box-shadow: var(--shadow-panel);
@@ -118,11 +102,7 @@
 }
 
 @utility premium-panel {
-  background: linear-gradient(
-    180deg,
-    oklch(1 0 0 / 0.04),
-    oklch(1 0 0 / 0.015)
-  );
+  background: oklch(1 0 0 / 0.03);
   border: 1px solid oklch(1 0 0 / 0.08);
   box-shadow: var(--shadow-panel);
   border-radius: var(--radius-lg);
@@ -143,14 +123,11 @@
 
 
 @utility text-gradient {
-  background: var(--gradient-hero);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--special-text);
 }
 
 @utility nebula-bg {
-  background-image: var(--gradient-nebula);
+  background-color: oklch(0.12 0.03 265);
 }
 
 @utility glow-blue {

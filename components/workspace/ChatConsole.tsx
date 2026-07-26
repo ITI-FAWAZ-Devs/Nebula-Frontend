@@ -44,7 +44,7 @@ export function ChatConsole({ open, onClose, planet }: ChatConsoleProps) {
   return (
     <DrawerShell side="bottom" open={open} onClose={onClose} width="min(880px, 96vw)" label="Command console">
       <div className="flex items-center gap-2 border-b border-white/5 px-6 py-3">
-        <span className="inline-block h-1.5 w-1.5 animate-pulse-glow rounded-full bg-nebula-cyan" />
+        <span className="inline-block h-1.5 w-1.5 animate-pulse-glow rounded-full bg-primary" />
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Command console · {planet?.name ?? "galaxy"}</div>
       </div>
       <div ref={scrollRef} className="max-h-[42vh] flex-1 space-y-4 overflow-y-auto p-6 scrollbar-thin">
@@ -55,7 +55,7 @@ export function ChatConsole({ open, onClose, planet }: ChatConsoleProps) {
             animate={{ opacity: 1, y: 0 }}
             className={`flex gap-3 ${m.role === "user" ? "flex-row-reverse" : ""}`}
           >
-            <div className={`flex h-7 w-7 flex-none items-center justify-center rounded-full ${m.role === "user" ? "bg-white/10 text-white" : "bg-gradient-to-br from-nebula-blue to-nebula-purple text-white"}`}>
+            <div className={`flex h-7 w-7 flex-none items-center justify-center rounded-full ${m.role === "user" ? "bg-white/10 text-white" : "bg-primary/20 text-primary"}`}>
               {m.role === "user" ? <User className="h-3.5 w-3.5" /> : <Bot className="h-3.5 w-3.5" />}
             </div>
             <div className={`max-w-[70%] rounded-lg px-4 py-2.5 text-sm text-white ${m.role === "user" ? "bg-white/[0.06]" : "bg-white/[0.02] border border-white/5"}`}>
@@ -66,7 +66,7 @@ export function ChatConsole({ open, onClose, planet }: ChatConsoleProps) {
       </div>
       <form onSubmit={e => { e.preventDefault(); send(); }} className="flex items-center gap-2 border-t border-white/5 p-4">
         <div className="flex flex-1 items-center gap-2 rounded-md bg-white/5 px-3 py-2">
-          <ChevronRight className="h-4 w-4 text-nebula-cyan" />
+          <ChevronRight className="h-4 w-4 text-primary" />
           <input 
             value={input} 
             onChange={e => setInput(e.target.value)}
@@ -76,7 +76,7 @@ export function ChatConsole({ open, onClose, planet }: ChatConsoleProps) {
         </div>
         <button 
           type="submit" 
-          className="rounded-md border border-white/10 bg-gradient-to-r from-nebula-blue/30 to-nebula-purple/30 p-2 text-white hover:from-nebula-blue/50 hover:to-nebula-purple/50 cursor-pointer"
+          className="rounded-md border border-white/10 bg-primary/20 p-2 text-white hover:bg-primary/35 cursor-pointer"
         >
           <Send className="h-4 w-4" />
         </button>

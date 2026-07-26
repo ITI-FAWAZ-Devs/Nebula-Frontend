@@ -34,7 +34,7 @@ export function HistoryTimeline({ open, onClose }: HistoryTimelineProps) {
               animate={{ opacity: 1, x: 0 }} 
               transition={{ delay: i * 0.05 }}
             >
-              <span className="absolute -left-[7px] mt-1 h-3 w-3 rounded-full bg-gradient-to-br from-nebula-blue to-nebula-pink shadow-[0_0_10px_var(--nebula-purple)]" />
+              <span className="absolute -left-[7px] mt-1 h-3 w-3 rounded-full bg-primary shadow-[0_0_10px_#4493F880]" />
               <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{e.t} · {e.who}</div>
               <div className="mt-1 text-sm text-white/90">{e.what}</div>
             </motion.li>

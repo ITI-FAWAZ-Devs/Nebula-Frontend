@@ -7,15 +7,16 @@ import { Search, Plus, Database, AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { NebulaBackdrop } from "@/components/landing/NebulaBackdrop";
-import { RepoCard } from "@/components/hangar/RepoCard";
-import { LaunchOverlay } from "@/components/hangar/LaunchOverlay";
-import { ImportRepoPicker } from "@/components/hangar/ImportRepoPicker";
-import { RepoDeleteConfirm } from "@/components/hangar/RepoDeleteConfirm";
-import { RepoDetailModal } from "@/components/hangar/RepoDetailModal";
+import { RepoCard } from "@/components/launch/RepoCard";
+import { LaunchOverlay } from "@/components/launch/LaunchOverlay";
+import { ImportRepoPicker } from "@/components/launch/ImportRepoPicker";
+import { RepoDeleteConfirm } from "@/components/launch/RepoDeleteConfirm";
+import { RepoDetailModal } from "@/components/launch/RepoDetailModal";
 import { Button } from "@/components/ui/button";
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 
 import { useImportedReposQuery, useDeleteRepoMutation, Repository } from "@/hooks/use-repository";
+import { Starfield } from "@/components/landing/Starfield";
 
 export default function HangarPage() {
   const router = useRouter();
@@ -126,7 +127,7 @@ export default function HangarPage() {
         {/* Loading Spinner */}
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20 gap-3 text-muted-foreground">
-            <Loader2 className="h-8 w-8 animate-spin text-nebula-cyan" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <span className="text-xs font-mono tracking-widest uppercase">Loading hangar payloads...</span>
           </div>
         )}
@@ -138,7 +139,7 @@ export default function HangarPage() {
             <p className="text-xs text-muted-foreground">
               {(error as any)?.response?.data?.message || error.message || "Failed to load database repositories."}
             </p>
-            <Button variant="ghost" className="mt-3 text-xs text-nebula-cyan cursor-pointer" onClick={() => refetch()}>
+            <Button variant="ghost" className="mt-3 text-xs text-primary cursor-pointer" onClick={() => refetch()}>
               Retry Fetch
             </Button>
           </div>
@@ -177,10 +178,10 @@ export default function HangarPage() {
                   <EmptyContent>
                     <Button 
                       onClick={() => setSearchOpen(true)}
-                      className="rounded-full font-mono text-xs uppercase tracking-widest text-primary-foreground mt-3 cursor-pointer px-6"
+                      className="rounded-full font-mono text-xs uppercase tracking-widest text-white mt-3 cursor-pointer px-6"
                       style={{
-                        background: "linear-gradient(135deg, oklch(0.82 0.14 210), oklch(0.72 0.18 265))",
-                        boxShadow: "0 4px 16px -4px oklch(0.72 0.18 265 / 0.6)",
+                        background: "#4493F8",
+                        boxShadow: "0 4px 16px -4px #4493F899",
                       }}
                     >
                       Import First Repository

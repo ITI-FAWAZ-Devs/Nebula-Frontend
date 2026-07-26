@@ -31,7 +31,7 @@ export function ProtectedGuard({ children }: { children: React.ReactNode }) {
           className="absolute h-[60vmin] w-[60vmin] rounded-full opacity-60"
           style={{
             background:
-              "radial-gradient(circle at center, oklch(0.72 0.18 265 / 0.3), oklch(0.65 0.22 300 / 0.15) 50%, transparent 80%)",
+              "#4493F820",
             filter: "blur(40px)",
           }}
         />
@@ -45,20 +45,20 @@ export function ProtectedGuard({ children }: { children: React.ReactNode }) {
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             />
             <motion.div
-              className="absolute h-14 w-14 rounded-full border border-dashed border-nebula-cyan/20 animate-spin-reverse-slow"
+              className="absolute h-14 w-14 rounded-full border border-dashed border-primary/20 animate-spin-reverse-slow"
             />
             <div
               className="h-5 w-5 rounded-full bg-white glow-blue"
               style={{
                 background:
-                  "radial-gradient(circle at 30% 30%, white, oklch(0.72 0.18 265) 60%, oklch(0.4 0.15 285))",
-                boxShadow: "0 0 16px oklch(0.72 0.18 265 / 0.9)",
+                  "#4493F8",
+                boxShadow: "0 0 16px #4493F8e6",
               }}
             />
           </div>
 
           <div className="flex flex-col items-center gap-1.5 font-mono text-center">
-            <div className="text-xs uppercase tracking-[0.3em] text-nebula-cyan/80 animate-pulse">
+            <div className="text-xs uppercase tracking-[0.3em] text-primary/80 animate-pulse">
               Authenticating Secure Session
             </div>
             <div className="text-[10px] text-white/40">

@@ -13,7 +13,7 @@ export function LiveLogs({ logLines }: LiveLogsProps) {
     <div className="premium-panel flex flex-col flex-1 overflow-hidden">
       <div className="flex items-center justify-between border-b border-white/5 px-5 py-3">
         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
-          <span className="inline-block h-1.5 w-1.5 animate-pulse-glow rounded-full bg-nebula-cyan" />
+          <span className="inline-block h-1.5 w-1.5 animate-pulse-glow rounded-full bg-primary" />
           Live event stream
         </div>
         <Zap className="h-3.5 w-3.5 text-muted-foreground" />
@@ -28,7 +28,7 @@ export function LiveLogs({ logLines }: LiveLogsProps) {
               className="flex gap-3 text-muted-foreground"
             >
               <span className="text-white/30">{l.t}</span>
-              <span className="uppercase tracking-widest text-nebula-cyan/80">[{l.step}]</span>
+              <span className="uppercase tracking-widest text-primary/80">[{l.step}]</span>
               <span className="text-foreground/80">{l.line}</span>
             </motion.div>
           ))}

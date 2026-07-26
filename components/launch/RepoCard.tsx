@@ -57,7 +57,7 @@ export function RepoCard({
         className={`premium-panel relative overflow-hidden p-6 transition-all duration-500 group-hover:border-white/20 ${!inView ? "pause-animations" : ""}`}
         style={{ 
           transform: hover ? "translateY(-4px)" : "none", 
-          boxShadow: hover ? "0 30px 80px -20px oklch(0.65 0.22 300 / 0.35)" : undefined 
+          boxShadow: hover ? "0 30px 80px -20px #4493F840" : undefined 
         }}
       >
         {/* orbit ring behind */}
@@ -67,7 +67,7 @@ export function RepoCard({
           animate={{ rotate: 360 }}
           transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
         >
-          <span className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 rounded-full bg-nebula-purple shadow-[0_0_20px_var(--nebula-purple)]" />
+          <span className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 rounded-full bg-primary shadow-[0_0_20px_#4493F8]" />
         </motion.div>
 
         {/* Action icons top right */}
@@ -122,7 +122,7 @@ export function RepoCard({
         <div className="mt-5 flex items-center gap-4 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider">
             {isPending ? (
-              <Loader2 className="h-3 w-3 animate-spin text-nebula-cyan" />
+              <Loader2 className="h-3 w-3 animate-spin text-primary" />
             ) : (
               <Circle className="h-2 w-2 fill-current" style={{ color: statusInfo.color }} />
             )}
@@ -140,7 +140,7 @@ export function RepoCard({
 
         <motion.button
           onClick={() => onLaunch(repo)}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-gradient-to-r from-nebula-blue/20 via-nebula-purple/20 to-nebula-pink/20 py-2.5 font-mono text-xs font-medium uppercase tracking-[0.2em] text-white transition-all hover:border-white/25 hover:shadow-[0_0_30px_oklch(0.65_0.22_300/0.35)] cursor-pointer"
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-primary/15 py-2.5 font-mono text-xs font-medium uppercase tracking-[0.2em] text-white transition-all hover:border-primary/40 hover:shadow-[0_0_30px_#4493F840] cursor-pointer"
           whileTap={{ scale: 0.98 }}
         >
           <Rocket className="h-3.5 w-3.5" />

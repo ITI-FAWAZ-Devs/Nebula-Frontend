@@ -25,11 +25,10 @@ export default function VerifyEmailPage() {
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-background nebula-bg px-4 py-12">
       {/* Background glow orb */}
       <div
-        className="absolute h-[50vmin] w-[50vmin] rounded-full opacity-40 pointer-events-none"
+        className="absolute h-[50vmin] w-[50vmin] rounded-full opacity-30 pointer-events-none"
         style={{
-          background:
-            "radial-gradient(circle at center, oklch(0.72 0.18 265 / 0.25), oklch(0.65 0.22 300 / 0.12) 50%, transparent 80%)",
-          filter: "blur(45px)",
+          background: "#4493F8",
+          filter: "blur(80px)",
         }}
       />
 
@@ -39,9 +38,8 @@ export default function VerifyEmailPage() {
           <div
             className="h-10 w-10 rounded-full mb-3"
             style={{
-              background:
-                "radial-gradient(circle at 30% 30%, white, oklch(0.72 0.18 265) 60%, oklch(0.4 0.15 285))",
-              boxShadow: "0 0 16px oklch(0.72 0.18 265 / 0.8)",
+              background: "#4493F8",
+              boxShadow: "0 0 20px #4493F8cc",
             }}
           />
           <h1 className="font-display text-3xl font-bold tracking-tight text-white">
@@ -83,7 +81,7 @@ export default function VerifyEmailPage() {
                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                 />
                 <motion.div
-                  className="absolute h-14 w-14 rounded-full border border-dashed border-nebula-cyan/20 animate-spin-reverse-slow"
+                  className="absolute h-14 w-14 rounded-full border border-dashed border-primary/20 animate-spin-reverse-slow"
                 />
                 <div className="h-4 w-4 rounded-full bg-white glow-blue animate-ping" />
               </div>
@@ -102,8 +100,8 @@ export default function VerifyEmailPage() {
             >
               <div className="flex justify-center mb-5">
                 <div
-                  className="flex h-14 w-14 items-center justify-center rounded-full text-2xl bg-nebula-cyan/10 text-nebula-cyan border border-nebula-cyan/30 animate-bounce"
-                  style={{ boxShadow: "0 0 20px oklch(0.82 0.14 210 / 0.3)" }}
+                  className="flex h-14 w-14 items-center justify-center rounded-full text-2xl bg-primary/10 text-primary border border-primary/30 animate-bounce"
+                  style={{ boxShadow: "0 0 20px #4493F840" }}
                 >
                   <FiCheckCircle className="h-6 w-6" />
                 </div>
@@ -117,11 +115,10 @@ export default function VerifyEmailPage() {
               <div className="border-t border-white/5 pt-6">
                 <Link
                   href="/login"
-                  className="inline-flex h-9 items-center justify-center rounded-full px-6 text-primary-foreground text-xs font-semibold"
+                  className="inline-flex h-9 items-center justify-center rounded-full px-6 text-white text-xs font-semibold"
                   style={{
-                    background:
-                      "linear-gradient(135deg, oklch(0.82 0.14 210), oklch(0.72 0.18 265))",
-                    boxShadow: "0 4px 16px -4px oklch(0.72 0.18 265 / 0.6)",
+                    background: "#4493F8",
+                    boxShadow: "0 4px 16px -4px #4493F899",
                   }}
                 >
                   Log In

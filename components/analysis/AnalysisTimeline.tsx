@@ -30,7 +30,7 @@ export function AnalysisTimeline({ steps, current, done, complete }: AnalysisTim
       {/* progress bar */}
       <div className="relative mb-8 h-1 overflow-hidden rounded-full bg-white/5">
         <motion.div 
-          className="absolute inset-y-0 left-0 bg-gradient-to-r from-nebula-blue via-nebula-purple to-nebula-pink"
+          className="absolute inset-y-0 left-0 bg-primary"
           animate={{ width: `${progress}%` }} 
           transition={{ ease: "easeOut" }} 
         />
@@ -48,12 +48,12 @@ export function AnalysisTimeline({ steps, current, done, complete }: AnalysisTim
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
               className={`flex items-start gap-4 rounded-lg border p-4 transition-colors ${
-                isActive ? "border-nebula-purple/40 bg-white/[0.04]" : isDone ? "border-white/10 bg-white/[0.02]" : "border-white/5"
+                isActive ? "border-primary/40 bg-white/[0.04]" : isDone ? "border-white/10 bg-white/[0.02]" : "border-white/5"
               }`}
             >
-              <div className={`relative mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-lg ${isDone ? "bg-nebula-blue/20 text-nebula-cyan" : isActive ? "bg-nebula-purple/20 text-white" : "bg-white/5 text-muted-foreground"}`}>
+              <div className={`relative mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-lg ${isDone ? "bg-primary/20 text-primary" : isActive ? "bg-primary/15 text-white" : "bg-white/5 text-muted-foreground"}`}>
                 {isDone ? <CheckCircle2 className="h-4 w-4" /> : isActive ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
-                {isActive && <span className="absolute inset-0 animate-pulse-glow rounded-lg ring-2 ring-nebula-purple/40" />}
+                {isActive && <span className="absolute inset-0 animate-pulse-glow rounded-lg ring-2 ring-primary/40" />}
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">

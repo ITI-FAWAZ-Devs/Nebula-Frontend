@@ -29,9 +29,9 @@ export function LaunchOverlay({ launching }: LaunchOverlayProps) {
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             >
               <div className="absolute inset-0 rounded-full border border-white/10" />
-              <div className="absolute inset-4 rounded-full border border-nebula-purple/40" />
-              <div className="absolute inset-8 rounded-full border border-nebula-blue/40" />
-              <div className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 rounded-full bg-nebula-pink shadow-[0_0_30px_var(--nebula-pink)]" />
+              <div className="absolute inset-4 rounded-full border border-primary/40" />
+              <div className="absolute inset-8 rounded-full border border-primary/20" />
+              <div className="absolute left-1/2 top-0 h-3 w-3 -translate-x-1/2 rounded-full bg-primary shadow-[0_0_30px_#4493F8]" />
             </motion.div>
             <div className="absolute inset-0 flex items-center justify-center">
               <Rocket className="h-8 w-8 text-white" />

@@ -19,8 +19,8 @@ export const STEPS: Step[] = [
 ];
 
 export const AGENTS: Agent[] = [
-  { name: "Architect", role: "Maps system topology", color: "var(--nebula-blue)" },
-  { name: "Documentarian", role: "Keeps docs alive", color: "var(--nebula-purple)" },
-  { name: "Sentinel", role: "Watches for regressions", color: "var(--nebula-pink)" },
-  { name: "Cartographer", role: "Charts the galaxy", color: "var(--nebula-cyan)" },
+  { name: "Architect", role: "Maps system topology", color: "#4493F8" },
+  { name: "Documentarian", role: "Keeps docs alive", color: "#4493F8" },
+  { name: "Sentinel", role: "Watches for regressions", color: "#F48C50" },
+  { name: "Cartographer", role: "Charts the galaxy", color: "#4493F8" },
 ];

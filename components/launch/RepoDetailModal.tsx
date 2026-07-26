@@ -53,7 +53,7 @@ export function RepoDetailModal({ repoId, open, onOpenChange }: RepoDetailModalP
         return "border-rose-500/25 bg-rose-500/5 text-rose-400";
       case "CLONING":
       case "INDEXING":
-        return "border-nebula-cyan/25 bg-nebula-cyan/5 text-nebula-cyan";
+        return "border-primary/25 bg-primary/5 text-primary";
       default:
         return "border-white/10 bg-white/5 text-muted-foreground";
     }
@@ -64,7 +64,7 @@ export function RepoDetailModal({ repoId, open, onOpenChange }: RepoDetailModalP
       <SheetContent side="right" className="premium-panel w-full sm:max-w-md border-l border-white/10 bg-background/95 backdrop-blur-xl text-white p-6">
         <SheetHeader className="p-0 mb-6">
           <SheetTitle className="text-white text-lg font-display font-semibold flex items-center gap-2">
-            <Database className="h-5 w-5 text-nebula-cyan" />
+            <Database className="h-5 w-5 text-primary" />
             Repository Payload Detail
           </SheetTitle>
           <SheetDescription className="text-muted-foreground">
@@ -183,7 +183,7 @@ export function RepoDetailModal({ repoId, open, onOpenChange }: RepoDetailModalP
 
             {/* Launch Action */}
             <Button
-              className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-gradient-to-r from-nebula-blue/20 via-nebula-purple/20 to-nebula-pink/20 py-2.5 font-mono text-xs font-medium uppercase tracking-[0.2em] text-white transition-all hover:border-white/25 hover:shadow-[0_0_30px_oklch(0.65_0.22_300/0.35)] cursor-pointer"
+              className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-primary/15 py-2.5 font-mono text-xs font-medium uppercase tracking-[0.2em] text-white transition-all hover:border-primary/40 hover:shadow-[0_0_30px_#4493F840] cursor-pointer"
               onClick={() => {
                 window.open(`https://github.com/${repo.owner}/${repo.name}`, "_blank");
               }}

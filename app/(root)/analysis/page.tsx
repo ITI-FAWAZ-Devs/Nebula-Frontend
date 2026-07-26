@@ -59,7 +59,7 @@ export default function AnalysisPage() {
           <h1 className="font-display text-4xl font-semibold text-white tracking-tight">Mission Control</h1>
           <p className="text-sm text-white/50 mt-1">Real-time compilation and agent ingestion sequence</p>
         </div>
-        <div className="font-mono text-xs uppercase tracking-[0.3em] text-nebula-cyan bg-white/5 px-4 py-2 border border-white/10 rounded-full w-fit">
+        <div className="font-mono text-xs uppercase tracking-[0.3em] text-primary bg-white/5 px-4 py-2 border border-white/10 rounded-full w-fit">
           Payload: {repo ?? "acme/orion-core"}
         </div>
       </div>

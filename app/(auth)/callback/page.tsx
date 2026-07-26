@@ -53,20 +53,19 @@ export default function OAuthCallbackPage() {
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           />
           <motion.div
-            className="absolute h-14 w-14 rounded-full border border-dashed border-nebula-cyan/20 animate-spin-reverse-slow"
+            className="absolute h-14 w-14 rounded-full border border-dashed border-primary/20 animate-spin-reverse-slow"
           />
           <div
             className="h-5 w-5 rounded-full bg-white glow-blue"
             style={{
-              background:
-                "radial-gradient(circle at 30% 30%, white, oklch(0.72 0.18 265) 60%, oklch(0.4 0.15 285))",
-              boxShadow: "0 0 16px oklch(0.72 0.18 265 / 0.9)",
+              background: "#4493F8",
+              boxShadow: "0 0 20px #4493F8cc",
             }}
           />
         </div>
         
         <div className="space-y-1.5">
-          <div className="text-xs uppercase tracking-[0.3em] text-nebula-cyan/80 animate-pulse">
+          <div className="text-xs uppercase tracking-[0.3em] text-primary/80 animate-pulse">
             Finalizing OAuth Handshake
           </div>
           <div className="text-[10px] text-white/40">

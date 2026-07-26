@@ -35,11 +35,11 @@ export function MissionStatusPanel() {
       className="premium-panel w-70 p-5 font-mono text-xs"
     >
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-[10px] uppercase tracking-[0.3em] text-nebula-cyan">
+        <span className="text-[10px] uppercase tracking-[0.3em] text-primary">
           Mission Status
         </span>
         <span className="flex items-center gap-1.5 text-[10px] text-white/60">
-          <span className="h-1.5 w-1.5 rounded-full bg-nebula-cyan animate-pulse-glow" />
+          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-glow" />
           LIVE
         </span>
       </div>
@@ -47,7 +47,7 @@ export function MissionStatusPanel() {
         {steps.map((s) => (
           <li key={s.label} className="flex items-center gap-2 text-white/80">
             {s.done ? (
-              <CheckCircle2 className="h-3.5 w-3.5 text-nebula-cyan" />
+              <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
             ) : (
               <Circle className="h-3.5 w-3.5 animate-pulse-glow text-nebula-blue" />
             )}
@@ -66,7 +66,7 @@ export function MissionStatusPanel() {
             style={{
               width: `${progress}%`,
               background:
-                "linear-gradient(90deg, oklch(0.82 0.14 210), oklch(0.72 0.18 265))",
+                "#4493F8",
             }}
           />
         </div>
@@ -80,7 +80,7 @@ export function MissionStatusPanel() {
             96%
           </div>
         </div>
-        <Activity className="h-8 w-8 text-nebula-cyan/70" />
+        <Activity className="h-8 w-8 text-gradient" />
       </div>
     </motion.div>
   );

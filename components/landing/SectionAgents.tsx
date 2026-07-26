@@ -77,7 +77,7 @@ export function SectionAgents() {
                 {a.desc}
               </p>
               <div className="mt-6 flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-white/40">
-                <span className="h-1.5 w-1.5 rounded-full bg-nebula-cyan animate-pulse-glow" />
+                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-glow" />
                 Online
               </div>
             </motion.div>

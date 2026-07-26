@@ -74,11 +74,10 @@ export default function LoginPage() {
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-background nebula-bg px-4 py-12">
       {/* Background glow orb */}
       <div
-        className="absolute h-[50vmin] w-[50vmin] rounded-full opacity-40 pointer-events-none"
+        className="absolute h-[50vmin] w-[50vmin] rounded-full opacity-30 pointer-events-none"
         style={{
-          background:
-            "radial-gradient(circle at center, oklch(0.72 0.18 265 / 0.25), oklch(0.65 0.22 300 / 0.12) 50%, transparent 80%)",
-          filter: "blur(45px)",
+          background: "#4493F8",
+          filter: "blur(80px)",
         }}
       />
 
@@ -88,9 +87,8 @@ export default function LoginPage() {
           <div
             className="h-10 w-10 rounded-full mb-3"
             style={{
-              background:
-                "radial-gradient(circle at 30% 30%, white, oklch(0.72 0.18 265) 60%, oklch(0.4 0.15 285))",
-              boxShadow: "0 0 16px oklch(0.72 0.18 265 / 0.8)",
+              background: "#4493F8",
+              boxShadow: "0 0 20px #4493F8cc",
             }}
           />
           <h1 className="font-display text-3xl font-bold tracking-tight text-white">
@@ -159,11 +157,10 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full inline-flex h-9 items-center justify-center rounded-full mt-6 text-xs font-semibold text-primary-foreground"
+              className="w-full inline-flex h-9 items-center justify-center rounded-full mt-6 text-xs font-semibold text-white"
               style={{
-                background:
-                  "linear-gradient(135deg, oklch(0.82 0.14 210), oklch(0.72 0.18 265))",
-                boxShadow: "0 4px 16px -4px oklch(0.72 0.18 265 / 0.6)",
+                background: "#4493F8",
+                boxShadow: "0 4px 16px -4px #4493F899",
               }}
             >
               {isSubmitting ? "Authenticating..." : "Log In"}
@@ -175,7 +172,7 @@ export default function LoginPage() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-white/10"></div>
             </div>
-            <span className="relative bg-transparent px-3 text-[10px] text-white/30 uppercase tracking-widest bg-[oklch(0.09_0.02_265)]">
+            <span className="relative bg-transparent px-3 text-[10px] text-white/30 uppercase tracking-widest bg-background">
               or continue with
             </span>
           </div>

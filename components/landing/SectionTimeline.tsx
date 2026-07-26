@@ -28,8 +28,7 @@ export function SectionTimeline() {
           <div
             className="absolute left-0 right-0 top-6 h-px"
             style={{
-              background:
-                "linear-gradient(to right, transparent, oklch(0.72 0.18 265 / 0.5), oklch(0.65 0.22 300 / 0.5), transparent)",
+              background: "#4493F820",
             }}
           />
           <ul className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
@@ -45,12 +44,11 @@ export function SectionTimeline() {
                 <div
                   className="relative z-10 mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-white/10"
                   style={{
-                    background:
-                      "linear-gradient(135deg, oklch(0.18 0.05 265), oklch(0.1 0.03 265))",
-                    boxShadow: "0 0 24px oklch(0.72 0.18 265 / 0.2)",
+                    background: "oklch(0.14 0.03 265)",
+                    boxShadow: "0 0 24px #4493F833",
                   }}
                 >
-                  <e.icon className="h-5 w-5 text-nebula-cyan" />
+                  <e.icon className="h-5 w-5 text-primary" />
                 </div>
                 <div className="mt-4 text-center font-mono text-[10px] uppercase tracking-widest text-white/40">
                   {e.t}

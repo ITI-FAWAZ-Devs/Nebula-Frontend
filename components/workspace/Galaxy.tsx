@@ -29,16 +29,13 @@ export function Galaxy({ planets, selected }: GalaxyProps) {
         const active = selected === p.id || selected === d;
         return (
           <line key={key} x1={p.x} y1={p.y} x2={t.x} y2={t.y}
-            stroke={active ? "url(#gradline)" : "rgba(255,255,255,0.12)"}
+            stroke={active ? "#4493F8" : "rgba(255,255,255,0.12)"}
             strokeWidth={active ? 0.25 : 0.12}
             className={active ? "animate-dash-flow" : ""}
           />
         );
       }))}
-      <linearGradient id="gradline" x1="0" x2="1">
-        <stop offset="0%" stopColor="var(--nebula-blue)" />
-        <stop offset="100%" stopColor="var(--nebula-pink)" />
-      </linearGradient>
+
     </svg>
   );
 }

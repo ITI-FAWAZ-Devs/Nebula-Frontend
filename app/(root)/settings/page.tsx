@@ -105,8 +105,8 @@ export default function SettingsPage() {
                 <p className="text-xs text-white/40 truncate w-full max-w-[200px] font-mono mt-0.5">
                   {user.email}
                 </p>
-                <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-nebula-cyan/25 bg-nebula-cyan/5 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-nebula-cyan">
-                  <span className="h-1.5 w-1.5 rounded-full bg-nebula-cyan animate-pulse" />
+                <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-primary/5 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-primary">
+                  <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                   Active Session
                 </div>
               </div>
@@ -118,7 +118,7 @@ export default function SettingsPage() {
                   <span>Profile Sync: Verified</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FiActivity className="text-nebula-cyan/70 size-3.5" />
+                  <FiActivity className="text-primary/70 size-3.5" />
                   <span>Server Status: Online</span>
                 </div>
               </div>
@@ -245,7 +245,7 @@ export default function SettingsPage() {
                       className="inline-flex h-8 items-center justify-center rounded-full px-5 text-xs font-semibold text-primary-foreground"
                       style={{
                         background:
-                          "linear-gradient(135deg, oklch(0.82 0.14 210), oklch(0.72 0.18 265))",
+                          "#4493F8",
                         boxShadow: "0 4px 16px -4px oklch(0.72 0.18 265 / 0.6)",
                       }}
                     >

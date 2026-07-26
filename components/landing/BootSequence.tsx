@@ -68,9 +68,9 @@ export function BootSequence({ onDone }: BootSequenceProps) {
         <div
           className="h-[80vmin] w-[80vmin] rounded-full"
           style={{
-            background:
-              "radial-gradient(circle at center, oklch(0.72 0.18 265 / 0.4), oklch(0.65 0.22 300 / 0.25) 40%, transparent 70%)",
-            filter: "blur(20px)",
+            background: "#4493F8",
+            filter: "blur(80px)",
+            opacity: 0.2,
           }}
         />
       </motion.div>
@@ -92,8 +92,8 @@ export function BootSequence({ onDone }: BootSequenceProps) {
         transition={{ duration: 0.6 }}
         className="relative z-10 mx-6 w-full max-w-xl font-mono"
       >
-        <div className="mb-6 flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-nebula-cyan/80">
-          <span className="h-1.5 w-1.5 rounded-full bg-nebula-cyan animate-pulse-glow" />
+        <div className="mb-6 flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-primary/80">
+          <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse-glow" />
           Nebula OS
         </div>
         <div className="space-y-1.5 text-sm text-white/70">
@@ -110,7 +110,7 @@ export function BootSequence({ onDone }: BootSequenceProps) {
                 <span
                   className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px] ${
                     done
-                      ? "bg-nebula-cyan/20 text-nebula-cyan"
+                      ? "bg-primary/20 text-primary"
                       : "bg-white/10 text-white/50"
                   }`}
                 >
@@ -144,9 +144,8 @@ export function BootSequence({ onDone }: BootSequenceProps) {
               className="h-full"
               style={{
                 width: `${progress}%`,
-                background:
-                  "linear-gradient(90deg, oklch(0.82 0.14 210), oklch(0.72 0.18 265), oklch(0.65 0.22 300))",
-                boxShadow: "0 0 16px oklch(0.72 0.18 265 / 0.8)",
+                background: "#4493F8",
+                boxShadow: "0 0 16px #4493F8cc",
               }}
             />
           </div>

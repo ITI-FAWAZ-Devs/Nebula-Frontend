@@ -42,16 +42,6 @@ export function NebulaLanding() {
       <NebulaBackdrop />
 
       <div ref={containerRef} className="relative">
-        {/* Side scroll beam */}
-        {/* <motion.div
-          className="pointer-events-none fixed left-6 top-0 z-30 hidden h-24 w-px lg:block"
-          style={{
-            top: beamY,
-            background:
-              "linear-gradient(to bottom, transparent, oklch(0.72 0.18 265), transparent)",
-          }}
-        /> */}
-
         {/* <Nav /> */}
         <Hero />
         <SectionUnderstand />

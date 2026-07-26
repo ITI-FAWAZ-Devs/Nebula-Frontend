@@ -63,7 +63,7 @@ export function LivingGraphIllustration() {
             transition={{ delay: 0.3 + i * 0.1, duration: 0.5 }}
             style={{
               filter:
-                "drop-shadow(0 0 8px oklch(0.72 0.18 265 / 0.9))",
+                "drop-shadow(0 0 8px #4493F8e6)",
               transformOrigin: `${n.x}px ${n.y}px`,
             }}
           />

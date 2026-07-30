@@ -50,7 +50,7 @@
   --secondary: oklch(0.2 0.04 265);
   --secondary-foreground: oklch(0.98 0.005 250);
   --muted: oklch(0.18 0.03 265);
-  --muted-foreground: oklch(0.68 0.03 260);
+  --muted-foreground: oklch(0.72 0.03 260);
   --accent: #4493F8;
   --accent-foreground: oklch(0.98 0.005 250);
   --destructive: oklch(0.65 0.24 25);
@@ -123,7 +123,10 @@
 
 
 @utility text-gradient {
-  color: var(--special-text);
+  background: linear-gradient(135deg, #F48C50, #4493F8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 @utility nebula-bg {
@@ -212,4 +215,8 @@
 @utility animate-dash-flow {
   stroke-dasharray: 6 8;
   animation: dash-flow 2s linear infinite;
+}
+
+.spline-container > div > iframe {
+  clip-path: polygon(0 0, 100% 0, 100% 93%, 93% 100%, 0 100%);
 }

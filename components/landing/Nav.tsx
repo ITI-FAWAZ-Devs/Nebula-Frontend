@@ -16,6 +16,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { toast } from "sonner";
 import { useRouter, usePathname } from "next/navigation";
+import { Hexagon } from "lucide-react";
 
 export function Nav() {
   const user = useAuthStore((state) => state.user);
@@ -23,14 +24,14 @@ export function Nav() {
   const router = useRouter();
   const pathname = usePathname();
 
-  if (pathname === "/workspace") return null;
+  if (pathname === "/workspace" || pathname === "/docs") return null;
 
   const handleLogout = async () => {
     try {
       await logoutMutation.mutateAsync();
       toast.success("Successfully logged out");
       router.push("/");
-    } catch (err: any) {
+    } catch {
       toast.error("Logout failed.");
     }
   };
@@ -43,26 +44,43 @@ export function Nav() {
       className="fixed left-0 right-0 top-0 z-40"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 mt-3 pill card-soft backdrop-blur rounded-full overflow-x-auto">
-        <div className="flex items-center gap-2">
-          <div
-            className="h-6 w-6 rounded-full"
-            style={{
-              background:
-                "#4493F8",
-              boxShadow: "0 0 12px #4493F8e6",
-            }}
-          />
+        <div className="flex items-center gap-2.5">
+          <div className="relative flex h-7 w-7 items-center justify-center">
+            <Hexagon
+              className="h-7 w-7 text-primary"
+              strokeWidth={1.5}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div
+                className="h-2 w-2 rounded-full"
+                style={{
+                  background: "#4493F8",
+                  boxShadow: "0 0 8px #4493F8e6",
+                }}
+              />
+            </div>
+          </div>
           <Link href="/" className="font-display text-lg font-semibold tracking-tight text-white">
             Nebula
           </Link>
         </div>
-        <nav className="hidden items-center gap-8 text-sm text-white/60 md:flex">
-          <Link className="transition-colors hover:text-white" href="/#product">Product</Link>
-          <Link className="transition-colors hover:text-white" href="/#agents">Agents</Link>
-          <Link className="transition-colors hover:text-white" href="/docs">Docs</Link>
-          <Link className="transition-colors hover:text-white" href="/pricing">Pricing</Link>
+        <nav className="hidden items-center gap-1 text-sm text-white/50 md:flex">
+          {[
+            { label: "Product", href: "/#product" },
+            { label: "Agents", href: "/#agents" },
+            { label: "Features", href: "/#features" },
+            { label: "Docs", href: "/docs" },
+          ].map((link) => (
+            <Link
+              key={link.label}
+              className="rounded-full px-3 py-1.5 transition-colors duration-200 hover:bg-white/5 hover:text-white"
+              href={link.href}
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {user ? (
             <div className="flex items-center gap-2">
               <Link className="transition-colors text-white/60 hover:text-white" href="/launch">Launch</Link>
@@ -98,15 +116,17 @@ export function Nav() {
             </div>
           ) : (
             <>
-              <Link className="hidden text-sm text-white/70 transition-colors hover:text-white sm:block" href="/login">
+              <Link
+                className="hidden rounded-full px-3 py-1.5 text-sm text-white/60 transition-colors duration-200 hover:bg-white/5 hover:text-white sm:block"
+                href="/login"
+              >
                 Sign in
               </Link>
               <Link href="/login">
                 <Button
-                  className="inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-xs font-medium text-primary-foreground"
+                  className="group inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-xs font-medium text-primary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-6px_#4493F8e6]"
                   style={{
-                    background:
-                      "#4493F8",
+                    background: "#4493F8",
                     boxShadow: "0 6px 24px -8px #4493F8e6",
                   }}
                 >

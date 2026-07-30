@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
+import { AnimatePresence } from "motion/react";
 import { BootSequence } from "./BootSequence";
 import { NebulaBackdrop } from "./NebulaBackdrop";
-// import { Nav } from "./Nav";
+import { Nav } from "./Nav";
 import { Hero } from "./Hero";
 import { SectionUnderstand } from "./SectionUnderstand";
 import { SectionAgents } from "./SectionAgents";
@@ -17,8 +17,6 @@ import { FinalCTA } from "./FinalCTA";
 export function NebulaLanding() {
   const [booting, setBooting] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: containerRef });
-  const beamY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   useEffect(() => {
     // Check if the user has already visited the site
@@ -40,6 +38,7 @@ export function NebulaLanding() {
       </AnimatePresence>
 
       <NebulaBackdrop />
+      <Nav />
 
       <div ref={containerRef} className="relative">
         {/* <Nav /> */}

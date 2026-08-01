@@ -100,6 +100,11 @@ export function Nav() {
                   </div>
                   <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem className="hover:bg-white/5 text-white/80 focus:bg-white/5 cursor-pointer rounded-md">
+                    <Link href="/organizations" className="flex items-center w-full">
+                      Organizations
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="hover:bg-white/5 text-white/80 focus:bg-white/5 cursor-pointer rounded-md">
                     <Link href="/settings" className="flex items-center w-full">
                       Settings
                     </Link>

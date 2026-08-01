@@ -13,6 +13,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useState } from "react";
 import { FiLock, FiUser, FiActivity } from "react-icons/fi";
+import { Key, ShieldCheck } from "lucide-react";
+import { GithubTokenModal } from "@/components/integrations/GithubTokenModal";
+import { useGithubTokenStatusQuery } from "@/hooks/use-github-token";
 
 const changePasswordSchema = z
   .object({
@@ -36,7 +39,9 @@ type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
   const changePasswordMutation = useChangePasswordMutation();
+  const { data: patStatus } = useGithubTokenStatusQuery();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [patModalOpen, setPatModalOpen] = useState(false);
 
   const {
     register,
@@ -151,6 +156,47 @@ export default function SettingsPage() {
                 </div>
               </div>
 
+              {/* GitHub PAT Integration Card */}
+              <div className="glass-panel p-6">
+                <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
+                  <div className="flex items-center gap-2">
+                    <Key className="text-primary size-4" />
+                    <h2 className="text-sm font-semibold text-white/90">
+                      GitHub Personal Access Token
+                    </h2>
+                  </div>
+                  {patStatus?.hasToken ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] uppercase text-emerald-400">
+                      <ShieldCheck className="h-3 w-3" /> Token Verified
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 font-mono text-[10px] uppercase text-amber-400">
+                      Token Missing
+                    </span>
+                  )}
+                </div>
+
+                <p className="text-xs text-white/50 mb-4 leading-relaxed">
+                  Required for repository import and workspace synchronization. Tokens are stored encrypted with AES-256-GCM.
+                </p>
+
+                <div className="flex items-center justify-between pt-2">
+                  <div className="text-[11px] font-mono text-white/40">
+                    {patStatus?.hasToken
+                      ? `Scopes: ${patStatus.scopes?.join(", ") || "repo"}`
+                      : "No PAT configured"}
+                  </div>
+                  <Button
+                    onClick={() => setPatModalOpen(true)}
+                    className="h-8 text-xs font-semibold px-4 rounded-full"
+                    style={{ background: "#4493F8" }}
+                  >
+                    <Key className="mr-1.5 h-3.5 w-3.5" />
+                    {patStatus?.hasToken ? "Manage Access Token" : "Configure Access Token"}
+                  </Button>
+                </div>
+              </div>
+
               {/* Password Change Form */}
               <div className="glass-panel p-6">
                 <div className="flex items-center gap-2 mb-4 pb-2 border-b border-white/5">
@@ -257,6 +303,11 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        <GithubTokenModal
+          open={patModalOpen}
+          onOpenChange={setPatModalOpen}
+        />
       </div>
     </ProtectedGuard>
   );

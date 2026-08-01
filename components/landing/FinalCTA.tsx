@@ -7,7 +7,7 @@ import { FiGithub } from "react-icons/fi";
 export function FinalCTA() {
   return (
     <section className="relative py-40">
-      <div className="mx-auto max-w-5xl px-6 text-center">
+      <div className="mx-auto max-w-[90rem] px-6 text-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}

@@ -50,7 +50,7 @@
   --secondary: oklch(0.2 0.04 265);
   --secondary-foreground: oklch(0.98 0.005 250);
   --muted: oklch(0.18 0.03 265);
-  --muted-foreground: oklch(0.68 0.03 260);
+  --muted-foreground: oklch(0.72 0.03 260);
   --accent: #4493F8;
   --accent-foreground: oklch(0.98 0.005 250);
   --destructive: oklch(0.65 0.24 25);
@@ -117,13 +117,17 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
 
 @utility text-gradient {
-  color: var(--special-text);
+  background: linear-gradient(135deg, #F48C50, #4493F8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 @utility nebula-bg {
@@ -142,6 +146,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -151,27 +156,32 @@
   from {
     transform: rotate(360deg);
   }
+
   to {
     transform: rotate(0deg);
   }
 }
 
 @keyframes float-y {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-8px);
   }
 }
 
 @keyframes pulse-glow {
+
   0%,
   100% {
     opacity: 0.6;
     transform: scale(1);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.15);
@@ -179,10 +189,12 @@
 }
 
 @keyframes twinkle {
+
   0%,
   100% {
     opacity: 0.2;
   }
+
   50% {
     opacity: 1;
   }
@@ -197,19 +209,28 @@
 @utility animate-spin-slow {
   animation: spin-slow 80s linear infinite;
 }
+
 @utility animate-spin-reverse-slow {
   animation: spin-reverse-slow 120s linear infinite;
 }
+
 @utility animate-float-y {
   animation: float-y 6s ease-in-out infinite;
 }
+
 @utility animate-pulse-glow {
   animation: pulse-glow 2.4s ease-in-out infinite;
 }
+
 @utility animate-twinkle {
   animation: twinkle 4s ease-in-out infinite;
 }
+
 @utility animate-dash-flow {
   stroke-dasharray: 6 8;
   animation: dash-flow 2s linear infinite;
+}
+
+.spline-container>div>iframe {
+  clip-path: polygon(0 0, 100% 0, 100% 93%, 93% 100%, 0 100%);
 }

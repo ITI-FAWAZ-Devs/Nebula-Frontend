@@ -4,7 +4,7 @@ import { LivingGraphIllustration } from "./LivingGraphIllustration";
 export function SectionLivingArch() {
   return (
     <section className="relative py-40">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 lg:grid-cols-2">
+      <div className="mx-auto grid max-w-[90rem] grid-cols-1 items-center gap-16 px-6 lg:grid-cols-2">
         <LivingGraphIllustration />
         <div>
           <SectionEyebrow>Living Architecture</SectionEyebrow>

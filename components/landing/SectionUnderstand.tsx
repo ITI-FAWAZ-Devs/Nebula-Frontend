@@ -4,7 +4,7 @@ import { ZoomIllustration } from "./ZoomIllustration";
 export function SectionUnderstand() {
   return (
     <section className="relative py-40">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-16 px-6 lg:grid-cols-2">
+      <div className="mx-auto grid max-w-[90rem] grid-cols-1 items-center gap-16 px-6 lg:grid-cols-2">
         <div>
           <SectionEyebrow>Understand your software</SectionEyebrow>
           <h2 className="font-display text-5xl leading-[1.05] tracking-tight text-white sm:text-6xl">

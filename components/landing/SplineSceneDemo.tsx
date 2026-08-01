@@ -56,31 +56,6 @@ export function SplineSceneBasic() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      <AnimatePresence>
-        {showHint && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ delay: 2.5, duration: 0.5 }}
-            className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2"
-          >
-            <motion.div
-              animate={{ y: [0, -4, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] text-white/50 backdrop-blur-sm"
-            >
-              <motion.div
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="h-3 w-3 rounded-full border border-white/20 border-t-primary"
-              />
-              Drag to interact
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   )
 }

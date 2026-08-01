@@ -16,7 +16,7 @@ export function SectionAskArchitect() {
 
   return (
     <section id="product" className="relative py-40">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-[90rem] px-6">
         <div className="max-w-2xl">
           <SectionEyebrow>Ask Your Architect</SectionEyebrow>
           <h2 className="font-display text-5xl leading-[1.05] tracking-tight sm:text-6xl">

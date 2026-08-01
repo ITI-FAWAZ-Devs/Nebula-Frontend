@@ -117,6 +117,7 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -145,6 +146,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -154,27 +156,32 @@
   from {
     transform: rotate(360deg);
   }
+
   to {
     transform: rotate(0deg);
   }
 }
 
 @keyframes float-y {
+
   0%,
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-8px);
   }
 }
 
 @keyframes pulse-glow {
+
   0%,
   100% {
     opacity: 0.6;
     transform: scale(1);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.15);
@@ -182,10 +189,12 @@
 }
 
 @keyframes twinkle {
+
   0%,
   100% {
     opacity: 0.2;
   }
+
   50% {
     opacity: 1;
   }
@@ -200,23 +209,28 @@
 @utility animate-spin-slow {
   animation: spin-slow 80s linear infinite;
 }
+
 @utility animate-spin-reverse-slow {
   animation: spin-reverse-slow 120s linear infinite;
 }
+
 @utility animate-float-y {
   animation: float-y 6s ease-in-out infinite;
 }
+
 @utility animate-pulse-glow {
   animation: pulse-glow 2.4s ease-in-out infinite;
 }
+
 @utility animate-twinkle {
   animation: twinkle 4s ease-in-out infinite;
 }
+
 @utility animate-dash-flow {
   stroke-dasharray: 6 8;
   animation: dash-flow 2s linear infinite;
 }
 
-.spline-container > div > iframe {
+.spline-container>div>iframe {
   clip-path: polygon(0 0, 100% 0, 100% 93%, 93% 100%, 0 100%);
 }

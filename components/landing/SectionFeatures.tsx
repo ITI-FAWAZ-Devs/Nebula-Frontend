@@ -32,7 +32,7 @@ export function SectionFeatures() {
 
   return (
     <section id="features" className="relative py-40">
-      <div className="mx-auto max-w-7xl px-6">
+      <div className="mx-auto max-w-[90rem] px-6">
         <div className="max-w-2xl">
           <SectionEyebrow>Capabilities</SectionEyebrow>
           <h2 className="font-display text-5xl leading-[1.05] tracking-tight sm:text-6xl">

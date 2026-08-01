@@ -43,7 +43,7 @@ export function Nav() {
       transition={{ delay: 0.4, duration: 0.6 }}
       className="fixed left-0 right-0 top-0 z-40"
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 mt-3 pill card-soft backdrop-blur rounded-full overflow-x-auto">
+      <div className="mx-auto flex max-w-[90rem] items-center justify-between px-6 py-3 mt-3 pill card-soft backdrop-blur rounded-full overflow-x-auto">
         <div className="flex items-center gap-2.5">
           <div className="relative flex h-7 w-7 items-center justify-center">
             <Hexagon
@@ -60,7 +60,7 @@ export function Nav() {
               />
             </div>
           </div>
-          <Link href="/" className="font-display text-lg font-semibold tracking-tight text-white">
+          <Link href="/" className="font-display text-lg font-semibold text-white">
             Nebula
           </Link>
         </div>
@@ -82,7 +82,7 @@ export function Nav() {
         </nav>
         <div className="flex items-center gap-2">
           {user ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
               <Link className="transition-colors text-white/60 hover:text-white" href="/launch">Launch</Link>
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 rounded-full p-0.5 border border-white/10 hover:border-white/20 hover:bg-white/3 transition-colors outline-none cursor-pointer">
@@ -127,7 +127,6 @@ export function Nav() {
                   className="group inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-xs font-medium text-primary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-6px_#4493F8e6]"
                   style={{
                     background: "#4493F8",
-                    boxShadow: "0 6px 24px -8px #4493F8e6",
                   }}
                 >
                   <FiGithub className="h-3.5 w-3.5" /> Launch

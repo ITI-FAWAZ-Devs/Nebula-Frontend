@@ -22,7 +22,7 @@ const metrics = [
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-[85vh] items-center overflow-hidden pb-10">
+    <section className="relative flex min-h-screen w-full items-center justify-center overflow-hidden px-6 pt-24 pb-12 lg:pt-16 lg:pb-16">
       <div className="absolute inset-0 opacity-[0.03]" style={{
         backgroundImage: "linear-gradient(oklch(1 0 0 / 1) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 1) 1px, transparent 1px)",
         backgroundSize: "60px 60px",
@@ -32,7 +32,7 @@ export function Hero() {
       <div className="absolute top-1/3 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/[0.04] blur-[120px]" />
       <div className="absolute top-1/2 right-1/4 w-[400px] h-[400px] rounded-full bg-nebula-purple/[0.03] blur-[100px]" />
 
-      <div className="relative mx-auto grid w-full max-w-[90rem] grid-cols-1 items-center gap-8 px-6 lg:grid-cols-[1fr_1.1fr] lg:gap-12">
+      <div className="relative mx-auto grid w-full max-w-[90rem] grid-cols-1 items-center gap-8 lg:grid-cols-[1fr_1.1fr] lg:gap-12">
         <div className="flex flex-col items-start text-left">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -112,7 +112,7 @@ export function Hero() {
                 See How It Works
               </Button>
             </div>
-            <p className="text-xs text-white/40">No credit card required &middot; Free for open source</p>
+            {/* <p className="text-xs text-white/40">No credit card required &middot; Free for open source</p> */}
           </motion.div>
         </div>
 
@@ -129,7 +129,7 @@ export function Hero() {
         </motion.div>
       </div>
 
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.3, duration: 0.8 }}
@@ -153,7 +153,7 @@ export function Hero() {
             </motion.div>
           ))}
         </div>
-      </motion.div>
+      </motion.div> */}
     </section>
   );
 }

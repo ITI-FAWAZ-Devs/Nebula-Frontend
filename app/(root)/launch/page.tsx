@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 
 import { useImportedReposQuery, useDeleteRepoMutation, Repository } from "@/hooks/use-repository";
+import { useArchDocStatusQuery, useRegenerateMutation } from "@/hooks/use-arch-doc";
 import { Starfield } from "@/components/landing/Starfield";
 
 export default function HangarPage() {
@@ -28,16 +29,58 @@ export default function HangarPage() {
   const [detailRepoId, setDetailRepoId] = useState<string | null>(null);
   const [deleteRepo, setDeleteRepo] = useState<Repository | null>(null);
   const [launching, setLaunching] = useState<Repository | null>(null);
+  const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
 
   // Queries & Mutations
   const { data: repos, isLoading, error, refetch } = useImportedReposQuery();
+  const { data: docStatus } = useArchDocStatusQuery();
   const deleteMutation = useDeleteRepoMutation();
+  const regenerateMutation = useRegenerateMutation();
+
+  const docStatusByRepo = (docStatus || []).reduce<Record<string, { hasDoc: boolean }>>(
+    (acc, entry) => {
+      acc[entry.repositoryId] = { hasDoc: entry.hasDoc };
+      return acc;
+    },
+    {}
+  );
 
   const handleLaunch = (r: Repository) => {
     setLaunching(r);
     setTimeout(() => {
-      router.push(`/analysis?repo=${encodeURIComponent(`${r.owner}/${r.name}`)}`);
+      router.push(
+        `/analysis?repoId=${r.id}&repo=${encodeURIComponent(`${r.owner}/${r.name}`)}`
+      );
     }, 1400);
+  };
+
+  const handleOpenWorkspace = (r: Repository) => {
+    router.push(
+      `/workspace?repoId=${r.id}&repo=${encodeURIComponent(`${r.owner}/${r.name}`)}`
+    );
+  };
+
+  const handleRegenerate = async (r: Repository) => {
+    setRegeneratingId(r.id);
+    try {
+      const result = await regenerateMutation.mutateAsync(r.id);
+      if (result.needsRegeneration) {
+        router.push(
+          `/workspace?repoId=${r.id}&repo=${encodeURIComponent(`${r.owner}/${r.name}`)}`
+        );
+      } else {
+        toast.info("No new changes to regenerate");
+      }
+    } catch (err) {
+      toast.error(
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ||
+          (err as Error)?.message ||
+          "Failed to regenerate"
+      );
+    } finally {
+      setRegeneratingId(null);
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -155,7 +198,11 @@ export default function HangarPage() {
                     key={repo.id} 
                     repo={repo} 
                     index={i} 
+                    hasDoc={docStatusByRepo[repo.id]?.hasDoc}
+                    isRegenerating={regeneratingId === repo.id}
                     onLaunch={handleLaunch} 
+                    onOpenWorkspace={handleOpenWorkspace}
+                    onRegenerate={handleRegenerate}
                     onDeleteClick={(r) => setDeleteRepo(r)}
                     onDetailClick={(r) => setDetailRepoId(r.id)}
                   />

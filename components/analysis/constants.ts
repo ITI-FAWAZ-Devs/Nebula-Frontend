@@ -14,7 +14,7 @@ export const STEPS: Step[] = [
     logs: ["embed model: nebula-e3-large", "chunks: 6,204 · 1536-dim", "index built · ANN recall 0.98"] },
   { id: "rag", label: "Initializing RAG", detail: "Building retrieval indices", icon: Database, duration: 1400,
     logs: ["hybrid search enabled", "reranker warmed", "context window: 200k tokens"] },
-  { id: "agents", label: "Launching AI agents", detail: "Bringing constellation online", icon: Bot, duration: 1800,
+  { id: "agents", label: "Generating architecture docs", detail: "PENDING · RETRIEVING · GENERATING · VERIFYING", icon: Bot, duration: 1800,
     logs: ["architect · online", "documentarian · online", "sentinel · online", "cartographer · online"] },
 ];
 

@@ -1,184 +1,198 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { Suspense, useState, useMemo } from "react";
 import Link from "next/link";
-import { 
-  Search, 
-  MessageSquare, 
-  BookOpen, 
-  History, 
-  Cpu, 
-  Activity, 
-  Circle, 
-  ChevronRight 
-} from "lucide-react";
-
+import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { AlertCircle, Database, Loader2, Rocket } from "lucide-react";
+import { ArchitectureWiki } from "@/components/docs/ArchitectureWiki";
+import { Button } from "@/components/ui/button";
 import { NebulaBackdrop } from "@/components/landing/NebulaBackdrop";
-import { Galaxy } from "@/components/workspace/Galaxy";
-import { PlanetNode } from "@/components/workspace/PlanetNode";
-import { DockButton } from "@/components/workspace/DockButton";
-import { DocsDrawer } from "@/components/workspace/DocsDrawer";
-import { ChatConsole } from "@/components/workspace/ChatConsole";
-import { SearchPalette } from "@/components/workspace/SearchPalette";
-import { HistoryTimeline } from "@/components/workspace/HistoryTimeline";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from "@/components/ui/empty";
+import {
+  useArchDocVersionsQuery,
+  useArchDocVersionQuery,
+  useRegenerateMutation,
+  isActiveArchDocStatus,
+} from "@/hooks/use-arch-doc";
 
-import { PLANETS } from "@/components/workspace/constants";
-import { DrawerType } from "@/components/workspace/types";
+function WorkspaceView() {
+  const searchParams = useSearchParams();
+  const repoId = searchParams.get("repoId");
+  const repo = searchParams.get("repo") || "repository";
 
-export default function WorkspacePage() {
-  const [selected, setSelected] = useState<string | null>(null);
-  const [drawer, setDrawer] = useState<DrawerType>(null);
-  const [entering, setEntering] = useState(true);
+  const [pickedVersion, setPickedVersion] = useState<number | null>(null);
+  const [knownLatest, setKnownLatest] = useState<number | null>(null);
 
-  useEffect(() => {
-    const t = setTimeout(() => setEntering(false), 1400);
-    
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { 
-        e.preventDefault(); 
-        setDrawer("search"); 
+  const { data: versions, isLoading: versionsLoading } = useArchDocVersionsQuery(repoId);
+
+  const completedVersions = useMemo(
+    () => (versions || []).filter((v) => v.status === "COMPLETED"),
+    [versions]
+  );
+  const latestVersion = completedVersions[0]?.version ?? null;
+  const activeVersion = useMemo(
+    () => (versions || []).find((v) => isActiveArchDocStatus(v.status)) ?? null,
+    [versions]
+  );
+
+  // Documented "adjusting state during render" pattern:
+  // seed the known latest once versions load, and auto-switch to Latest when a
+  // regeneration completes (i.e. a newer version appears in the history).
+  if (latestVersion !== null && knownLatest === null) {
+    setKnownLatest(latestVersion);
+  } else if (
+    latestVersion !== null &&
+    knownLatest !== null &&
+    latestVersion > knownLatest
+  ) {
+    setKnownLatest(latestVersion);
+    setPickedVersion(null);
+  }
+
+  const selectedVersion = pickedVersion ?? latestVersion;
+
+  const { data, isLoading, isError, error, refetch } = useArchDocVersionQuery(
+    repoId,
+    selectedVersion
+  );
+
+  const regenerateMutation = useRegenerateMutation();
+
+  const handleRegenerate = async () => {
+    if (!repoId) return;
+    try {
+      const result = await regenerateMutation.mutateAsync(repoId);
+      if (!result.needsRegeneration) {
+        toast.info("No new changes to regenerate");
       }
-      if (e.key === "Escape") {
-        setDrawer(null);
-      }
-    };
-    
-    window.addEventListener("keydown", onKey);
-    return () => { 
-      clearTimeout(t); 
-      window.removeEventListener("keydown", onKey); 
-    };
-  }, []);
-
-  const planet = PLANETS.find(p => p.id === selected) ?? null;
-
-  const openPlanet = (id: string) => {
-    setSelected(id);
-    setDrawer("docs");
+    } catch (err) {
+      toast.error(
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ||
+          (err as Error)?.message ||
+          "Failed to regenerate"
+      );
+    }
   };
 
-  return (
-    <div className="relative h-screen w-screen overflow-hidden text-foreground bg-background">
-      <NebulaBackdrop />
-
-      {/* Top status bar */}
-      <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2 font-display text-base font-semibold text-white">
-            Nebula
-          </Link>
-          <span className="mx-2 h-4 w-px bg-white/10" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/50">acme/orion-core · main</span>
-          <div className="ml-4 inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/50 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> 4 agents online
-          </div>
-        </div>
-        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-white/50">
-          <Cpu className="h-3 w-3" /> galaxy synced 2s ago
-        </div>
-      </header>
-
-      {/* Galaxy */}
-      <div className="absolute inset-0">
-        <AnimatePresence>
-          {entering && (
-            <motion.div 
-              initial={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              transition={{ duration: 0.6 }}
-              className="absolute inset-0 z-30 flex items-center justify-center bg-background/70 backdrop-blur-xl"
-            >
-              <div className="text-center">
-                <motion.div 
-                  initial={{ scale: 0 }} 
-                  animate={{ scale: 1 }} 
-                  transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                  className="mx-auto h-24 w-24 rounded-full bg-primary shadow-[0_0_80px_#4493F8]" 
-                />
-                <div className="mt-6 font-mono text-[10px] uppercase tracking-[0.3em] text-primary">Welcome to the galaxy</div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <Galaxy planets={PLANETS} selected={selected} />
-        
-        {PLANETS.map((p, i) => (
-          <PlanetNode 
-            key={p.id} 
-            p={p} 
-            index={i} 
-            selected={selected === p.id} 
-            onSelect={() => openPlanet(p.id)} 
-          />
-        ))}
+  if (data && selectedVersion !== null) {
+    return (
+      <div className="h-screen w-full overflow-hidden text-foreground">
+        <ArchitectureWiki
+          data={data}
+          repoName={repo}
+          versions={completedVersions}
+          activeVersion={activeVersion}
+          selectedVersion={selectedVersion}
+          onVersionChange={setPickedVersion}
+          onRegenerate={handleRegenerate}
+          isRegenerating={!!activeVersion}
+        />
       </div>
+    );
+  }
 
-      {/* Floating dock */}
-      <motion.div 
-        initial={{ y: 40, opacity: 0 }} 
-        animate={{ y: 0, opacity: entering ? 0 : 1 }} 
-        transition={{ delay: 1.6, duration: 0.8 }}
-        className="absolute bottom-6 left-1/2 z-20 -translate-x-1/2"
-      >
-        <div className="premium-panel flex items-center gap-1 p-1.5">
-          <DockButton icon={Search} label="Search" hotkey="⌘K" onClick={() => setDrawer("search")} />
-          <DockButton icon={MessageSquare} label="Console" onClick={() => setDrawer("chat")} />
-          <DockButton icon={BookOpen} label="Docs" onClick={() => { if (!planet) setSelected("core"); setDrawer("docs"); }} />
-          <DockButton icon={History} label="Memory" onClick={() => setDrawer("history")} />
+  if (!repoId) {
+    return <EmptyState />;
+  }
+
+  if (versionsLoading || isLoading) {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
+        <NebulaBackdrop />
+        <div className="relative z-10 flex min-h-screen flex-col items-center justify-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            Loading architecture document...
+          </span>
         </div>
-      </motion.div>
+      </div>
+    );
+  }
 
-      {/* Ambient module inspector (bottom-left) */}
-      <AnimatePresence>
-        {planet && !entering && drawer === null && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-24 left-6 z-10 max-w-xs"
+  if (completedVersions.length === 0) {
+    return <EmptyState />;
+  }
+
+  if (isError && (error as { response?: { status?: number } })?.response?.status !== 404) {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
+        <NebulaBackdrop />
+        <div className="relative z-10 flex flex-col items-center justify-center gap-3 px-6 text-center">
+          <AlertCircle className="h-10 w-10 text-rose-500" />
+          <p className="max-w-md text-xs text-muted-foreground">
+            {(error as { response?: { data?: { message?: string } } })?.response?.data
+              ?.message ||
+              (error as Error)?.message ||
+              "Failed to load the architecture document."}
+          </p>
+          <Button
+            variant="ghost"
+            className="mt-3 cursor-pointer text-primary"
+            onClick={() => refetch()}
           >
-            <div className="premium-panel p-4">
-              <div className="flex items-center gap-2">
-                <Circle className="h-2.5 w-2.5 fill-current" style={{ color: planet.color }} />
-                <div className="font-display text-sm font-medium text-white">{planet.name}</div>
-              </div>
-              <div className="mt-1 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">{planet.kind}</div>
-              <p className="mt-2 text-xs text-muted-foreground">{planet.desc}</p>
-              <button 
-                onClick={() => setDrawer("docs")}
-                className="mt-3 inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-primary hover:text-white cursor-pointer"
-              >
-                Open docs <ChevronRight className="h-3 w-3" />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            Retry Fetch
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-      {/* Drawers */}
-      <DocsDrawer 
-        planet={planet} 
-        open={drawer === "docs"} 
-        onClose={() => setDrawer(null)} 
-        planets={PLANETS} 
-      />
-      <ChatConsole 
-        planet={planet} 
-        open={drawer === "chat"} 
-        onClose={() => setDrawer(null)} 
-      />
-      <SearchPalette 
-        open={drawer === "search"} 
-        onClose={() => setDrawer(null)} 
-        onSelect={openPlanet} 
-        planets={PLANETS} 
-      />
-      <HistoryTimeline 
-        open={drawer === "history"} 
-        onClose={() => setDrawer(null)} 
-      />
+  return <EmptyState />;
+}
+
+function EmptyState() {
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
+      <NebulaBackdrop />
+      <Empty className="relative z-10 mx-auto max-w-md py-24">
+        <EmptyHeader>
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-white/5 bg-white/5 text-muted-foreground">
+            <Database className="h-6 w-6" />
+          </div>
+          <EmptyTitle className="text-base text-white">
+            No architecture document yet
+          </EmptyTitle>
+          <EmptyDescription className="mt-1 max-w-sm text-muted-foreground">
+            Launch a repository to generate its architecture documentation.
+          </EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Link href="/launch">
+            <Button
+              className="mt-3 cursor-pointer rounded-full px-6 font-mono text-xs uppercase tracking-widest text-white"
+              style={{
+                background: "#4493F8",
+                boxShadow: "0 4px 16px -4px #4493F899",
+              }}
+            >
+              <Rocket className="h-3.5 w-3.5" />
+              Launch to Galaxy
+            </Button>
+          </Link>
+        </EmptyContent>
+      </Empty>
     </div>
+  );
+}
+
+export default function WorkspacePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <WorkspaceView />
+    </Suspense>
   );
 }

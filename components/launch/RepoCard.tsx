@@ -2,14 +2,27 @@
 
 import { useState, useRef } from "react";
 import { motion, useInView } from "motion/react";
-import { GitBranch, Rocket, Circle, Eye, Trash2, Loader2 } from "lucide-react";
+import {
+  GitBranch,
+  Rocket,
+  Circle,
+  Eye,
+  Trash2,
+  Loader2,
+  RefreshCw,
+  BookOpen,
+} from "lucide-react";
 import { FiGithub } from "react-icons/fi";
 import { Repository } from "@/hooks/use-repository";
 
 interface RepoCardProps {
   repo: Repository;
   index: number;
+  hasDoc?: boolean;
+  isRegenerating?: boolean;
   onLaunch: (r: Repository) => void;
+  onOpenWorkspace: (r: Repository) => void;
+  onRegenerate: (r: Repository) => void;
   onDeleteClick: (r: Repository) => void;
   onDetailClick: (r: Repository) => void;
 }
@@ -17,7 +30,11 @@ interface RepoCardProps {
 export function RepoCard({
   repo,
   index,
+  hasDoc = false,
+  isRegenerating = false,
   onLaunch,
+  onOpenWorkspace,
+  onRegenerate,
   onDeleteClick,
   onDetailClick,
 }: RepoCardProps) {
@@ -138,14 +155,40 @@ export function RepoCard({
           </span>
         </div>
 
-        <motion.button
-          onClick={() => onLaunch(repo)}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-primary/15 py-2.5 font-mono text-xs font-medium uppercase tracking-[0.2em] text-white transition-all hover:border-primary/40 hover:shadow-[0_0_30px_#4493F840] cursor-pointer"
-          whileTap={{ scale: 0.98 }}
-        >
-          <Rocket className="h-3.5 w-3.5" />
-          Launch to Galaxy
-        </motion.button>
+        {hasDoc ? (
+          <div className="mt-6 flex items-center gap-2">
+            <motion.button
+              onClick={() => onOpenWorkspace(repo)}
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-white/10 bg-primary/15 py-2.5 font-mono text-xs font-medium uppercase tracking-[0.2em] text-white transition-all hover:border-primary/40 hover:shadow-[0_0_30px_#4493F840] cursor-pointer"
+              whileTap={{ scale: 0.98 }}
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              Go to Workspace
+            </motion.button>
+            <motion.button
+              onClick={() => onRegenerate(repo)}
+              disabled={isRegenerating}
+              className="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 font-mono text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground transition-all hover:border-white/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+              whileTap={{ scale: 0.98 }}
+            >
+              {isRegenerating ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="h-3.5 w-3.5" />
+              )}
+              Regenerate
+            </motion.button>
+          </div>
+        ) : (
+          <motion.button
+            onClick={() => onLaunch(repo)}
+            className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 bg-primary/15 py-2.5 font-mono text-xs font-medium uppercase tracking-[0.2em] text-white transition-all hover:border-primary/40 hover:shadow-[0_0_30px_#4493F840] cursor-pointer"
+            whileTap={{ scale: 0.98 }}
+          >
+            <Rocket className="h-3.5 w-3.5" />
+            Launch to Galaxy
+          </motion.button>
+        )}
       </div>
     </motion.div>
   );

@@ -1,17 +1,18 @@
 "use client";
 
 import { motion } from "motion/react";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { Step } from "./types";
 
 interface AnalysisTimelineProps {
   steps: Step[];
   current: number;
   done: Set<string>;
+  failed: Set<string>;
   complete: boolean;
 }
 
-export function AnalysisTimeline({ steps, current, done, complete }: AnalysisTimelineProps) {
+export function AnalysisTimeline({ steps, current, done, failed, complete }: AnalysisTimelineProps) {
   const progress = (done.size / steps.length) * 100;
 
   return (
@@ -39,7 +40,8 @@ export function AnalysisTimeline({ steps, current, done, complete }: AnalysisTim
       <ol className="space-y-3">
         {steps.map((s, i) => {
           const isDone = done.has(s.id);
-          const isActive = i === current && !complete;
+          const isFailed = failed.has(s.id);
+          const isActive = i === current && !complete && !isFailed;
           const Icon = s.icon;
           return (
             <motion.li 
@@ -48,18 +50,20 @@ export function AnalysisTimeline({ steps, current, done, complete }: AnalysisTim
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
               className={`flex items-start gap-4 rounded-lg border p-4 transition-colors ${
-                isActive ? "border-primary/40 bg-white/[0.04]" : isDone ? "border-white/10 bg-white/[0.02]" : "border-white/5"
+                isFailed
+                  ? "border-rose-500/30 bg-rose-500/[0.06]"
+                  : isActive ? "border-primary/40 bg-white/[0.04]" : isDone ? "border-white/10 bg-white/[0.02]" : "border-white/5"
               }`}
             >
-              <div className={`relative mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-lg ${isDone ? "bg-primary/20 text-primary" : isActive ? "bg-primary/15 text-white" : "bg-white/5 text-muted-foreground"}`}>
-                {isDone ? <CheckCircle2 className="h-4 w-4" /> : isActive ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
+              <div className={`relative mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-lg ${isFailed ? "bg-rose-500/15 text-rose-400" : isDone ? "bg-primary/20 text-primary" : isActive ? "bg-primary/15 text-white" : "bg-white/5 text-muted-foreground"}`}>
+                {isFailed ? <AlertCircle className="h-4 w-4" /> : isDone ? <CheckCircle2 className="h-4 w-4" /> : isActive ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
                 {isActive && <span className="absolute inset-0 animate-pulse-glow rounded-lg ring-2 ring-primary/40" />}
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <div className={`font-display text-sm font-medium ${isDone || isActive ? "text-foreground" : "text-muted-foreground"}`}>{s.label}</div>
-                  <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    {isDone ? "done" : isActive ? "running" : "queued"}
+                  <div className={`font-display text-sm font-medium ${isFailed ? "text-rose-300" : isDone || isActive ? "text-foreground" : "text-muted-foreground"}`}>{s.label}</div>
+                  <div className={`font-mono text-[10px] uppercase tracking-widest ${isFailed ? "text-rose-400" : "text-muted-foreground"}`}>
+                    {isFailed ? "failed" : isDone ? "done" : isActive ? "running" : "queued"}
                   </div>
                 </div>
                 <div className="mt-0.5 text-xs text-muted-foreground">{s.detail}</div>

@@ -31,7 +31,7 @@ export function AgentConstellation({ agents, online }: AgentConstellationProps) 
                 style={{ background: `radial-gradient(circle, ${a.color}55, transparent 70%)` }}
               >
                 <Bot className="h-4 w-4 text-white" />
-                {online && <span className="absolute inset-0 animate-pulse-glow rounded-full" style={{ boxShadow: `0 0 24px ${a.color}` }} />}
+                {online && <span className="absolute inset-0 animate-pulse-glow rounded-full" style={{ boxShadow: `0 0 5px ${a.color}` }} />}
               </div>
               <div className="min-w-0">
                 <div className="font-display text-sm font-medium text-white">{a.name}</div>

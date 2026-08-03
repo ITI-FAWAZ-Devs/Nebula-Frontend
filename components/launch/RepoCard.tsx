@@ -45,15 +45,15 @@ export function RepoCard({
   const getStatusDetails = (status: string) => {
     switch (status) {
       case "READY":
-        return { color: "#10b981", label: "Ready", glow: "shadow-[0_0_10px_#10b981]" };
+        return { color: "#10b981", label: "Ready"};
       case "FAILED":
-        return { color: "#ef4444", label: "Failed", glow: "shadow-[0_0_10px_#ef4444]" };
+        return { color: "#ef4444", label: "Failed"};
       case "CLONING":
-        return { color: "#22d3ee", label: "Cloning", glow: "shadow-[0_0_10px_#22d3ee]" };
+        return { color: "#22d3ee", label: "Cloning" };
       case "INDEXING":
-        return { color: "#a855f7", label: "Indexing", glow: "shadow-[0_0_10px_#a855f7]" };
+        return { color: "#a855f7", label: "Indexing" };
       default:
-        return { color: "#94a3b8", label: "Imported", glow: "" };
+        return { color: "#94a3b8", label: "Imported" };
     }
   };
 
@@ -143,7 +143,7 @@ export function RepoCard({
             ) : (
               <Circle className="h-2 w-2 fill-current" style={{ color: statusInfo.color }} />
             )}
-            <span style={{ color: statusInfo.color }} className={statusInfo.glow}>
+            <span style={{ color: statusInfo.color }}>
               {statusInfo.label}
             </span>
           </span>

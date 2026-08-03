@@ -129,7 +129,7 @@ function AnalysisMissionControl() {
     if (analysisRank >= rank("graphify", ANALYSIS_STAGES)) set.add("ast");
     if (analysisRank >= rank("build_graph", ANALYSIS_STAGES)) set.add("graph");
     if (docRank >= rank("describe_files", DOC_STAGES)) set.add("embed");
-    if (docRank >= rank("embed_descriptions", DOC_STAGES)) set.add("rag");
+    if (docRank >= rank("save_chroma", DOC_STAGES)) set.add("rag");
     if (archDoc?.status === "COMPLETED") set.add("agents");
     return set;
   }, [analysisRank, docRank, archDoc?.status]);
@@ -173,6 +173,20 @@ function AnalysisMissionControl() {
     [archDoc]
   );
 
+  const steps = useMemo(() => {
+    const pct =
+      typeof documentation?.progress === "number" ? Math.round(documentation.progress) : null;
+    return STEPS.map((s) => {
+      if (s.id === "embed" && documentation?.stage === "describe_files" && pct !== null) {
+        return { ...s, detail: `Describing files — ${pct}%` };
+      }
+      if (s.id === "rag" && documentation?.stage === "embed_descriptions" && pct !== null) {
+        return { ...s, detail: `Building retrieval indices — ${pct}%` };
+      }
+      return s;
+    });
+  }, [documentation]);
+
   return (
     <div className="relative min-h-screen overflow-hidden text-foreground pt-28 pb-16 px-4 sm:px-6 bg-background">
       <NebulaBackdrop />
@@ -213,7 +227,7 @@ function AnalysisMissionControl() {
       <main className="relative z-10 mx-auto grid max-w-7xl gap-6 px-2 pb-16 lg:grid-cols-[1.1fr_1fr]">
         {/* LEFT: Timeline */}
         <AnalysisTimeline
-          steps={STEPS}
+          steps={steps}
           current={current}
           done={done}
           failed={failed}

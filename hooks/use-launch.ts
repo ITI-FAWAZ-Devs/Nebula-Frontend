@@ -22,6 +22,8 @@ export type DocumentationJob = {
   status: "PENDING" | "RUNNING" | "COMPLETED" | "FAILED";
   stage: string | null;
   error: string | null;
+  progress: number | null;
+  queueJobId: string | null;
   startedAt: string | null;
   finishedAt: string | null;
   createdAt: string;
@@ -146,6 +148,8 @@ export function useLaunchPipeline(repoId: string | null) {
 
   const waitForJob = useCallback(
     async (kind: "analysis" | "documentation" | "archDoc") => {
+      const startedAt = Date.now();
+      const maxWaitMs = 30 * 60 * 1000;
       while (true) {
         let status = "";
         let failMessage: string | null = null;
@@ -167,6 +171,9 @@ export function useLaunchPipeline(repoId: string | null) {
         if (status === "COMPLETED") return;
         if (status === "FAILED") {
           throw new Error(failMessage || `${kind} job failed`);
+        }
+        if (Date.now() - startedAt > maxWaitMs) {
+          throw new Error(`${kind} job timed out after 30 minutes`);
         }
 
         try {

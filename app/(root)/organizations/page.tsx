@@ -3,16 +3,17 @@
 import { useState } from "react";
 import { ProtectedGuard } from "@/components/auth/ProtectedGuard";
 import { useOrganizationsQuery } from "@/hooks/use-organization";
-import { Building2, Plus, Users, Shield, Settings, Check, ArrowRight } from "lucide-react";
+import { Building2, Plus, Users, Shield, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreateOrgModal } from "@/components/organizations/CreateOrgModal";
 import { MembersTab } from "@/components/organizations/MembersTab";
 import { RolesTab } from "@/components/organizations/RolesTab";
+import { OrgReposTab } from "@/components/organizations/OrgReposTab";
 
 export default function OrganizationsPage() {
   const { data: orgs, isLoading } = useOrganizationsQuery();
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"members" | "roles">("members");
+  const [activeTab, setActiveTab] = useState<"members" | "roles" | "repositories">("members");
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
   // Auto-select first org if available and none selected
@@ -141,7 +142,17 @@ export default function OrganizationsPage() {
                             : "text-white/50 hover:text-white"
                         }`}
                       >
-                        <Shield className="h-3.5 w-3.5" /> Custom Roles
+                        <Shield className="h-3.5 w-3.5" /> Roles
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("repositories")}
+                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+                          activeTab === "repositories"
+                            ? "bg-primary text-white font-semibold shadow-md"
+                            : "text-white/50 hover:text-white"
+                        }`}
+                      >
+                        <Database className="h-3.5 w-3.5" /> Repositories
                       </button>
                     </div>
                   </div>
@@ -149,7 +160,8 @@ export default function OrganizationsPage() {
                   {/* Tab Panel */}
                   <div className="glass-panel p-6">
                     {activeTab === "members" && <MembersTab orgId={currentOrg.id} />}
-                    {activeTab === "roles" && <RolesTab orgId={currentOrg.id} />}
+                    {activeTab === "roles" && <RolesTab orgId={currentOrg.id} userPermissions={currentOrg.userRole?.permissions || []} />}
+                    {activeTab === "repositories" && <OrgReposTab orgId={currentOrg.id} />}
                   </div>
                 </div>
               )}

@@ -69,6 +69,32 @@ export function useOrganizationsQuery() {
   });
 }
 
+// Hook: List repositories belonging to an organization
+export function useOrgRepositoriesQuery(orgId: string | null) {
+  return useQuery({
+    queryKey: ["org-repositories", orgId],
+    queryFn: async () => {
+      if (!orgId) return [];
+      const response = await api.get(`/api/organizations/${orgId}/repositories`);
+      return response.data.data as Array<{
+        id: string;
+        githubRepoId: string;
+        name: string;
+        owner: string;
+        defaultBranch: string;
+        isPrivate: boolean;
+        cloneUrl: string;
+        status: string;
+        userId: string;
+        organizationId: string | null;
+        createdAt: string;
+        updatedAt: string;
+      }>;
+    },
+    enabled: !!orgId,
+  });
+}
+
 // Hook: Get organization detail by ID
 export function useOrganizationQuery(orgId: string | null) {
   return useQuery({

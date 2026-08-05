@@ -86,6 +86,7 @@ function WorkspaceView() {
     return (
       <div className="h-screen w-full overflow-hidden text-foreground">
         <ArchitectureWiki
+          repositoryId={repoId}
           data={data}
           repoName={repo}
           versions={completedVersions}

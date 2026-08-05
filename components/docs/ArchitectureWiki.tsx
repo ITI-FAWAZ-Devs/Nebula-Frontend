@@ -17,9 +17,13 @@ import {
   Hexagon,
   RefreshCw,
   Loader2,
+  Bot,
+  User,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { AlertCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -31,10 +35,12 @@ import {
   ArchDocData,
   ArchDocVersionSummary,
 } from "@/hooks/use-arch-doc";
+import { useAgentChat, type AgentCitation } from "@/hooks/use-agent-chat";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface ArchitectureWikiProps {
+  repositoryId: string;
   data: ArchDocData;
   repoName?: string;
   versions: ArchDocVersionSummary[];
@@ -192,9 +198,58 @@ function SourceFilesPanel({ files }: { files: string[] }) {
   );
 }
 
+// ─── Citation Badges ────────────────────────────────────────────────────────
+
+function CitationBadges({ citations }: { citations: AgentCitation[] }) {
+  if (!citations.length) return null;
+  return (
+    <div className="mt-2 flex flex-wrap gap-1.5">
+      {citations.map((c, i) => (
+        <span
+          key={`${c.nodeId}-${i}`}
+          className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/60"
+          title={c.lineRange ? `${c.filePath}:${c.lineRange}` : c.filePath}
+        >
+          <FileText className="h-2.5 w-2.5 text-primary/50" />
+          {c.filePath}
+          {c.lineRange && (
+            <span className="text-white/30">:{c.lineRange}</span>
+          )}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// ─── Chat Markdown Components ──────────────────────────────────────────────────
+
+const chatMdComponents = {
+  p: ({ children }: any) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
+  a: ({ children, href }: any) => (
+    <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+      {children}
+    </a>
+  ),
+  code: ({ children, className }: any) => {
+    const isBlock = className?.includes("language-");
+    if (isBlock) {
+      return (
+        <pre className="overflow-x-auto rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-[11px] my-2 text-foreground/80 scrollbar-thin">
+          <code>{children}</code>
+        </pre>
+      );
+    }
+    return <code className="rounded bg-white/10 px-1 py-0.5 font-mono text-[11px]">{children}</code>;
+  },
+  ul: ({ children }: any) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+  ol: ({ children }: any) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+  li: ({ children }: any) => <li>{children}</li>,
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function ArchitectureWiki({
+  repositoryId,
   data,
   repoName = "product-list-app",
   versions,
@@ -208,7 +263,30 @@ export function ArchitectureWiki({
   const [activeHeading, setActiveHeading] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [chatInput, setChatInput] = useState("");
+  const [chatExpanded, setChatExpanded] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+
+  const { messages, isStreaming, error, sendMessage, clearError } =
+    useAgentChat(repositoryId);
+
+  // Expand chat when messages exist
+  useEffect(() => {
+    if (messages.length > 0) setChatExpanded(true);
+  }, [messages.length]);
+
+  // Toast errors
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      clearError();
+    }
+  }, [error, clearError]);
+
+  // Auto-scroll chat to bottom
+  useEffect(() => {
+    chatScrollRef.current?.scrollTo({ top: 9999, behavior: "smooth" });
+  }, [messages]);
 
   const currentSection = useMemo(
     () => data.sections.find((s) => s.key === activeSection) ?? data.sections[0],
@@ -254,6 +332,19 @@ export function ArchitectureWiki({
     () => buildMarkdownComponents(activeSection),
     [activeSection]
   );
+
+  const handleSendMessage = async () => {
+    const q = chatInput.trim();
+    if (!q || isStreaming) return;
+    if (q.length > 4000) {
+      toast.error("Question must be 4000 characters or fewer");
+      return;
+    }
+    setChatInput("");
+    await sendMessage(q);
+  };
+
+  const chatDisabled = !repositoryId || isStreaming;
 
   return (
     <div className="flex h-full flex-col text-foreground">
@@ -489,31 +580,108 @@ export function ArchitectureWiki({
       </div>
 
       {/* ── Bottom Chat Bar ── */}
-      <div className="shrink-0 border-t border-white/5 bg-background/80 px-4 py-3 backdrop-blur-sm">
-        <div className="mx-auto max-w-3xl">
-          <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/3 px-4 py-2.5 focus-within:border-primary/40 focus-within:bg-white/5 transition-all">
-            <Sparkles className="h-4 w-4 shrink-0 text-primary/60" />
-            <input
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              placeholder={`Ask Nebula about ${repoName}…`}
-              className="flex-1 bg-transparent text-sm text-white placeholder:text-muted-foreground/50 outline-none"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && chatInput.trim()) {
-                  setChatInput("");
-                }
-              }}
-            />
-            <div className="flex items-center gap-2">
-              <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
-                Fast
-              </span>
-              <button
-                disabled={!chatInput.trim()}
-                className="rounded-lg bg-primary/20 p-1.5 text-primary transition-colors hover:bg-primary/30 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+      <div className="shrink-0 border-t border-white/5 bg-background/80 backdrop-blur-sm transition-all duration-300">
+        <div className="mx-auto max-w-3xl flex flex-col w-full">
+          <AnimatePresence>
+            {(chatExpanded || messages.length > 0) && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "40vh", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden border-b border-white/5"
               >
-                <Send className="h-3.5 w-3.5" />
-              </button>
+                <div
+                  ref={chatScrollRef}
+                  className="h-full w-full overflow-y-auto px-4 py-4 scrollbar-thin flex flex-col gap-4"
+                >
+                  {messages.map((m) => (
+                    <div
+                      key={m.id}
+                      className={cn(
+                        "flex flex-col max-w-[85%]",
+                        m.role === "user" ? "self-end items-end" : "self-start items-start"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "rounded-2xl px-4 py-3 text-sm shadow-sm",
+                          m.role === "user"
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-white/5 text-foreground border border-white/10"
+                        )}
+                      >
+                        {m.role === "assistant" && !m.isStreaming ? (
+                          <ReactMarkdown components={chatMdComponents}>
+                            {m.content}
+                          </ReactMarkdown>
+                        ) : (
+                          <div className="whitespace-pre-wrap leading-relaxed">{m.content}</div>
+                        )}
+                        {m.isStreaming && m.content.length === 0 && (
+                          <div className="flex items-center gap-1.5 text-muted-foreground py-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "0ms" }} />
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "150ms" }} />
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "300ms" }} />
+                          </div>
+                        )}
+                      </div>
+                      {m.role === "assistant" && m.citations && m.citations.length > 0 && (
+                        <CitationBadges citations={m.citations} />
+                      )}
+                      {m.failed && (
+                        <div className="mt-1 flex items-center gap-1.5 text-xs text-rose-400 font-medium">
+                          <AlertCircle className="h-3 w-3" />
+                          Message failed to complete
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
+                    <div className="flex flex-col max-w-[85%] self-start items-start">
+                      <div className="rounded-2xl px-4 py-3 text-sm shadow-sm bg-white/5 border border-white/10">
+                        <div className="flex items-center gap-1.5 text-muted-foreground py-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div className="px-4 py-3">
+            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/3 px-4 py-2.5 focus-within:border-primary/40 focus-within:bg-white/5 transition-all">
+              <Sparkles className="h-4 w-4 shrink-0 text-primary/60" />
+              <input
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onFocus={() => setChatExpanded(true)}
+                placeholder={`Ask Nebula about ${repoName}…`}
+                className="flex-1 bg-transparent text-sm text-white placeholder:text-muted-foreground/50 outline-none disabled:opacity-50"
+                disabled={chatDisabled}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
+              />
+              <div className="flex items-center gap-2">
+                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+                  Fast
+                </span>
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!chatInput.trim() || chatDisabled}
+                  className="rounded-lg bg-primary/20 p-1.5 text-primary transition-colors hover:bg-primary/30 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

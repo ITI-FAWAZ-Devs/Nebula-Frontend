@@ -22,7 +22,6 @@ import { Starfield } from "@/components/landing/Starfield";
 export default function HangarPage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [provider, setProvider] = useState<"all" | "github" | "gitlab">("all");
   
   // UI states for modals/drawers
   const [searchOpen, setSearchOpen] = useState(false);
@@ -104,11 +103,9 @@ export default function HangarPage() {
 
   // Filter local state list
   const filtered = (repos || []).filter(r => {
-    // Note: Database repositories are currently GitHub-only
-    const matchesProvider = provider === "all" || provider === "github";
     const matchesQuery = r.name.toLowerCase().includes(query.toLowerCase()) || 
                          r.owner.toLowerCase().includes(query.toLowerCase());
-    return matchesProvider && matchesQuery;
+    return matchesQuery;
   });
 
   return (
@@ -147,17 +144,6 @@ export default function HangarPage() {
               placeholder="Search imported repositories…"
               className="w-full bg-transparent font-mono text-sm placeholder:text-muted-foreground focus:outline-none text-white" 
             />
-          </div>
-          <div className="flex items-center gap-1 rounded-md border border-white/10 bg-white/5 p-1 font-mono text-[10px] uppercase tracking-[0.2em]">
-            {(["all", "github", "gitlab"] as const).map(p => (
-              <button 
-                key={p} 
-                onClick={() => setProvider(p)}
-                className={`rounded px-3 py-1.5 transition cursor-pointer ${provider === p ? "bg-white/10 text-white" : "text-muted-foreground hover:text-white"}`}
-              >
-                {p}
-              </button>
-            ))}
           </div>
           <Button 
             onClick={() => setSearchOpen(true)}

@@ -139,7 +139,7 @@ export function MembersTab({ orgId }: MembersTabProps) {
                   onValueChange={(newRoleId) => newRoleId && handleRoleChange(member.id, newRoleId)}
                 >
                   <SelectTrigger className="h-8 bg-black/20 border-white/10 text-white text-[11px] font-mono w-40">
-                    <SelectValue />
+                    <SelectValue placeholder={member.role.name}>{member.role.name}</SelectValue>
                   </SelectTrigger>
                   <SelectContent className="glass-panel border-white/10 bg-popover/95 text-white">
                     {roles?.map((r) => (

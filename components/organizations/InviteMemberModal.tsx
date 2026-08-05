@@ -96,7 +96,11 @@ export function InviteMemberModal({ orgId, open, onOpenChange }: InviteMemberMod
             </label>
             <Select value={selectedRoleId} onValueChange={(val) => setSelectedRoleId(val || "")}>
               <SelectTrigger className="bg-black/30 border-white/10 text-white h-10 text-xs font-mono w-full">
-                <SelectValue placeholder={loadingRoles ? "Loading roles..." : "Select role..."} />
+                <SelectValue placeholder={loadingRoles ? "Loading roles..." : "Select role..."}>
+                  {selectedRoleId
+                    ? (roles?.find((r) => r.id === selectedRoleId)?.name ?? "Select role...")
+                    : undefined}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent className="glass-panel border-white/10 bg-popover/95 text-white">
                 {roles?.map((role) => (

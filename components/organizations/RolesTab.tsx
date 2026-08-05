@@ -14,9 +14,11 @@ import { RoleBuilderModal } from "./RoleBuilderModal";
 
 interface RolesTabProps {
   orgId: string;
+  userPermissions: string[];
 }
 
-export function RolesTab({ orgId }: RolesTabProps) {
+export function RolesTab({ orgId, userPermissions }: RolesTabProps) {
+  const canManage = userPermissions.includes("org:manage");
   const { data: roles, isLoading: loadingRoles } = useOrgRolesQuery(orgId);
   const deleteRoleMutation = useDeleteOrgRoleMutation(orgId);
 
@@ -67,19 +69,22 @@ export function RolesTab({ orgId }: RolesTabProps) {
           </p>
         </div>
 
-        <Button
-          onClick={handleOpenCreate}
-          className="h-8 text-xs font-semibold px-4 rounded-full"
-          style={{ background: "#4493F8" }}
-        >
-          <Plus className="mr-1.5 h-3.5 w-3.5" /> Create Role
-        </Button>
+        {canManage && (
+          <Button
+            onClick={handleOpenCreate}
+            className="h-8 text-xs font-semibold px-4 rounded-full"
+            style={{ background: "#4493F8" }}
+          >
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> Create Role
+          </Button>
+        )}
       </div>
 
       {/* Roles grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {roles?.map((role) => {
           const isOwnerRole = role.name === "Owner";
+          const isSystemDefault = ["Owner", "Developer", "Team Manager"].includes(role.name);
 
           return (
             <div
@@ -89,13 +94,17 @@ export function RolesTab({ orgId }: RolesTabProps) {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <Shield className={`h-4 w-4 ${isOwnerRole ? "text-amber-400" : "text-primary"}`} />
+                    <Shield className={`h-4 w-4 ${isOwnerRole ? "text-amber-400" : isSystemDefault ? "text-sky-400" : "text-primary"}`} />
                     <span className="text-sm font-bold text-white">{role.name}</span>
                   </div>
 
                   {isOwnerRole ? (
                     <Badge variant="outline" className="text-[9px] font-mono bg-amber-500/10 text-amber-400 border-amber-500/20">
                       System Role
+                    </Badge>
+                  ) : isSystemDefault ? (
+                    <Badge variant="outline" className="text-[9px] font-mono bg-sky-500/10 text-sky-400 border-sky-500/20">
+                      Default
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-[9px] font-mono bg-primary/10 text-primary border-primary/20">
@@ -124,7 +133,7 @@ export function RolesTab({ orgId }: RolesTabProps) {
               <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[11px] font-mono text-white/40">
                 <span>{role._count?.members || 0} members assigned</span>
 
-                {!isOwnerRole && (
+                {!isOwnerRole && canManage && (
                   <div className="flex items-center gap-1">
                     <Button
                       variant="ghost"

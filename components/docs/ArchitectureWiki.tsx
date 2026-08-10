@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useId } from "react";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -81,6 +81,76 @@ function timeAgo(iso: string) {
   return "just now";
 }
 
+// ─── Mermaid Diagram ─────────────────────────────────────────────────────────
+
+function MermaidDiagram({ chart }: { chart: string }) {
+  const id = useId().replace(/:/g, "");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!chart?.trim() || !containerRef.current) return;
+    let cancelled = false;
+
+    async function render() {
+      try {
+        const mermaid = (await import("mermaid")).default;
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: "dark",
+          themeVariables: {
+            background: "transparent",
+            primaryColor: "#4493F8",
+            primaryTextColor: "#e2e8f0",
+            primaryBorderColor: "rgba(255,255,255,0.08)",
+            lineColor: "rgba(255,255,255,0.25)",
+            secondaryColor: "rgba(255,255,255,0.05)",
+            tertiaryColor: "rgba(255,255,255,0.03)",
+            edgeLabelBackground: "rgba(0,0,0,0.6)",
+            clusterBkg: "rgba(255,255,255,0.04)",
+            fontFamily: "ui-monospace, monospace",
+            fontSize: "13px",
+          },
+        });
+        const diagramId = `mermaid-${id}`;
+        const { svg } = await mermaid.render(diagramId, chart.trim());
+        if (!cancelled && containerRef.current) {
+          containerRef.current.innerHTML = svg;
+          // Make the SVG fill its container width
+          const svgEl = containerRef.current.querySelector("svg");
+          if (svgEl) {
+            svgEl.style.width = "100%";
+            svgEl.style.height = "auto";
+            svgEl.removeAttribute("width");
+          }
+        }
+      } catch (err: unknown) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Failed to render diagram");
+        }
+      }
+    }
+
+    render();
+    return () => { cancelled = true; };
+  }, [chart, id]);
+
+  if (error) {
+    return (
+      <div className="my-4 rounded-lg border border-rose-500/20 bg-rose-500/5 px-4 py-3 font-mono text-[11px] text-rose-400">
+        Diagram error: {error}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="my-4 flex justify-center overflow-x-auto rounded-lg border border-white/5 bg-black/30 p-4"
+    />
+  );
+}
+
 // ─── Markdown Components ─────────────────────────────────────────────────────
 
 function buildMarkdownComponents(sectionKey: string) {
@@ -128,7 +198,11 @@ function buildMarkdownComponents(sectionKey: string) {
       <em className="text-white/60 italic">{children}</em>
     ),
     code: ({ children, className }: { children?: React.ReactNode; className?: string }) => {
+      const isMermaid = className === "language-mermaid";
       const isBlock = className?.includes("language-");
+      if (isMermaid) {
+        return <MermaidDiagram chart={String(children ?? "")} />;
+      }
       if (isBlock) {
         return (
           <pre className="overflow-x-auto rounded-lg border border-white/5 bg-black/40 p-4 font-mono text-[11px] leading-relaxed text-foreground/80 mb-4">
@@ -148,6 +222,52 @@ function buildMarkdownComponents(sectionKey: string) {
       </blockquote>
     ),
   };
+}
+
+// ─── Dependency Graph Panel ───────────────────────────────────────────────────
+
+function DependencyGraphPanel({ diagram }: { diagram: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-6 rounded-lg border border-white/5 bg-white/2 overflow-hidden">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-white/5 transition-colors cursor-pointer"
+      >
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+          <svg className="h-3 w-3 text-primary/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+          </svg>
+          Dependency Graph
+        </div>
+        <ChevronDown
+          className={cn(
+            "h-3.5 w-3.5 text-muted-foreground transition-transform duration-200",
+            open && "rotate-180"
+          )}
+        />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-white/5 px-4 pb-4 pt-4">
+              <MermaidDiagram chart={diagram} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
 }
 
 // ─── Source Files Badge ───────────────────────────────────────────────────────
@@ -541,6 +661,11 @@ export function ArchitectureWiki({
                   {currentSection.contentMd}
                 </ReactMarkdown>
               </article>
+
+              {/* Dependency Graph */}
+              {currentSection.diagramMermaid && (
+                <DependencyGraphPanel diagram={currentSection.diagramMermaid} />
+              )}
 
               {/* Source files */}
               <SourceFilesPanel files={currentSection.sourceFiles} />

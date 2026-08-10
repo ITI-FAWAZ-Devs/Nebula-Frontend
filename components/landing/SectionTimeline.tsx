@@ -14,7 +14,7 @@ export function SectionTimeline() {
   ];
 
   return (
-    <section className="relative py-40">
+    <section id="timeline" className="relative py-40">
       <div className="mx-auto max-w-[90rem] px-6">
         <div className="max-w-2xl">
           <SectionEyebrow>Architecture Timeline</SectionEyebrow>

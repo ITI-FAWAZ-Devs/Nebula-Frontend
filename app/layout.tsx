@@ -44,7 +44,11 @@ export default function RootLayout({
         montserratHeading.variable,
       )}
     >
+<<<<<<< HEAD
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
+=======
+      <body suppressHydrationWarning className="min-h-full flex flex-col">
+>>>>>>> 8b5aa05 (feat: initialize workspace architecture and wiki components with Mermaid diagramming and markdown support)
         <Providers>
           {children}
         </Providers>

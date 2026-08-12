@@ -9,7 +9,8 @@ import { useLoginMutation } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldContent, FieldError, FieldTitle } from "@/components/ui/field";
-import { FiGithub } from "react-icons/fi";
+import { AuthCard } from "@/components/auth/AuthCard";
+import { FiGithub, FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -31,6 +32,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const loginMutation = useLoginMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const redirectUrl = searchParams.get("redirect") || "/";
 
@@ -64,150 +66,136 @@ export default function LoginPage() {
   };
 
   const handleOAuthLogin = (provider: "github" | "google") => {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-    // Construct final callback URL
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL;
     const targetUrl = `${backendUrl}/auth/${provider}`;
     window.location.href = targetUrl;
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background nebula-bg px-4 py-12">
-      {/* Background glow orb */}
-      <div
-        className="absolute h-[50vmin] w-[50vmin] rounded-full opacity-30 pointer-events-none"
-        style={{
-          background: "#4493F8",
-          filter: "blur(80px)",
-        }}
-      />
-
-      <div className="relative z-10 w-full max-w-[420px]">
-        {/* Logo/Branding Header */}
-        <div className="flex flex-col items-center text-center mb-8">
-          <div
-            className="h-10 w-10 rounded-full mb-3"
-            style={{
-              background: "#4493F8",
-              boxShadow: "0 0 20px #4493F8cc",
-            }}
-          />
-          <h1 className="font-display text-3xl font-bold tracking-tight text-white">
-            Nebula <span className="text-gradient">OS</span>
-          </h1>
-          <p className="text-sm text-white/50 mt-1.5 font-mono tracking-wide uppercase text-[10px]">
-            AI SOFTWARE COMMAND CENTER
-          </p>
-        </div>
-
-        {/* Auth Glass Panel Card */}
-        <div className="glass-panel p-8 w-full">
-          <h2 className="text-lg font-semibold text-white/90 mb-1">
-            Welcome back
-          </h2>
-          <p className="text-xs text-white/55 mb-6">
-            Log in to manage your repositories and active agents.
-          </p>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Email Field */}
-            <Field data-invalid={!!errors.email}>
-              <FieldLabel htmlFor="email">
-                <FieldTitle className="text-white/70">Email Address</FieldTitle>
-              </FieldLabel>
-              <FieldContent>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  className="bg-black/20 border-white/10 text-white placeholder:text-white/20 h-9"
-                  {...register("email")}
-                />
-              </FieldContent>
-              {errors.email && <FieldError>{errors.email.message}</FieldError>}
-            </Field>
-
-            {/* Password Field */}
-            <Field data-invalid={!!errors.password}>
-              <div className="flex items-center justify-between mb-1">
-                <FieldLabel htmlFor="password">
-                  <FieldTitle className="text-white/70">Password</FieldTitle>
-                </FieldLabel>
-                <Link
-                  href="/forgot-password"
-                  className="text-[11px] text-primary hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <FieldContent>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  className="bg-black/20 border-white/10 text-white placeholder:text-white/20 h-9"
-                  {...register("password")}
-                />
-              </FieldContent>
-              {errors.password && (
-                <FieldError>{errors.password.message}</FieldError>
-              )}
-            </Field>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full inline-flex h-9 items-center justify-center rounded-full mt-6 text-xs font-semibold text-white"
-              style={{
-                background: "#4493F8",
-                boxShadow: "0 4px 16px -4px #4493F899",
-              }}
-            >
-              {isSubmitting ? "Authenticating..." : "Log In"}
-            </Button>
-          </form>
-
-          {/* Separator */}
-          <div className="relative my-6 text-center">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
-            </div>
-            <span className="relative bg-transparent px-3 text-[10px] text-white/30 uppercase tracking-widest bg-background">
-              or continue with
-            </span>
-          </div>
-
-          {/* Social Sign-in Buttons */}
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOAuthLogin("github")}
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/3 text-xs font-semibold text-white/80 hover:bg-white/8 hover:text-white transition-colors"
-            >
-              <FiGithub className="h-4 w-4" />
-              GitHub
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOAuthLogin("google")}
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/3 text-xs font-semibold text-white/80 hover:bg-white/8 hover:text-white transition-colors"
-            >
-              <FcGoogle className="h-4 w-4" />
-              Google
-            </Button>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <p className="text-center text-xs text-white/40 mt-6">
-          Don't have an account?{" "}
-          <Link href="/register" className="text-primary hover:underline">
-            Sign up
-          </Link>
+    <AuthCard>
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-white tracking-tight">
+          Welcome back
+        </h2>
+        <p className="text-xs text-white/55 mt-1 leading-relaxed">
+          Log in to manage your repositories, teams, and AI agents.
         </p>
       </div>
-    </div>
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {/* Email Field */}
+        <Field data-invalid={!!errors.email}>
+          <FieldLabel htmlFor="email">
+            <FieldTitle className="text-white/80 text-xs font-medium">Email Address</FieldTitle>
+          </FieldLabel>
+          <FieldContent>
+            <div className="relative flex items-center">
+              <FiMail className="absolute left-3.5 h-4 w-4 text-white/35 pointer-events-none" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                className="bg-black/40 border-white/12 text-white placeholder:text-white/20 pl-10 h-10 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary transition-all text-xs"
+                {...register("email")}
+              />
+            </div>
+          </FieldContent>
+          {errors.email && <FieldError className="text-[11px] text-red-400 mt-1">{errors.email.message}</FieldError>}
+        </Field>
+
+        {/* Password Field */}
+        <Field data-invalid={!!errors.password}>
+          <div className="flex items-center justify-between mb-1">
+            <FieldLabel htmlFor="password">
+              <FieldTitle className="text-white/80 text-xs font-medium">Password</FieldTitle>
+            </FieldLabel>
+            <Link
+              href="/forgot-password"
+              className="text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              Forgot password?
+            </Link>
+          </div>
+          <FieldContent>
+            <div className="relative flex items-center">
+              <FiLock className="absolute left-3.5 h-4 w-4 text-white/35 pointer-events-none" />
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="bg-black/40 border-white/12 text-white placeholder:text-white/20 pl-10 pr-10 h-10 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary transition-all text-xs"
+                {...register("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 text-white/35 hover:text-white/70 transition-colors p-1"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <FiEyeOff className="h-4 w-4" /> : <FiEye className="h-4 w-4" />}
+              </button>
+            </div>
+          </FieldContent>
+          {errors.password && (
+            <FieldError className="text-[11px] text-red-400 mt-1">{errors.password.message}</FieldError>
+          )}
+        </Field>
+
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="group relative w-full inline-flex h-10 items-center justify-center rounded-xl mt-6 text-xs font-semibold text-white transition-all duration-300 hover:scale-[1.01] shadow-[0_4px_20px_rgba(68,147,248,0.35)] hover:shadow-[0_6px_28px_rgba(68,147,248,0.55)] cursor-pointer"
+          style={{
+            background: "linear-gradient(135deg, #4493F8 0%, #6366F1 100%)",
+          }}
+        >
+          <span>{isSubmitting ? "Authenticating..." : "Log In"}</span>
+          {!isSubmitting && (
+            <FiArrowRight className="h-3.5 w-3.5 ml-2 transition-transform group-hover:translate-x-1" />
+          )}
+        </Button>
+      </form>
+
+      {/* Separator */}
+      <div className="relative my-6 text-center">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-white/10"></div>
+        </div>
+        <span className="relative bg-[#0C1017] px-3 text-[10px] text-white/40 uppercase tracking-widest font-mono">
+          or continue with
+        </span>
+      </div>
+
+      {/* Social Sign-in Buttons */}
+      <div className="grid grid-cols-2 gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => handleOAuthLogin("github")}
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/4 text-xs font-semibold text-white/90 hover:bg-white/8 hover:text-white hover:border-white/20 transition-all cursor-pointer"
+        >
+          <FiGithub className="h-4 w-4" />
+          GitHub
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => handleOAuthLogin("google")}
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-white/12 bg-white/4 text-xs font-semibold text-white/90 hover:bg-white/8 hover:text-white hover:border-white/20 transition-all cursor-pointer"
+        >
+          <FcGoogle className="h-4 w-4" />
+          Google
+        </Button>
+      </div>
+
+      {/* Footer link */}
+      <p className="text-center text-xs text-white/40 mt-6">
+        Don't have an account?{" "}
+        <Link href="/register" className="text-primary hover:text-primary/80 font-semibold transition-colors">
+          Sign up
+        </Link>
+      </p>
+    </AuthCard>
   );
 }

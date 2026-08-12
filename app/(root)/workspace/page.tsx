@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { AlertCircle, Database, Loader2, Rocket } from "lucide-react";
-import { ArchitectureWiki } from "@/components/docs/ArchitectureWiki";
+import { ArchitectureWiki } from "@/components/workspace/ArchitectureWiki";
 import { Button } from "@/components/ui/button";
 import { NebulaBackdrop } from "@/components/landing/NebulaBackdrop";
 import {
@@ -78,8 +78,8 @@ function WorkspaceView() {
       toast.error(
         (err as { response?: { data?: { message?: string } } })?.response?.data
           ?.message ||
-          (err as Error)?.message ||
-          "Failed to regenerate"
+        (err as Error)?.message ||
+        "Failed to regenerate"
       );
     }
   };

@@ -5,23 +5,17 @@ import {
   Bell,
   BookOpen,
   Check,
-  Cookie,
-  Database,
   FileCode2,
   Folder,
   FolderOpen,
   GitBranch,
-  KeyRound,
   Layers,
   LayoutDashboard,
   Lock,
   MessageSquare,
   Network,
   Search,
-  ServerCog,
   Settings,
-  Shield,
-  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -49,15 +43,50 @@ const graphNodes: {
   label: string;
   x: number;
   y: number;
-  color: string;
-  icon: LucideIcon;
+  iconSrc: string;
 }[] = [
-  { id: "auth-ctrl", label: "Auth", x: 20, y: 26, color: "#60A5FA", icon: Shield },
-  { id: "auth-svc", label: "Service", x: 50, y: 18, color: "#A78BFA", icon: ServerCog },
-  { id: "user-repo", label: "Users", x: 80, y: 28, color: "#818CF8", icon: Users },
-  { id: "db", label: "DB", x: 50, y: 68, color: "#34D399", icon: Database },
-  { id: "jwt", label: "JWT", x: 18, y: 70, color: "#C084FC", icon: KeyRound },
-  { id: "session", label: "Session", x: 80, y: 70, color: "#38BDF8", icon: Cookie },
+  {
+    id: "auth-ctrl",
+    label: "Auth",
+    x: 20,
+    y: 26,
+    iconSrc: "/landing/icons/auth.png",
+  },
+  {
+    id: "auth-svc",
+    label: "Service",
+    x: 50,
+    y: 18,
+    iconSrc: "/landing/icons/service.png",
+  },
+  {
+    id: "user-repo",
+    label: "Users",
+    x: 80,
+    y: 28,
+    iconSrc: "/landing/icons/users.png",
+  },
+  {
+    id: "db",
+    label: "DB",
+    x: 50,
+    y: 68,
+    iconSrc: "/landing/icons/database.png",
+  },
+  {
+    id: "jwt",
+    label: "JWT",
+    x: 18,
+    y: 70,
+    iconSrc: "/landing/icons/jwt.png",
+  },
+  {
+    id: "session",
+    label: "Session",
+    x: 80,
+    y: 70,
+    iconSrc: "/landing/icons/session.png",
+  },
 ];
 
 const edges = [
@@ -187,10 +216,14 @@ function KnowledgeGraph({ compact = false }: { compact?: boolean }) {
           style={{ left: `${node.x}%`, top: `${node.y}%` }}
         >
           <div
-            className="flex h-8 w-8 items-center justify-center rounded-lg border bg-[#0B0E14] sm:h-9 sm:w-9"
-            style={{ borderColor: `${node.color}66`, color: node.color }}
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-[#0B0E14] p-1.5 sm:h-10 sm:w-10"
           >
-            <node.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={1.75} />
+            <img
+              src={node.iconSrc}
+              alt={node.label}
+              className="h-full w-full object-contain"
+              draggable={false}
+            />
           </div>
           <span className="whitespace-nowrap font-mono text-[8px] font-medium text-white/80 sm:text-[9px]">
             {node.label}

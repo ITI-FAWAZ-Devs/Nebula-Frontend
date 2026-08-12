@@ -1,14 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import {
-  Lock,
-  MousePointerClick,
-  Play,
-  RefreshCw,
-  ShieldCheck,
-  Sparkles,
-} from "lucide-react";
+import { Play, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { FiGithub } from "react-icons/fi";
 import { Button } from "../ui/button";
@@ -16,28 +9,24 @@ import { HeroProductPreview } from "./HeroProductPreview";
 
 const highlights = [
   {
-    icon: ShieldCheck,
+    iconSrc: "/landing/icons/grounded.png",
     title: "Grounded in your code",
     subtitle: "Answers backed by real files",
-    color: "#A78BFA",
   },
   {
-    icon: MousePointerClick,
+    iconSrc: "/landing/icons/citations.png",
     title: "Clickable citations",
     subtitle: "Trace every answer",
-    color: "#34D399",
   },
   {
-    icon: RefreshCw,
+    iconSrc: "/landing/icons/sync.png",
     title: "Always up to date",
     subtitle: "Syncs with your repo",
-    color: "#60A5FA",
   },
   {
-    icon: Lock,
+    iconSrc: "/landing/icons/private.png",
     title: "Your code stays private",
     subtitle: "Secure & enterprise ready",
-    color: "#C084FC",
   },
 ];
 
@@ -147,15 +136,13 @@ export function Hero() {
                 transition={{ delay: 0.9 + i * 0.08, duration: 0.5 }}
                 className="flex items-start gap-3"
               >
-                <div
-                  className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border"
-                  style={{
-                    color: item.color,
-                    borderColor: `${item.color}33`,
-                    background: `${item.color}14`,
-                  }}
-                >
-                  <item.icon className="h-4 w-4" />
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] p-1.5">
+                  <img
+                    src={item.iconSrc}
+                    alt=""
+                    className="h-full w-full object-contain"
+                    draggable={false}
+                  />
                 </div>
                 <div className="min-w-0">
                   <div className="text-sm font-medium text-white leading-snug">

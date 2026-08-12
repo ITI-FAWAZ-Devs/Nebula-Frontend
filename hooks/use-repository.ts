@@ -24,6 +24,7 @@ export interface Repository {
   status: RepositoryStatus;
   lastIndexedCommit?: string | null;
   userId: string;
+  organizationId?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -112,7 +113,26 @@ export function useDeleteRepoMutation() {
     onSuccess: (data, id) => {
       // Invalidate list query and detail query
       queryClient.invalidateQueries({ queryKey: ["imported-repos"] });
+      queryClient.invalidateQueries({ queryKey: ["org-repositories"] });
       queryClient.invalidateQueries({ queryKey: ["repository", id] });
+    },
+  });
+}
+
+// Hook: Import repository by public or private URL/shorthand
+export function useImportRepoFromUrlMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: { url: string; organizationId?: string; connectionId?: string }) => {
+      const response = await api.post("/api/repositories/import-url", payload);
+      return response.data.data as Repository;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["imported-repos"] });
+      if (data.organizationId) {
+        queryClient.invalidateQueries({ queryKey: ["org-repositories", data.organizationId] });
+      }
     },
   });
 }

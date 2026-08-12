@@ -1,24 +1,50 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { ProtectedGuard } from "@/components/auth/ProtectedGuard";
-import { useOrganizationsQuery } from "@/hooks/use-organization";
-import { Building2, Plus, Users, Shield, Database } from "lucide-react";
+import {
+  useOrganizationsQuery,
+  useDeleteOrganizationMutation,
+} from "@/hooks/use-organization";
+import { Building2, Plus, Users, Shield, Database, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreateOrgModal } from "@/components/organizations/CreateOrgModal";
+import { DeleteOrgConfirm } from "@/components/organizations/DeleteOrgConfirm";
 import { MembersTab } from "@/components/organizations/MembersTab";
 import { RolesTab } from "@/components/organizations/RolesTab";
 import { OrgReposTab } from "@/components/organizations/OrgReposTab";
 
 export default function OrganizationsPage() {
   const { data: orgs, isLoading } = useOrganizationsQuery();
+  const deleteOrgMutation = useDeleteOrganizationMutation();
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"members" | "roles" | "repositories">("members");
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [deleteOrgOpen, setDeleteOrgOpen] = useState(false);
 
   // Auto-select first org if available and none selected
   const activeOrgId = selectedOrgId || (orgs && orgs.length > 0 ? orgs[0].id : null);
   const currentOrg = orgs?.find((o) => o.id === activeOrgId);
+
+  const handleDeleteOrg = () => {
+    if (!currentOrg) return;
+    toast.promise(deleteOrgMutation.mutateAsync(currentOrg.id), {
+      loading: `Deleting ${currentOrg.name}...`,
+      success: () => {
+        setDeleteOrgOpen(false);
+        setSelectedOrgId(null);
+        return `Organization "${currentOrg.name}" deleted.`;
+      },
+      error: (err: any) => {
+        const msg =
+          err?.response?.data?.message ||
+          err?.message ||
+          "Failed to delete organization.";
+        return `Error: ${msg}`;
+      },
+    });
+  };
 
   return (
     <ProtectedGuard>
@@ -122,38 +148,51 @@ export default function OrganizationsPage() {
                       </p>
                     </div>
 
-                    {/* Navigation Tabs */}
-                    <div className="flex bg-black/40 p-1 rounded-xl border border-white/10 self-start sm:self-auto">
-                      <button
-                        onClick={() => setActiveTab("members")}
-                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer ${
-                          activeTab === "members"
-                            ? "bg-primary text-white font-semibold shadow-md"
-                            : "text-white/50 hover:text-white"
-                        }`}
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      {/* Navigation Tabs */}
+                      <div className="flex bg-black/40 p-1 rounded-xl border border-white/10">
+                        <button
+                          onClick={() => setActiveTab("members")}
+                          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+                            activeTab === "members"
+                              ? "bg-primary text-white font-semibold shadow-md"
+                              : "text-white/50 hover:text-white"
+                          }`}
+                        >
+                          <Users className="h-3.5 w-3.5" /> Members
+                        </button>
+                        <button
+                          onClick={() => setActiveTab("roles")}
+                          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+                            activeTab === "roles"
+                              ? "bg-primary text-white font-semibold shadow-md"
+                              : "text-white/50 hover:text-white"
+                          }`}
+                        >
+                          <Shield className="h-3.5 w-3.5" /> Roles
+                        </button>
+                        <button
+                          onClick={() => setActiveTab("repositories")}
+                          className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer ${
+                            activeTab === "repositories"
+                              ? "bg-primary text-white font-semibold shadow-md"
+                              : "text-white/50 hover:text-white"
+                          }`}
+                        >
+                          <Database className="h-3.5 w-3.5" /> Repositories
+                        </button>
+                      </div>
+
+                      {/* Delete Org Button */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteOrgOpen(true)}
+                        className="h-8 w-8 rounded-lg text-white/30 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer shrink-0"
+                        title="Delete Organization"
                       >
-                        <Users className="h-3.5 w-3.5" /> Members
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("roles")}
-                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer ${
-                          activeTab === "roles"
-                            ? "bg-primary text-white font-semibold shadow-md"
-                            : "text-white/50 hover:text-white"
-                        }`}
-                      >
-                        <Shield className="h-3.5 w-3.5" /> Roles
-                      </button>
-                      <button
-                        onClick={() => setActiveTab("repositories")}
-                        className={`flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer ${
-                          activeTab === "repositories"
-                            ? "bg-primary text-white font-semibold shadow-md"
-                            : "text-white/50 hover:text-white"
-                        }`}
-                      >
-                        <Database className="h-3.5 w-3.5" /> Repositories
-                      </button>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
 
@@ -175,6 +214,16 @@ export default function OrganizationsPage() {
         onOpenChange={setCreateModalOpen}
         onCreated={(orgId) => setSelectedOrgId(orgId)}
       />
+
+      {currentOrg && (
+        <DeleteOrgConfirm
+          open={deleteOrgOpen}
+          onOpenChange={setDeleteOrgOpen}
+          orgName={currentOrg.name}
+          onConfirm={handleDeleteOrg}
+          isDeleting={deleteOrgMutation.isPending}
+        />
+      )}
     </ProtectedGuard>
   );
 }

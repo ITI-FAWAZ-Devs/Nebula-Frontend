@@ -50,11 +50,13 @@ export interface OrganizationMember {
 export const PERMISSION_CATALOG = [
   { id: "repo:read", label: "Repository Read", description: "View repositories and metadata" },
   { id: "repo:import", label: "Repository Import", description: "Import GitHub repositories into org" },
+  { id: "repo:delete", label: "Repository Delete", description: "Remove imported repositories from org" },
   { id: "docs:read", label: "Docs Read", description: "Read architecture documents and RAG answers" },
   { id: "docs:write", label: "Docs Write", description: "Generate and edit architecture documents" },
   { id: "task:read", label: "Task Read", description: "View organization tasks and background jobs" },
   { id: "task:write", label: "Task Write", description: "Create and update tasks and pipeline triggers" },
   { id: "member:invite", label: "Member Invite", description: "Invite new members to the organization" },
+  { id: "connection:manage", label: "Connection Manage", description: "Create, view, and delete organization connections" },
   { id: "org:manage", label: "Organization Manage", description: "Manage roles, settings, and member permissions" },
 ] as const;
 
@@ -254,6 +256,21 @@ export function useRemoveOrgMemberMutation(orgId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["org-members", orgId] });
       queryClient.invalidateQueries({ queryKey: ["organization", orgId] });
+    },
+  });
+}
+
+// Hook: Delete Organization
+export function useDeleteOrganizationMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (orgId: string) => {
+      const response = await api.delete(`/api/organizations/${orgId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["organizations"] });
     },
   });
 }

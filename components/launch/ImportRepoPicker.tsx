@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { GitBranch, Lock, Globe, Loader2, AlertCircle, Key, Building2, Check } from "lucide-react";
+import { GitBranch, Lock, Globe, Loader2, AlertCircle, Key, Building2, Check, Link2, Search } from "lucide-react";
 import { FiGithub } from "react-icons/fi";
 
 import {
@@ -15,7 +15,13 @@ import {
 } from "@/components/ui/command";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useGithubReposQuery, useImportRepoMutation, GitHubRepoDetails } from "@/hooks/use-repository";
+import { Input } from "@/components/ui/input";
+import {
+  useGithubReposQuery,
+  useImportRepoMutation,
+  useImportRepoFromUrlMutation,
+  GitHubRepoDetails,
+} from "@/hooks/use-repository";
 import { useOrganizationsQuery } from "@/hooks/use-organization";
 import { GithubTokenModal } from "@/components/integrations/GithubTokenModal";
 
@@ -28,12 +34,17 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
   const { data, isLoading, error, refetch } = useGithubReposQuery();
   const { data: userOrgs } = useOrganizationsQuery();
   const importMutation = useImportRepoMutation();
+  const importUrlMutation = useImportRepoFromUrlMutation();
 
+  const [importMode, setImportMode] = useState<"list" | "url">("list");
+  const [urlInput, setUrlInput] = useState("");
   const [importingId, setImportingId] = useState<string | null>(null);
   const [patModalOpen, setPatModalOpen] = useState(false);
   const [selectedOrgId, setSelectedOrgId] = useState<string | null>(null);
 
-  const isPatRequiredError = (error as any)?.response?.status === 428 || (error as any)?.response?.data?.errorCode === "GITHUB_TOKEN_REQUIRED";
+  const isPatRequiredError =
+    (error as any)?.response?.status === 428 ||
+    (error as any)?.response?.data?.errorCode === "GITHUB_TOKEN_REQUIRED";
 
   const handleImport = async (repo: GitHubRepoDetails) => {
     setImportingId(repo.githubRepoId);
@@ -42,26 +53,56 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
       ...repo,
       ...(selectedOrgId ? { organizationId: selectedOrgId } : {}),
     };
-    
+
+    toast.promise(importMutation.mutateAsync(payload as any), {
+      loading: `Importing ${repo.owner}/${repo.name}...`,
+      success: () => {
+        setImportingId(null);
+        onOpenChange(false);
+        return `Successfully imported ${repo.name}!`;
+      },
+      error: (err: any) => {
+        setImportingId(null);
+        const status = err?.response?.status;
+        if (status === 428) {
+          setPatModalOpen(true);
+          return "GitHub Personal Access Token is required to import repos.";
+        }
+        const msg =
+          err?.response?.data?.message ||
+          err?.message ||
+          "Failed to import repository.";
+        return `Failed: ${msg}`;
+      },
+    });
+  };
+
+  const handleUrlImport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!urlInput.trim()) return;
+
+    setImportingId("url-import");
     toast.promise(
-      importMutation.mutateAsync(payload as any),
+      importUrlMutation.mutateAsync({
+        url: urlInput.trim(),
+        ...(selectedOrgId ? { organizationId: selectedOrgId } : {}),
+      }),
       {
-        loading: `Importing ${repo.owner}/${repo.name}...`,
-        success: () => {
+        loading: "Parsing & importing repository from URL...",
+        success: (res) => {
           setImportingId(null);
+          setUrlInput("");
           onOpenChange(false);
-          return `Successfully imported ${repo.name}!`;
+          return `Successfully imported ${res.owner}/${res.name}!`;
         },
         error: (err: any) => {
           setImportingId(null);
-          const status = err?.response?.status;
-          if (status === 428) {
-            setPatModalOpen(true);
-            return "GitHub Personal Access Token is required to import repos.";
-          }
-          const msg = err?.response?.data?.message || err?.message || "Failed to import repository.";
+          const msg =
+            err?.response?.data?.message ||
+            err?.message ||
+            "Failed to import repository from URL.";
           return `Failed: ${msg}`;
-        }
+        },
       }
     );
   };
@@ -75,47 +116,103 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
         open={open}
         onOpenChange={onOpenChange}
         title="Import Repository"
-        description="Select a GitHub repository to sync with your Nebula cockpit."
+        description="Select a GitHub repository or paste a public URL to sync with Nebula."
         className="premium-panel max-w-2xl! border-white/10 bg-background/95 backdrop-blur-xl shadow-[0_0_60px_-10px_rgba(168,85,247,0.2)] text-white"
       >
-        {/* Org Selector Header if User Belongs to Orgs */}
-        {userOrgs && userOrgs.length > 0 && (
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5 bg-white/[0.02]">
-            <div className="flex items-center gap-2 text-xs text-white/60 font-mono">
-              <Building2 className="h-3.5 w-3.5 text-primary" />
-              <span>Import Scope:</span>
-            </div>
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+        {/* Mode & Org Selector Header */}
+        <div className="flex flex-col gap-2 p-3 border-b border-white/5 bg-white/[0.02]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 bg-white/5 p-1 rounded-lg border border-white/5">
               <button
                 type="button"
-                onClick={() => setSelectedOrgId(null)}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-mono transition-all border ${
-                  selectedOrgId === null
-                    ? "bg-primary/15 text-primary border-primary/30 font-semibold"
-                    : "bg-white/5 text-white/50 border-white/5 hover:text-white"
+                onClick={() => setImportMode("list")}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono transition-all cursor-pointer ${
+                  importMode === "list"
+                    ? "bg-primary text-white font-semibold shadow-sm"
+                    : "text-white/50 hover:text-white"
                 }`}
               >
-                Personal Workspace
+                <FiGithub className="h-3.5 w-3.5" /> GitHub Repos
               </button>
-              {userOrgs.map((org) => (
+              <button
+                type="button"
+                onClick={() => setImportMode("url")}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono transition-all cursor-pointer ${
+                  importMode === "url"
+                    ? "bg-primary text-white font-semibold shadow-sm"
+                    : "text-white/50 hover:text-white"
+                }`}
+              >
+                <Link2 className="h-3.5 w-3.5" /> Public URL Link
+              </button>
+            </div>
+
+            {userOrgs && userOrgs.length > 0 && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-mono text-white/40 uppercase">Scope:</span>
                 <button
-                  key={org.id}
                   type="button"
-                  onClick={() => setSelectedOrgId(org.id)}
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-mono transition-all border ${
-                    selectedOrgId === org.id
-                      ? "bg-primary/15 text-primary border-primary/30 font-semibold"
+                  onClick={() => setSelectedOrgId(null)}
+                  className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                    selectedOrgId === null
+                      ? "bg-primary/20 text-primary border-primary/40 font-semibold"
                       : "bg-white/5 text-white/50 border-white/5 hover:text-white"
                   }`}
                 >
-                  {org.name}
+                  Personal
                 </button>
-              ))}
-            </div>
+                {userOrgs.map((org) => (
+                  <button
+                    key={org.id}
+                    type="button"
+                    onClick={() => setSelectedOrgId(org.id)}
+                    className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
+                      selectedOrgId === org.id
+                        ? "bg-primary/20 text-primary border-primary/40 font-semibold"
+                        : "bg-white/5 text-white/50 border-white/5 hover:text-white"
+                    }`}
+                  >
+                    {org.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
-        <CommandInput placeholder="Search GitHub repositories..." className="text-white placeholder:text-white/20 font-mono text-xs" />
+        {importMode === "url" ? (
+          <form onSubmit={handleUrlImport} className="p-6 space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-mono text-white/70 flex items-center gap-1.5">
+                <Globe className="h-3.5 w-3.5 text-primary" /> Repository Link or Shorthand
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  placeholder="https://github.com/facebook/react or facebook/react"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/30 font-mono text-xs h-10"
+                />
+                <Button
+                  type="submit"
+                  disabled={!urlInput.trim() || importingId === "url-import"}
+                  className="h-10 px-5 text-xs font-mono rounded-lg bg-primary hover:bg-primary/90 text-white cursor-pointer shrink-0"
+                >
+                  {importingId === "url-import" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Import URL"
+                  )}
+                </Button>
+              </div>
+              <p className="text-[11px] text-white/40 font-mono">
+                Public repositories require no access token. Private repositories will use your saved personal or organization connection.
+              </p>
+            </div>
+          </form>
+        ) : (
+          <>
+            <CommandInput placeholder="Search GitHub repositories..." className="text-white placeholder:text-white/20 font-mono text-xs" />
 
         <CommandList className="no-scrollbar p-4">
           {isLoading && (
@@ -244,6 +341,8 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
             </CommandGroup>
           )}
         </CommandList>
+          </>
+        )}
       </CommandDialog>
 
       <GithubTokenModal

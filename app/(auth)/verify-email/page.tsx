@@ -6,6 +6,7 @@ import { useVerifyEmailMutation } from "@/hooks/use-auth";
 import { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { FiCheckCircle, FiAlertCircle } from "react-icons/fi";
+import { AuthCard } from "@/components/auth/AuthCard";
 
 export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
@@ -22,140 +23,104 @@ export default function VerifyEmailPage() {
   }, [token, verifyEmailMutation]);
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background nebula-bg px-4 py-12">
-      {/* Background glow orb */}
-      <div
-        className="absolute h-[50vmin] w-[50vmin] rounded-full opacity-30 pointer-events-none"
-        style={{
-          background: "#4493F8",
-          filter: "blur(80px)",
-        }}
-      />
-
-      <div className="relative z-10 w-full max-w-[420px]">
-        {/* Branding header */}
-        <div className="flex flex-col items-center text-center mb-8">
-          <div
-            className="h-10 w-10 rounded-full mb-3"
-            style={{
-              background: "#4493F8",
-              boxShadow: "0 0 20px #4493F8cc",
-            }}
-          />
-          <h1 className="font-display text-3xl font-bold tracking-tight text-white">
-            Nebula <span className="text-gradient">OS</span>
-          </h1>
-          <p className="text-sm text-white/50 mt-1.5 font-mono tracking-wide uppercase text-[10px]">
-            AI SOFTWARE COMMAND CENTER
+    <AuthCard>
+      {!token ? (
+        <div className="text-center py-4">
+          <div className="flex justify-center mb-6">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-[0_0_30px_rgba(245,158,11,0.2)]">
+              <FiAlertCircle className="h-8 w-8 text-amber-400" />
+            </div>
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">
+            Token Missing
+          </h2>
+          <p className="text-xs text-white/60 leading-relaxed mb-6">
+            We couldn't locate a verification token in the URL. Please click the full link in your verification email.
+          </p>
+          <div className="border-t border-white/10 pt-6">
+            <Link
+              href="/login"
+              className="inline-flex h-10 items-center justify-center rounded-xl px-6 text-xs font-semibold text-white border border-white/15 bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              Return to Login
+            </Link>
+          </div>
+        </div>
+      ) : verifyEmailMutation.isPending ? (
+        <div className="py-6 text-center">
+          <div className="relative flex items-center justify-center h-20 mb-6">
+            <motion.div
+              className="absolute h-12 w-12 rounded-full border-2 border-primary/30 border-t-primary"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            />
+            <div className="h-4 w-4 rounded-full bg-primary shadow-[0_0_20px_rgba(68,147,248,0.8)] animate-pulse" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-1.5">
+            Verifying Email
+          </h2>
+          <p className="text-xs text-white/50 font-mono tracking-wider uppercase">
+            Securing account connection...
           </p>
         </div>
-
-        {/* Card Component */}
-        <div className="glass-panel p-8 w-full min-h-[260px] flex flex-col justify-center text-center">
-          {!token ? (
-            <div>
-              <div className="flex justify-center mb-5">
-                <FiAlertCircle className="h-12 w-12 text-destructive" />
-              </div>
-              <h2 className="text-lg font-semibold text-white mb-2">
-                Verification Token Missing
-              </h2>
-              <p className="text-xs text-white/60 leading-relaxed mb-6">
-                We couldn't locate a verification token in the URL. Please click the full link in your verification email.
-              </p>
-              <div className="border-t border-white/5 pt-5">
-                <Link
-                  href="/login"
-                  className="inline-flex h-9 items-center justify-center rounded-full px-6 text-xs font-semibold text-white/85 border border-white/10 bg-white/3 hover:bg-white/8 transition-colors"
-                >
-                  Return to Login
-                </Link>
-              </div>
+      ) : verifyEmailMutation.isSuccess ? (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="py-4 text-center"
+        >
+          <div className="flex justify-center mb-6">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/30 shadow-[0_0_30px_rgba(68,147,248,0.3)]">
+              <FiCheckCircle className="h-8 w-8 text-primary" />
             </div>
-          ) : verifyEmailMutation.isPending ? (
-            <div className="py-4">
-              <div className="relative flex items-center justify-center h-16 mb-4">
-                <motion.div
-                  className="absolute h-10 w-10 rounded-full border border-primary/30"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                />
-                <motion.div
-                  className="absolute h-14 w-14 rounded-full border border-dashed border-primary/20 animate-spin-reverse-slow"
-                />
-                <div className="h-4 w-4 rounded-full bg-white glow-blue animate-ping" />
-              </div>
-              <h2 className="text-lg font-semibold text-white mb-1">
-                Verifying Email
-              </h2>
-              <p className="text-xs text-white/50 font-mono tracking-wide uppercase text-[10px]">
-                Securing account connection...
-              </p>
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">
+            Email Verified!
+          </h2>
+          <p className="text-xs text-white/60 leading-relaxed mb-6 max-w-sm mx-auto">
+            Your email address has been verified successfully. Your command center is ready to launch.
+          </p>
+          <div className="border-t border-white/10 pt-6">
+            <Link
+              href="/login"
+              className="inline-flex h-10 items-center justify-center rounded-xl px-8 text-xs font-semibold text-white shadow-[0_4px_20px_rgba(68,147,248,0.35)] hover:scale-[1.02] transition-transform"
+              style={{
+                background: "linear-gradient(135deg, #4493F8 0%, #6366F1 100%)",
+              }}
+            >
+              Log In to Workspace
+            </Link>
+          </div>
+        </motion.div>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="py-4 text-center"
+        >
+          <div className="flex justify-center mb-6">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 text-red-400 border border-red-500/30 shadow-[0_0_30px_rgba(239,68,68,0.2)]">
+              <FiAlertCircle className="h-8 w-8 text-red-400" />
             </div>
-          ) : verifyEmailMutation.isSuccess ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="py-4"
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">
+            Verification Failed
+          </h2>
+          <p className="text-xs text-white/60 leading-relaxed mb-6 max-w-sm mx-auto">
+            {(verifyEmailMutation.error as any)?.response?.data?.message ||
+              verifyEmailMutation.error?.message ||
+              "Invalid or expired verification token."}
+          </p>
+          <div className="border-t border-white/10 pt-6">
+            <Link
+              href="/login"
+              className="inline-flex h-10 items-center justify-center rounded-xl px-6 text-xs font-semibold text-white border border-white/15 bg-white/5 hover:bg-white/10 transition-colors"
             >
-              <div className="flex justify-center mb-5">
-                <div
-                  className="flex h-14 w-14 items-center justify-center rounded-full text-2xl bg-primary/10 text-primary border border-primary/30 animate-bounce"
-                  style={{ boxShadow: "0 0 20px #4493F840" }}
-                >
-                  <FiCheckCircle className="h-6 w-6" />
-                </div>
-              </div>
-              <h2 className="text-xl font-bold text-white mb-2">
-                Email Verified!
-              </h2>
-              <p className="text-xs text-white/60 leading-relaxed mb-6 max-w-sm mx-auto">
-                Your email address has been verified successfully. Your command center is ready.
-              </p>
-              <div className="border-t border-white/5 pt-6">
-                <Link
-                  href="/login"
-                  className="inline-flex h-9 items-center justify-center rounded-full px-6 text-white text-xs font-semibold"
-                  style={{
-                    background: "#4493F8",
-                    boxShadow: "0 4px 16px -4px #4493F899",
-                  }}
-                >
-                  Log In
-                </Link>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="py-4"
-            >
-              <div className="flex justify-center mb-5">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full text-2xl bg-destructive/10 text-destructive border border-destructive/20">
-                  <FiAlertCircle className="h-6 w-6" />
-                </div>
-              </div>
-              <h2 className="text-lg font-semibold text-white mb-2">
-                Verification Failed
-              </h2>
-              <p className="text-xs text-white/60 leading-relaxed mb-6 max-w-sm mx-auto">
-                {(verifyEmailMutation.error as any)?.response?.data?.message ||
-                  verifyEmailMutation.error?.message ||
-                  "Invalid or expired verification token."}
-              </p>
-              <div className="border-t border-white/5 pt-6">
-                <Link
-                  href="/login"
-                  className="inline-flex h-9 items-center justify-center rounded-full px-6 text-xs font-semibold text-white/85 border border-white/10 bg-white/3 hover:bg-white/8 transition-colors"
-                >
-                  Return to Login
-                </Link>
-              </div>
-            </motion.div>
-          )}
-        </div>
-      </div>
-    </div>
+              Return to Login
+            </Link>
+          </div>
+        </motion.div>
+      )}
+    </AuthCard>
   );
 }

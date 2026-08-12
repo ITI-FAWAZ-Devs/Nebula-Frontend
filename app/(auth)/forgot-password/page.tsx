@@ -8,10 +8,11 @@ import { useForgotPasswordMutation } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldContent, FieldError, FieldTitle } from "@/components/ui/field";
+import { AuthCard } from "@/components/auth/AuthCard";
 import { toast } from "sonner";
 import { useState } from "react";
 import { motion } from "motion/react";
-import { FiMail } from "react-icons/fi";
+import { FiMail, FiArrowRight, FiArrowLeft } from "react-icons/fi";
 
 const forgotPasswordSchema = z.object({
   email: z
@@ -58,124 +59,101 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background nebula-bg px-4 py-12">
-      {/* Background glow orb */}
-      <div
-        className="absolute h-[50vmin] w-[50vmin] rounded-full opacity-30 pointer-events-none"
-        style={{
-          background: "#4493F8",
-          filter: "blur(80px)",
-        }}
-      />
+    <AuthCard>
+      {!isSent ? (
+        <>
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-white tracking-tight">
+              Forgot password?
+            </h2>
+            <p className="text-xs text-white/55 mt-1 leading-relaxed">
+              Enter your registered email address and we'll send you a secure reset link.
+            </p>
+          </div>
 
-      <div className="relative z-10 w-full max-w-[420px]">
-        {/* Branding header */}
-        <div className="flex flex-col items-center text-center mb-8">
-          <div
-            className="h-10 w-10 rounded-full mb-3"
-            style={{
-              background: "#4493F8",
-              boxShadow: "0 0 20px #4493F8cc",
-            }}
-          />
-          <h1 className="font-display text-3xl font-bold tracking-tight text-white">
-            Nebula <span className="text-gradient">OS</span>
-          </h1>
-          <p className="text-sm text-white/50 mt-1.5 font-mono tracking-wide uppercase text-[10px]">
-            AI SOFTWARE COMMAND CENTER
-          </p>
-        </div>
-
-        {/* Card Component */}
-        <div className="glass-panel p-8 w-full min-h-[280px] flex flex-col justify-center">
-          {!isSent ? (
-            <>
-              <h2 className="text-lg font-semibold text-white/90 mb-1">
-                Forgot password?
-              </h2>
-              <p className="text-xs text-white/55 mb-6">
-                Enter your email address and we'll send you a password reset link.
-              </p>
-
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                {/* Email Field */}
-                <Field data-invalid={!!errors.email}>
-                  <FieldLabel htmlFor="email">
-                    <FieldTitle className="text-white/70">
-                      Email Address
-                    </FieldTitle>
-                  </FieldLabel>
-                  <FieldContent>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="name@example.com"
-                      className="bg-black/20 border-white/10 text-white placeholder:text-white/20 h-9"
-                      {...register("email")}
-                    />
-                  </FieldContent>
-                  {errors.email && (
-                    <FieldError>{errors.email.message}</FieldError>
-                  )}
-                </Field>
-
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full inline-flex h-9 items-center justify-center rounded-full mt-6 text-xs font-semibold text-white"
-                  style={{
-                    background: "#4493F8",
-                    boxShadow: "0 4px 16px -4px #4493F899",
-                  }}
-                >
-                  {isSubmitting ? "Sending reset link..." : "Send Reset Link"}
-                </Button>
-              </form>
-            </>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="text-center py-4"
-            >
-              {/* Mail Icon Animation */}
-              <div className="flex justify-center mb-6">
-                <div
-                  className="flex h-14 w-14 items-center justify-center rounded-full text-xl bg-primary/10 text-primary border border-primary/20"
-                  style={{ boxShadow: "0 0 20px #4493F840" }}
-                >
-                  <FiMail className="h-6 w-6" />
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Email Field */}
+            <Field data-invalid={!!errors.email}>
+              <FieldLabel htmlFor="email">
+                <FieldTitle className="text-white/80 text-xs font-medium">Email Address</FieldTitle>
+              </FieldLabel>
+              <FieldContent>
+                <div className="relative flex items-center">
+                  <FiMail className="absolute left-3.5 h-4 w-4 text-white/35 pointer-events-none" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    className="bg-black/40 border-white/12 text-white placeholder:text-white/20 pl-10 h-10 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary transition-all text-xs"
+                    {...register("email")}
+                  />
                 </div>
-              </div>
-              <h2 className="text-xl font-bold text-white mb-2">
-                Check your email
-              </h2>
-              <p className="text-xs text-white/60 leading-relaxed mb-6 max-w-sm mx-auto">
-                If an account exists for <span className="text-primary font-mono">{targetEmail}</span>, 
-                we've sent a secure password reset link to your inbox.
-              </p>
-              <div className="border-t border-white/5 pt-6">
-                <button
-                  type="button"
-                  onClick={() => setIsSent(false)}
-                  className="text-xs text-primary hover:underline font-semibold"
-                >
-                  Try a different email
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </div>
+              </FieldContent>
+              {errors.email && (
+                <FieldError className="text-[11px] text-red-400 mt-1">{errors.email.message}</FieldError>
+              )}
+            </Field>
 
-        {/* Footer */}
-        <p className="text-center text-xs text-white/40 mt-6">
-          Back to{" "}
-          <Link href="/login" className="text-primary hover:underline">
-            Login
-          </Link>
-        </p>
-      </div>
-    </div>
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="group relative w-full inline-flex h-10 items-center justify-center rounded-xl mt-6 text-xs font-semibold text-white transition-all duration-300 hover:scale-[1.01] shadow-[0_4px_20px_rgba(68,147,248,0.35)] hover:shadow-[0_6px_28px_rgba(68,147,248,0.55)] cursor-pointer"
+              style={{
+                background: "linear-gradient(135deg, #4493F8 0%, #6366F1 100%)",
+              }}
+            >
+              <span>{isSubmitting ? "Sending Reset Link..." : "Send Reset Link"}</span>
+              {!isSubmitting && (
+                <FiArrowRight className="h-3.5 w-3.5 ml-2 transition-transform group-hover:translate-x-1" />
+              )}
+            </Button>
+          </form>
+
+          <p className="text-center text-xs text-white/40 mt-6">
+            <Link href="/login" className="inline-flex items-center gap-1.5 text-white/60 hover:text-white transition-colors">
+              <FiArrowLeft className="h-3.5 w-3.5" /> Back to Login
+            </Link>
+          </p>
+        </>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center py-2"
+        >
+          {/* Mail Icon Animation */}
+          <div className="flex justify-center mb-6">
+            <div
+              className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary border border-primary/30 shadow-[0_0_30px_rgba(68,147,248,0.3)]"
+            >
+              <FiMail className="h-7 w-7 text-primary" />
+            </div>
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">
+            Check your inbox
+          </h2>
+          <p className="text-xs text-white/60 leading-relaxed mb-6 max-w-sm mx-auto">
+            If an account exists for <span className="text-primary font-mono font-semibold">{targetEmail}</span>, 
+            we've sent a password reset link to your email address.
+          </p>
+          <div className="flex flex-col gap-2.5 border-t border-white/10 pt-6">
+            <button
+              type="button"
+              onClick={() => setIsSent(false)}
+              className="text-xs text-primary hover:text-primary/80 font-semibold transition-colors cursor-pointer"
+            >
+              Try a different email
+            </button>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors mt-2"
+            >
+              <FiArrowLeft className="h-3.5 w-3.5" /> Back to Login
+            </Link>
+          </div>
+        </motion.div>
+      )}
+    </AuthCard>
   );
 }

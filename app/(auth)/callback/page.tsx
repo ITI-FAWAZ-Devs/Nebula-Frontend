@@ -6,6 +6,7 @@ import { useAuthStore } from "@/lib/store";
 import { useMeQuery } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { motion } from "motion/react";
+import { AuthCard } from "@/components/auth/AuthCard";
 
 export default function OAuthCallbackPage() {
   const router = useRouter();
@@ -43,29 +44,22 @@ export default function OAuthCallbackPage() {
   }, [accessToken, setAccessToken, refetch, router, searchParams]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background nebula-bg font-mono text-center p-6">
-      <div className="relative flex flex-col items-center gap-6">
+    <AuthCard>
+      <div className="py-6 flex flex-col items-center justify-center text-center">
         {/* Sleek rotating status indicators */}
-        <div className="relative flex items-center justify-center">
+        <div className="relative flex items-center justify-center h-20 mb-6">
           <motion.div
-            className="absolute h-10 w-10 rounded-full border border-primary/30"
+            className="absolute h-14 w-14 rounded-full border-2 border-primary/30 border-t-primary"
             animate={{ rotate: 360 }}
-            transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-          />
-          <motion.div
-            className="absolute h-14 w-14 rounded-full border border-dashed border-primary/20 animate-spin-reverse-slow"
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
           />
           <div
-            className="h-5 w-5 rounded-full bg-white glow-blue"
-            style={{
-              background: "#4493F8",
-              boxShadow: "0 0 20px #4493F8cc",
-            }}
+            className="h-5 w-5 rounded-full bg-primary shadow-[0_0_20px_rgba(68,147,248,0.9)] animate-pulse"
           />
         </div>
-        
-        <div className="space-y-1.5">
-          <div className="text-xs uppercase tracking-[0.3em] text-primary/80 animate-pulse">
+
+        <div className="space-y-1.5 font-mono">
+          <div className="text-xs uppercase tracking-[0.25em] text-primary font-semibold animate-pulse">
             Finalizing OAuth Handshake
           </div>
           <div className="text-[10px] text-white/40">
@@ -73,6 +67,6 @@ export default function OAuthCallbackPage() {
           </div>
         </div>
       </div>
-    </div>
+    </AuthCard>
   );
 }

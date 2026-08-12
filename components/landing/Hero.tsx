@@ -57,7 +57,7 @@ export function Hero() {
 
       <div className="relative mx-auto grid w-full max-w-[90rem] grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-14">
         <div className="flex flex-col items-start text-left">
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.6 }}
@@ -65,7 +65,7 @@ export function Hero() {
           >
             <Sparkles className="h-3.5 w-3.5 text-[#F48C50]" />
             <span>Turn any GitHub repo into a code knowledge graph.</span>
-          </motion.div>
+          </motion.div> */}
 
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -125,9 +125,9 @@ export function Hero() {
                 variant="outline"
                 className="inline-flex h-12 items-center gap-2.5 rounded-xl border-white/15 bg-transparent px-6 text-sm font-medium text-white/85 transition-all duration-300 hover:border-white/25 hover:bg-white/[0.04] hover:text-white hover:-translate-y-0.5"
               >
-                <span className="flex h-5 w-5 items-center justify-center rounded-full border border-white/25">
+                {/* <span className="flex h-5 w-5 items-center justify-center rounded-full border border-white/25"> */}
                   <Play className="h-2.5 w-2.5 fill-current" />
-                </span>
+                {/* </span> */}
                 See how it works
               </Button>
             </Link>
@@ -137,7 +137,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.85, duration: 0.7 }}
-            className="mt-12 grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4"
+            className="mt-12 grid w-full grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-2"
           >
             {highlights.map((item, i) => (
               <motion.div

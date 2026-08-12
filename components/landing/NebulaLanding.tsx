@@ -3,8 +3,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { AnimatePresence } from "motion/react";
 import { BootSequence } from "./BootSequence";
-import { NebulaBackdrop } from "./NebulaBackdrop";
-import { Nav } from "./Nav";
 import { Hero } from "./Hero";
 import { SectionUnderstand } from "./SectionUnderstand";
 import { SectionAgents } from "./SectionAgents";
@@ -19,7 +17,6 @@ export function NebulaLanding() {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Check if the user has already visited the site
     const hasBooted = localStorage.getItem("nebula_booted");
     if (!hasBooted) {
       setBooting(true);
@@ -36,12 +33,7 @@ export function NebulaLanding() {
       <AnimatePresence>
         {booting && <BootSequence key="boot" onDone={handleBootDone} />}
       </AnimatePresence>
-
-      <NebulaBackdrop />
-      <Nav />
-
       <div ref={containerRef} className="relative">
-        {/* <Nav /> */}
         <Hero />
         <SectionUnderstand />
         <SectionAgents />

@@ -18,7 +18,22 @@ export function LiveLogs({ logLines }: LiveLogsProps) {
         </div>
         <Zap className="h-3.5 w-3.5 text-muted-foreground" />
       </div>
-      <div className="h-[320px] overflow-y-auto p-5 font-mono text-[11px] leading-relaxed scrollbar-thin">
+      <div
+        className="max-h-120 overflow-y-auto p-5 font-mono text-[11px] leading-relaxed"
+        style={{
+          scrollbarWidth: "none", // Firefox
+          msOverflowStyle: "none", // IE 10+
+        }}
+      >
+        <style>
+          {`
+            /* Hide scrollbar for Chrome, Safari and Opera */
+            div::-webkit-scrollbar {
+              display: none;
+            }
+          `}
+        </style>
+
         <AnimatePresence initial={false}>
           {logLines.map((l, i) => (
             <motion.div 

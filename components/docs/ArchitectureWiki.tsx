@@ -11,14 +11,13 @@ import {
   Shield,
   FileText,
   Send,
-  Sparkles,
   Menu,
   ChevronDown,
   Hexagon,
   RefreshCw,
   Loader2,
-  Bot,
-  User,
+  Plus,
+  Cpu,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -36,11 +35,14 @@ import {
   ArchDocVersionSummary,
 } from "@/hooks/use-arch-doc";
 import { useAgentChat, type AgentCitation } from "@/hooks/use-agent-chat";
+import type { Repository } from "@/hooks/use-repository";
+import { useRouter } from "next/navigation";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 interface ArchitectureWikiProps {
   repositoryId: string;
+  repository?: Repository | null;
   data: ArchDocData;
   repoName?: string;
   versions: ArchDocVersionSummary[];
@@ -50,6 +52,7 @@ interface ArchitectureWikiProps {
   onRegenerate: () => void;
   isRegenerating: boolean;
 }
+
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -320,23 +323,68 @@ function SourceFilesPanel({ files }: { files: string[] }) {
 
 // ─── Citation Badges ────────────────────────────────────────────────────────
 
-function CitationBadges({ citations }: { citations: AgentCitation[] }) {
+function buildGithubBlobUrl(
+  citation: AgentCitation,
+  repository?: Repository | null
+): string | null {
+  if (!repository) return null;
+  const { owner, name, defaultBranch } = repository;
+  if (!owner || !name) return null;
+  const base = `https://github.com/${owner}/${name}/blob/${defaultBranch}/${citation.filePath}`;
+  if (citation.lineRange) {
+    const [start, end] = citation.lineRange.split("-");
+    return `${base}#L${start}${end ? `-L${end}` : ""}`;
+  }
+  return base;
+}
+
+function CitationBadges({
+  citations,
+  repository,
+}: {
+  citations: AgentCitation[];
+  repository?: Repository | null;
+}) {
   if (!citations.length) return null;
   return (
     <div className="mt-2 flex flex-wrap gap-1.5">
-      {citations.map((c, i) => (
-        <span
-          key={`${c.nodeId}-${i}`}
-          className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/60"
-          title={c.lineRange ? `${c.filePath}:${c.lineRange}` : c.filePath}
-        >
-          <FileText className="h-2.5 w-2.5 text-primary/50" />
-          {c.filePath}
-          {c.lineRange && (
-            <span className="text-white/30">:{c.lineRange}</span>
-          )}
-        </span>
-      ))}
+      {citations.map((c, i) => {
+        const href = buildGithubBlobUrl(c, repository);
+        const label = c.filePath.split("/").slice(-1)[0] ?? c.filePath;
+        const title = c.lineRange ? `${c.filePath}:${c.lineRange}` : c.filePath;
+        const inner = (
+          <>
+            <FileText className="h-2.5 w-2.5 text-primary/50 shrink-0" />
+            {label}
+            {c.lineRange && (
+              <span className="text-white/30">:{c.lineRange}</span>
+            )}
+          </>
+        );
+        if (href) {
+          return (
+            <a
+              key={`${c.nodeId}-${i}`}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={title}
+              className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/60 hover:border-primary/40 hover:text-white/90 transition-colors"
+            >
+              {inner}
+            </a>
+          );
+        }
+        return (
+          <span
+            key={`${c.nodeId}-${i}`}
+            title={title}
+            className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/60"
+          >
+            {inner}
+          </span>
+        );
+      })}
     </div>
   );
 }
@@ -370,6 +418,7 @@ const chatMdComponents = {
 
 export function ArchitectureWiki({
   repositoryId,
+  repository,
   data,
   repoName = "product-list-app",
   versions,
@@ -386,6 +435,7 @@ export function ArchitectureWiki({
   const [chatExpanded, setChatExpanded] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const { messages, isStreaming, error, sendMessage, clearError } =
     useAgentChat(repositoryId);
@@ -407,6 +457,7 @@ export function ArchitectureWiki({
   useEffect(() => {
     chatScrollRef.current?.scrollTo({ top: 9999, behavior: "smooth" });
   }, [messages]);
+
 
   const currentSection = useMemo(
     () => data.sections.find((s) => s.key === activeSection) ?? data.sections[0],
@@ -465,6 +516,10 @@ export function ArchitectureWiki({
   };
 
   const chatDisabled = !repositoryId || isStreaming;
+
+  const handleOpenVoice = () => {
+    router.push(`/voice?repoId=${repositoryId}&repo=${encodeURIComponent(repoName ?? "")}`);
+  };
 
   return (
     <div className="flex h-full flex-col text-foreground">
@@ -704,14 +759,17 @@ export function ArchitectureWiki({
         )}
       </div>
 
-      {/* ── Bottom Chat Bar ── */}
-      <div className="shrink-0 border-t border-white/5 bg-background/80 backdrop-blur-sm transition-all duration-300">
+      {/* ── Bottom Panel — unified ChatGPT-style bar ── */}
+      <div className="shrink-0 border-t border-white/5 bg-background/80 backdrop-blur-sm">
         <div className="mx-auto max-w-3xl flex flex-col w-full">
+
+
+          {/* ── Text chat conversation area ── */}
           <AnimatePresence>
             {(chatExpanded || messages.length > 0) && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "40vh", opacity: 1 }}
+                animate={{ height: "38vh", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.3 }}
                 className="overflow-hidden border-b border-white/5"
@@ -752,7 +810,7 @@ export function ArchitectureWiki({
                         )}
                       </div>
                       {m.role === "assistant" && m.citations && m.citations.length > 0 && (
-                        <CitationBadges citations={m.citations} />
+                        <CitationBadges citations={m.citations} repository={repository} />
                       )}
                       {m.failed && (
                         <div className="mt-1 flex items-center gap-1.5 text-xs text-rose-400 font-medium">
@@ -778,15 +836,24 @@ export function ArchitectureWiki({
             )}
           </AnimatePresence>
 
+          {/* ── Unified ChatGPT-style input bar ── */}
           <div className="px-4 py-3">
-            <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/3 px-4 py-2.5 focus-within:border-primary/40 focus-within:bg-white/5 transition-all">
-              <Sparkles className="h-4 w-4 shrink-0 text-primary/60" />
+            <div
+              className="flex items-center gap-2.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-2.5 backdrop-blur-sm focus-within:border-white/20 transition-colors"
+              style={{ boxShadow: "0 0 0 1px rgba(255,255,255,0.03) inset" }}
+            >
+              {/* + */}
+              <button className="shrink-0 flex h-6 w-6 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/35 hover:text-white/65 transition-colors">
+                <Plus className="h-3 w-3" />
+              </button>
+
+              {/* Text input */}
               <input
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onFocus={() => setChatExpanded(true)}
-                placeholder={`Ask Nebula about ${repoName}…`}
-                className="flex-1 bg-transparent text-sm text-white placeholder:text-muted-foreground/50 outline-none disabled:opacity-50"
+                placeholder={`Ask anything about ${repoName}…`}
+                className="flex-1 min-w-0 bg-transparent text-sm text-white placeholder:text-white/25 outline-none disabled:opacity-40"
                 disabled={chatDisabled}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
@@ -795,20 +862,43 @@ export function ArchitectureWiki({
                   }
                 }}
               />
-              <div className="flex items-center gap-2">
-                <span className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
-                  Fast
-                </span>
-                <button
+
+              {/* Think badge */}
+              <button className="shrink-0 flex items-center gap-1 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-white/30 hover:text-white/55 transition-colors">
+                <Cpu className="h-2.5 w-2.5" />
+                <span className="text-[10px] font-medium">Think</span>
+              </button>
+
+              {/* Send (when typed) OR voice button that opens full-screen voice page */}
+              {chatInput.trim() ? (
+                <motion.button
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={handleSendMessage}
-                  disabled={!chatInput.trim() || chatDisabled}
-                  className="rounded-lg bg-primary/20 p-1.5 text-primary transition-colors hover:bg-primary/30 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  className="shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white hover:bg-primary/90 transition-colors"
                 >
                   <Send className="h-3.5 w-3.5" />
-                </button>
-              </div>
+                </motion.button>
+              ) : (
+                <motion.button
+                  whileTap={{ scale: 0.88 }}
+                  onClick={handleOpenVoice}
+                  title="Open voice mode"
+                  className="shrink-0 flex h-8 w-8 items-center justify-center rounded-full bg-primary hover:bg-primary/90 transition-all duration-200 shadow-[0_0_12px_2px_rgba(68,147,248,0.4)]"
+                >
+                  <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-white">
+                    <rect x="2"   y="8" width="2" height="4" rx="1" />
+                    <rect x="5.5" y="5" width="2" height="10" rx="1" />
+                    <rect x="9"   y="3" width="2" height="14" rx="1" />
+                    <rect x="12.5" y="5" width="2" height="10" rx="1" />
+                    <rect x="16"  y="8" width="2" height="4" rx="1" />
+                  </svg>
+                </motion.button>
+              )}
             </div>
           </div>
+
         </div>
       </div>
     </div>

@@ -21,6 +21,7 @@ import {
   useRegenerateMutation,
   isActiveArchDocStatus,
 } from "@/hooks/use-arch-doc";
+import { useRepositoryQuery } from "@/hooks/use-repository";
 
 function WorkspaceView() {
   const searchParams = useSearchParams();
@@ -31,6 +32,7 @@ function WorkspaceView() {
   const [knownLatest, setKnownLatest] = useState<number | null>(null);
 
   const { data: versions, isLoading: versionsLoading } = useArchDocVersionsQuery(repoId);
+  const { data: repository } = useRepositoryQuery(repoId);
 
   const completedVersions = useMemo(
     () => (versions || []).filter((v) => v.status === "COMPLETED"),
@@ -86,7 +88,8 @@ function WorkspaceView() {
     return (
       <div className="h-screen w-full overflow-hidden text-foreground">
         <ArchitectureWiki
-          repositoryId={repoId}
+          repositoryId={repoId!}
+          repository={repository}
           data={data}
           repoName={repo}
           versions={completedVersions}

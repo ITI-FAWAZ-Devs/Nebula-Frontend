@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AgentCitation } from "@/hooks/use-agent-chat";
+import type { Repository } from "@/hooks/use-repository";
 import { MermaidDiagram } from "./MermaidDiagram";
 import { getGithubFileUrl } from "./github-utils";
 
@@ -112,23 +113,68 @@ export function SourceFilesPanel({
   );
 }
 
-export function CitationBadges({ citations }: { citations: AgentCitation[] }) {
+function buildGithubBlobUrl(
+  citation: AgentCitation,
+  repository?: Repository | null
+): string | null {
+  if (!repository) return null;
+  const { owner, name, defaultBranch } = repository;
+  if (!owner || !name) return null;
+  const base = `https://github.com/${owner}/${name}/blob/${defaultBranch}/${citation.filePath}`;
+  if (citation.lineRange) {
+    const [start, end] = citation.lineRange.split("-");
+    return `${base}#L${start}${end ? `-L${end}` : ""}`;
+  }
+  return base;
+}
+
+export function CitationBadges({
+  citations,
+  repository,
+}: {
+  citations: AgentCitation[];
+  repository?: Repository | null;
+}) {
   if (!citations.length) return null;
   return (
     <div className="mt-2 flex flex-wrap gap-1.5">
-      {citations.map((c, i) => (
-        <span
-          key={`${c.nodeId}-${i}`}
-          className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/60"
-          title={c.lineRange ? `${c.filePath}:${c.lineRange}` : c.filePath}
-        >
-          <FileText className="h-2.5 w-2.5 text-primary/50" />
-          {c.filePath}
-          {c.lineRange && (
-            <span className="text-white/30">:{c.lineRange}</span>
-          )}
-        </span>
-      ))}
+      {citations.map((c, i) => {
+        const href = buildGithubBlobUrl(c, repository);
+        const label = c.filePath.split("/").slice(-1)[0] ?? c.filePath;
+        const title = c.lineRange ? `${c.filePath}:${c.lineRange}` : c.filePath;
+        const inner = (
+          <>
+            <FileText className="h-2.5 w-2.5 text-primary/50 shrink-0" />
+            {label}
+            {c.lineRange && (
+              <span className="text-white/30">:{c.lineRange}</span>
+            )}
+          </>
+        );
+        if (href) {
+          return (
+            <a
+              key={`${c.nodeId}-${i}`}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={title}
+              className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/60 hover:border-primary/40 hover:text-white/90 transition-colors"
+            >
+              {inner}
+            </a>
+          );
+        }
+        return (
+          <span
+            key={`${c.nodeId}-${i}`}
+            title={title}
+            className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-white/60"
+          >
+            {inner}
+          </span>
+        );
+      })}
     </div>
   );
 }

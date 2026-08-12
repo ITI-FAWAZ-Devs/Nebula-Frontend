@@ -9,6 +9,7 @@ import type {
   ArchDocVersionSummary,
 } from "@/hooks/use-arch-doc";
 import { useAgentChat } from "@/hooks/use-agent-chat";
+import type { Repository } from "@/hooks/use-repository";
 
 import { getGithubFileUrl, preprocessMarkdownFileLinks } from "./github-utils";
 import { extractHeadings } from "./wiki-helpers";
@@ -23,6 +24,7 @@ export { getGithubFileUrl };
 
 export interface ArchitectureWikiProps {
   repositoryId: string | null;
+  repository?: Repository | null;
   data: ArchDocData;
   repoName?: string;
   versions: ArchDocVersionSummary[];
@@ -35,6 +37,7 @@ export interface ArchitectureWikiProps {
 
 export function ArchitectureWiki({
   repositoryId,
+  repository,
   data,
   repoName = "product-list-app",
   versions,
@@ -235,6 +238,7 @@ export function ArchitectureWiki({
       <ArchitectureWikiChat
         repoName={repoName}
         repositoryId={repositoryId}
+        repository={repository}
         messages={messages}
         isStreaming={isStreaming}
         chatInput={chatInput}

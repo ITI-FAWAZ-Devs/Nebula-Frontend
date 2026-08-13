@@ -7,10 +7,10 @@ import { Bell, Home, LogOut, Settings } from "lucide-react";
 import { useAuthStore } from "@/lib/store";
 import { useLogoutMutation } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -59,16 +59,14 @@ export function AdminHeader() {
 
       {/* Notifications placeholder */}
       <DropdownMenu>
-        <DropdownMenuTrigger className="flex items-center outline-none">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            className="relative text-white/60 hover:bg-white/5 hover:text-white cursor-pointer"
-            aria-label="Notifications"
-          >
+        <DropdownMenuTrigger
+          aria-label="Notifications"
+          className="group flex items-center rounded-md outline-none"
+        >
+          <span className="relative flex size-6 items-center justify-center rounded-md text-white/60 transition-all [&_svg:not([class*='size-'])]:size-3 group-hover:bg-white/5 group-hover:text-white">
             <Bell />
-            <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-background" />
-          </Button>
+            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-background" />
+          </span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-72 glass-panel border border-white/10 bg-popover/90 p-1 text-white backdrop-blur">
           <Empty className="border-0 p-6">
@@ -94,14 +92,16 @@ export function AdminHeader() {
           </span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56 glass-panel border border-white/10 bg-popover/90 p-1 text-white backdrop-blur">
-          <DropdownMenuLabel className="px-2 py-1.5 text-xs">
-            <p className="truncate font-semibold text-white">
-              {user?.fullName || "Admin"}
-            </p>
-            <p className="truncate font-mono text-[10px] font-normal text-white/50">
-              {user?.email}
-            </p>
-          </DropdownMenuLabel>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className="px-2 py-1.5 text-xs">
+              <p className="truncate font-semibold text-white">
+                {user?.fullName || "Admin"}
+              </p>
+              <p className="truncate font-mono text-[10px] font-normal text-white/50">
+                {user?.email}
+              </p>
+            </DropdownMenuLabel>
+          </DropdownMenuGroup>
           <DropdownMenuSeparator className="bg-white/10" />
           <DropdownMenuItem className="hover:bg-white/5 text-white/80 focus:bg-white/5 cursor-pointer rounded-md">
             <Link href="/" className="flex items-center gap-2 w-full">

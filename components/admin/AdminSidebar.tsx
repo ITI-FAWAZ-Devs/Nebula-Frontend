@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -126,14 +127,16 @@ export function AdminSidebar() {
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56 glass-panel border border-white/10 bg-popover/90 p-1 text-white backdrop-blur">
-                <DropdownMenuLabel className="px-2 py-1.5 text-xs">
-                  <p className="truncate font-semibold text-white">
-                    {user?.fullName || "Admin"}
-                  </p>
-                  <p className="truncate font-mono text-[10px] font-normal text-white/50">
-                    {user?.email}
-                  </p>
-                </DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="px-2 py-1.5 text-xs">
+                    <p className="truncate font-semibold text-white">
+                      {user?.fullName || "Admin"}
+                    </p>
+                    <p className="truncate font-mono text-[10px] font-normal text-white/50">
+                      {user?.email}
+                    </p>
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator className="bg-white/10" />
                 <DropdownMenuItem
                   className="hover:bg-white/5 text-white/80 focus:bg-white/5 cursor-pointer rounded-md"

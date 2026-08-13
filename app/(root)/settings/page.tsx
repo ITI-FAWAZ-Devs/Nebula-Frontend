@@ -91,7 +91,7 @@ export default function SettingsPage() {
 
   return (
     <ProtectedGuard>
-      <div className="min-h-screen bg-background nebula-bg pt-28 pb-16 px-4 sm:px-6">
+      <div className="min-h-screen bg-background nebula-bg pt-10 pb-16 px-4 sm:px-6 md:pt-8">
         <div className="mx-auto max-w-4xl">
           {/* Header */}
           <div className="mb-8">

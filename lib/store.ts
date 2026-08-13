@@ -55,3 +55,15 @@ export const useWorkspaceStore = create<WorkspaceState>()(
     },
   ),
 );
+
+// ── UI chrome store ────────────────────────────────────────────────────────
+
+interface UiState {
+  importPickerOpen: boolean;
+  setImportPickerOpen: (open: boolean) => void;
+}
+
+export const useUiStore = create<UiState>((set) => ({
+  importPickerOpen: false,
+  setImportPickerOpen: (importPickerOpen) => set({ importPickerOpen }),
+}));

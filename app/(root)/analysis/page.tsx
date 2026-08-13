@@ -188,7 +188,7 @@ function AnalysisMissionControl() {
   }, [documentation]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden text-foreground pt-28 pb-16 px-4 sm:px-6 bg-background">
+    <div className="relative min-h-screen overflow-hidden text-foreground pt-10 pb-16 px-4 sm:px-6 bg-background md:pt-8">
       <NebulaBackdrop />
 
       {/* header title info */}

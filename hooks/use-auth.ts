@@ -74,15 +74,8 @@ export function useLoginMutation() {
       const { user, accessToken } = data;
       useAuthStore.getState().setAuth(user, accessToken);
       queryClient.setQueryData(["me"], user);
-      // Initialize workspace context from user's default workspace
-      if (user.defaultWorkspaceType === "ORGANIZATION" && user.defaultOrganizationId) {
-        useWorkspaceStore.getState().setWorkspace({
-          type: "organization",
-          organizationId: user.defaultOrganizationId,
-        });
-      } else {
-        useWorkspaceStore.getState().setWorkspace({ type: "personal" });
-      }
+      // Always enter the app in the personal workspace
+      useWorkspaceStore.getState().setWorkspace({ type: "personal" });
     },
   });
 }
@@ -142,6 +135,7 @@ export function useLogoutMutation() {
     onSuccess: () => {
       // Clear Zustand client state
       useAuthStore.getState().clearAuth();
+      useWorkspaceStore.getState().setWorkspace({ type: "personal" });
       // Remove query cache details for all queries
       queryClient.setQueryData(["me"], null);
       queryClient.clear();
@@ -149,6 +143,7 @@ export function useLogoutMutation() {
     onError: () => {
       // Fallback: clear client session anyway on logout issues
       useAuthStore.getState().clearAuth();
+      useWorkspaceStore.getState().setWorkspace({ type: "personal" });
       queryClient.setQueryData(["me"], null);
       queryClient.clear();
     },

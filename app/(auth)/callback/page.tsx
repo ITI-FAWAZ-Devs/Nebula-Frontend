@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/lib/store";
+import { useAuthStore, useWorkspaceStore } from "@/lib/store";
 import { useMeQuery } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { motion } from "motion/react";
@@ -12,6 +12,7 @@ export default function OAuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const setAccessToken = useAuthStore((state) => state.setAccessToken);
+  const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
 
   const accessToken = searchParams.get("accessToken");
   const runOnce = useRef(false);
@@ -29,9 +30,9 @@ export default function OAuthCallbackPage() {
       // 2. Refresh the ['me'] query to retrieve profile details
       refetch().then((result) => {
         if (result.data) {
+          setWorkspace({ type: "personal" });
           toast.success("Successfully logged in via OAuth!");
-          const redirect = searchParams.get("redirect") || "/";
-          router.replace(redirect);
+          router.replace("/launch");
         } else {
           toast.error("Session verification failed. Please login manually.");
           router.replace("/login");
@@ -41,7 +42,7 @@ export default function OAuthCallbackPage() {
       toast.error("OAuth token payload missing. Please login manually.");
       router.replace("/login");
     }
-  }, [accessToken, setAccessToken, refetch, router, searchParams]);
+  }, [accessToken, setAccessToken, setWorkspace, refetch, router]);
 
   return (
     <AuthCard>

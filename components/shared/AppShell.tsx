@@ -1,10 +1,12 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useAuthStore, useUiStore } from "@/lib/store";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore, useUiStore, useWorkspaceStore } from "@/lib/store";
 import { AppSidebar } from "@/components/shared/AppSidebar";
 import { ImportRepoPicker } from "@/components/launch/ImportRepoPicker";
+import { CreateOrgModal } from "@/components/organizations/CreateOrgModal";
 import { Nav } from "@/components/landing/Nav";
+import { orgTabHref } from "@/lib/org-nav";
 
 const APP_PREFIXES = [
   "/launch",
@@ -19,6 +21,28 @@ const APP_PREFIXES = [
 function isAppRoute(pathname: string) {
   return APP_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
+function CreateOrgHost() {
+  const router = useRouter();
+  const createOrgOpen = useUiStore((s) => s.createOrgOpen);
+  const setCreateOrgOpen = useUiStore((s) => s.setCreateOrgOpen);
+  const setWorkspace = useWorkspaceStore((s) => s.setWorkspace);
+
+  return (
+    <CreateOrgModal
+      open={createOrgOpen}
+      onOpenChange={setCreateOrgOpen}
+      onCreated={(org) => {
+        setWorkspace({
+          type: "organization",
+          organizationId: org.id,
+          organizationName: org.name,
+        });
+        router.push(orgTabHref(org.id, "members"));
+      }}
+    />
   );
 }
 
@@ -41,6 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           open={importPickerOpen}
           onOpenChange={setImportPickerOpen}
         />
+        <CreateOrgHost />
       </>
     );
   }
@@ -49,6 +74,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <Nav />
       {children}
+      {user && <CreateOrgHost />}
     </>
   );
 }

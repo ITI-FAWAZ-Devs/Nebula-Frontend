@@ -17,7 +17,7 @@ import { useCreateOrganizationMutation } from "@/hooks/use-organization";
 interface CreateOrgModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreated?: (orgId: string) => void;
+  onCreated?: (org: { id: string; name: string }) => void;
 }
 
 export function CreateOrgModal({ open, onOpenChange, onCreated }: CreateOrgModalProps) {
@@ -33,7 +33,7 @@ export function CreateOrgModal({ open, onOpenChange, onCreated }: CreateOrgModal
       toast.success(`Organization "${org.name}" created!`);
       setName("");
       onOpenChange(false);
-      if (onCreated) onCreated(org.id);
+      if (onCreated) onCreated({ id: org.id, name: org.name });
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || "Failed to create organization.";
       toast.error(msg);

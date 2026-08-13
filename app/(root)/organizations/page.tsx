@@ -1,13 +1,12 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ProtectedGuard } from "@/components/auth/ProtectedGuard";
 import { useOrganizationsQuery, can } from "@/hooks/use-organization";
-import { useAuthStore, useWorkspaceStore } from "@/lib/store";
+import { useAuthStore, useUiStore, useWorkspaceStore } from "@/lib/store";
 import { Building2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CreateOrgModal } from "@/components/organizations/CreateOrgModal";
 import { MembersTab } from "@/components/organizations/MembersTab";
 import { RolesTab } from "@/components/organizations/RolesTab";
 import { OrgReposTab } from "@/components/organizations/OrgReposTab";
@@ -29,7 +28,7 @@ function OrganizationsView() {
   const { data: orgs, isLoading } = useOrganizationsQuery();
   const user = useAuthStore((s) => s.user);
   const { workspace, setWorkspace } = useWorkspaceStore();
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const setCreateOrgOpen = useUiStore((s) => s.setCreateOrgOpen);
 
   const tabParam = searchParams.get("tab");
   const orgParam = searchParams.get("org");
@@ -130,7 +129,7 @@ function OrganizationsView() {
                 collaborate on codebases.
               </p>
               <Button
-                onClick={() => setCreateModalOpen(true)}
+                onClick={() => setCreateOrgOpen(true)}
                 className="mt-6 h-10 rounded-full px-6 font-mono text-xs uppercase tracking-wider text-white"
                 style={{ background: "#4493F8" }}
               >
@@ -151,7 +150,7 @@ function OrganizationsView() {
                   </p>
                 </div>
                 <Button
-                  onClick={() => setCreateModalOpen(true)}
+                  onClick={() => setCreateOrgOpen(true)}
                   className="h-10 cursor-pointer self-start rounded-full px-5 text-xs font-semibold shadow-[0_0_20px_-4px_rgba(68,147,248,0.5)] sm:self-auto"
                   style={{ background: "#4493F8" }}
                 >
@@ -201,7 +200,7 @@ function OrganizationsView() {
                   </p>
                 </div>
                 <Button
-                  onClick={() => setCreateModalOpen(true)}
+                  onClick={() => setCreateOrgOpen(true)}
                   variant="outline"
                   className="h-9 cursor-pointer self-start rounded-xl border-white/10 bg-white/[0.03] px-3 text-xs text-white/70 hover:bg-white/5 hover:text-white"
                 >
@@ -255,19 +254,6 @@ function OrganizationsView() {
         </div>
       </div>
 
-      <CreateOrgModal
-        open={createModalOpen}
-        onOpenChange={setCreateModalOpen}
-        onCreated={(orgId) => {
-          const named = orgs?.find((o) => o.id === orgId);
-          setWorkspace({
-            type: "organization",
-            organizationId: orgId,
-            organizationName: named?.name,
-          });
-          router.push(orgTabHref(orgId, "members"));
-        }}
-      />
     </ProtectedGuard>
   );
 }

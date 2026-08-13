@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useWorkspaceStore } from "@/lib/store";
+import { useUiStore, useWorkspaceStore } from "@/lib/store";
 import { useOrganizationsQuery } from "@/hooks/use-organization";
 import {
   DropdownMenu,
@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserCircle2, Building2, ChevronDown, Check } from "lucide-react";
+import { UserCircle2, Building2, ChevronDown, Check, Plus } from "lucide-react";
 import { VALID_ORG_TABS, orgTabHref, type OrgTab } from "@/lib/org-nav";
 import { cn } from "@/lib/utils";
 
@@ -22,9 +22,11 @@ interface WorkspaceSwitcherProps {
 
 export function WorkspaceSwitcher({ variant = "default" }: WorkspaceSwitcherProps) {
   const { workspace, setWorkspace } = useWorkspaceStore();
+  const setCreateOrgOpen = useUiStore((s) => s.setCreateOrgOpen);
   const { data: orgs } = useOrganizationsQuery();
   const pathname = usePathname();
   const router = useRouter();
+  const hasOrgs = !!orgs && orgs.length > 0;
 
   const syncOrgRoute = (organizationId: string) => {
     if (!pathname.startsWith("/organizations")) return;
@@ -103,41 +105,55 @@ export function WorkspaceSwitcher({ variant = "default" }: WorkspaceSwitcherProp
           </DropdownMenuItem>
         </DropdownMenuGroup>
 
-        {orgs && orgs.length > 0 && (
-          <>
-            <DropdownMenuSeparator className="bg-white/8 my-1" />
-            <DropdownMenuGroup>
-              <DropdownMenuLabel className="px-2 py-1 text-[10px] uppercase tracking-widest text-white/35 font-mono">
-                Organizations
-              </DropdownMenuLabel>
-              {orgs.map((org: { id: string; name: string }) => {
-                const isActive =
-                  workspace.type === "organization" && workspace.organizationId === org.id;
-                return (
-                  <DropdownMenuItem
-                    key={org.id}
-                    className={cn(
-                      "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs cursor-pointer",
-                      isActive ? "text-white bg-white/5" : "text-white/70 hover:text-white hover:bg-white/5",
-                    )}
-                    onClick={() => {
-                      setWorkspace({
-                        type: "organization",
-                        organizationId: org.id,
-                        organizationName: org.name,
-                      });
-                      syncOrgRoute(org.id);
-                    }}
-                  >
-                    <Building2 className="h-3.5 w-3.5 text-purple-400 shrink-0" />
-                    <span className="flex-1 truncate">{org.name}</span>
-                    {isActive && <Check className="h-3 w-3 text-primary shrink-0" />}
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuGroup>
-          </>
-        )}
+        <DropdownMenuSeparator className="bg-white/8 my-1" />
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="px-2 py-1 text-[10px] uppercase tracking-widest text-white/35 font-mono">
+            Organizations
+          </DropdownMenuLabel>
+
+          {!hasOrgs && (
+            <div className="mx-1 mb-1 rounded-md border border-dashed border-white/10 bg-white/[0.02] px-2.5 py-2">
+              <p className="text-[11px] leading-snug text-white/45">
+                No organizations yet. Create one to invite teammates and share repos.
+              </p>
+            </div>
+          )}
+
+          {hasOrgs &&
+            orgs!.map((org: { id: string; name: string }) => {
+              const isActive =
+                workspace.type === "organization" && workspace.organizationId === org.id;
+              return (
+                <DropdownMenuItem
+                  key={org.id}
+                  className={cn(
+                    "flex items-center gap-2 rounded-md px-2 py-1.5 text-xs cursor-pointer",
+                    isActive ? "text-white bg-white/5" : "text-white/70 hover:text-white hover:bg-white/5",
+                  )}
+                  onClick={() => {
+                    setWorkspace({
+                      type: "organization",
+                      organizationId: org.id,
+                      organizationName: org.name,
+                    });
+                    syncOrgRoute(org.id);
+                  }}
+                >
+                  <Building2 className="h-3.5 w-3.5 text-purple-400 shrink-0" />
+                  <span className="flex-1 truncate">{org.name}</span>
+                  {isActive && <Check className="h-3 w-3 text-primary shrink-0" />}
+                </DropdownMenuItem>
+              );
+            })}
+
+          <DropdownMenuItem
+            className="mt-0.5 flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-xs text-primary hover:bg-primary/10 focus:bg-primary/10"
+            onClick={() => setCreateOrgOpen(true)}
+          >
+            <Plus className="h-3.5 w-3.5 shrink-0" />
+            <span className="flex-1 font-medium">Create organization</span>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

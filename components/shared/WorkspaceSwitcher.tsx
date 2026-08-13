@@ -59,7 +59,7 @@ export function WorkspaceSwitcher({ variant = "default" }: WorkspaceSwitcherProp
         className={cn(
           "flex items-center gap-1.5 rounded-lg text-xs font-medium text-white/70 outline-none transition-colors hover:bg-white/5 hover:text-white cursor-pointer",
           variant === "sidebar"
-            ? "w-full border border-white/10 bg-white/[0.03] px-2.5 py-2"
+            ? "w-full border border-white/10 bg-white/3 px-2.5 py-2"
             : "px-2.5 py-1.5"
         )}
       >
@@ -67,7 +67,7 @@ export function WorkspaceSwitcher({ variant = "default" }: WorkspaceSwitcherProp
         <span
           className={cn(
             "truncate",
-            variant === "sidebar" ? "flex-1 text-left max-w-none" : "max-w-[100px]"
+            variant === "sidebar" ? "flex-1 text-left max-w-none" : "max-w-25"
           )}
         >
           {currentLabel}
@@ -112,7 +112,7 @@ export function WorkspaceSwitcher({ variant = "default" }: WorkspaceSwitcherProp
           </DropdownMenuLabel>
 
           {!hasOrgs && (
-            <div className="mx-1 mb-1 rounded-md border border-dashed border-white/10 bg-white/[0.02] px-2.5 py-2">
+            <div className="mx-1 mb-1 rounded-md border border-dashed border-white/10 bg-white/2 px-2.5 py-2">
               <p className="text-[11px] leading-snug text-white/45">
                 No organizations yet. Create one to invite teammates and share repos.
               </p>

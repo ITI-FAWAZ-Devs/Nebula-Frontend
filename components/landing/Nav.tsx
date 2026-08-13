@@ -63,9 +63,9 @@ export function Nav() {
       transition={{ delay: 0.4, duration: 0.6 }}
       className="fixed left-0 right-0 top-0 z-40"
     >
-      <div className="mx-auto mt-3 flex max-w-[90rem] items-center justify-between overflow-x-auto rounded-full border border-white/8 bg-[#0B0E14]/70 px-5 py-2.5 backdrop-blur-xl">
+      <div className="mx-auto mt-3 flex max-w-360 items-center justify-between overflow-x-auto rounded-full border border-white/8 bg-[#0B0E14]/70 px-5 py-2.5 backdrop-blur-xl">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#8B5CF6] to-[#3B82F6] text-white shadow-[0_0_16px_rgba(99,102,241,0.45)]">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-[#8B5CF6] to-[#3B82F6] text-white shadow-[0_0_16px_rgba(99,102,241,0.45)]">
             <NebulaMark className="h-4 w-4" />
           </div>
           <Link href="/" className="font-display text-lg font-semibold text-white">
@@ -86,7 +86,7 @@ export function Nav() {
         <div className="flex items-center gap-2">
           {user ? (
             <div className="flex items-center gap-3">
-              <WorkspaceSwitcher />
+              {/* <WorkspaceSwitcher /> */}
               <Link
                 className="text-sm text-white/60 transition-colors hover:text-white"
                 href="/launch"

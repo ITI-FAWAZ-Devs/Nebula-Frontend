@@ -85,11 +85,11 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
     <aside className="flex h-full w-60 flex-col border-r border-white/8 bg-[#070A12]/95 backdrop-blur-xl">
       <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-white/8 px-4">
         <Link
-          href="/launch"
+          href="/"
           className="flex items-center gap-2.5"
           onClick={onNavigate}
         >
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#8B5CF6] to-[#3B82F6] text-white shadow-[0_0_16px_rgba(99,102,241,0.45)]">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-[#8B5CF6] to-[#3B82F6] text-white shadow-[0_0_16px_rgba(99,102,241,0.45)]">
             <NebulaMark className="h-4 w-4" />
           </div>
           <span className="font-display text-base font-semibold text-white">
@@ -159,7 +159,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
             setImportPickerOpen(true);
             onNavigate?.();
           }}
-          className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] text-white/55 transition-colors hover:bg-white/[0.04] hover:text-white/90"
+          className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] text-white/55 transition-colors hover:bg-white/4 hover:text-white/90"
         >
           <Plus className="h-4 w-4 shrink-0 opacity-80" />
           Import Repository
@@ -186,7 +186,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 
         {user && (
           <DropdownMenu>
-            <DropdownMenuTrigger className="mt-1 flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] text-white/70 outline-none transition-colors hover:bg-white/[0.04] hover:text-white">
+            <DropdownMenuTrigger className="mt-1 flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] text-white/70 outline-none transition-colors hover:bg-white/4 hover:text-white">
               <Avatar size="sm">
                 <AvatarImage
                   src={user.avatar || undefined}

@@ -72,7 +72,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <Nav />
+      {!isWorkspace && <Nav />}
       {children}
       {user && <CreateOrgHost />}
     </>

@@ -110,7 +110,7 @@ function WorkspaceView() {
   if (versionsLoading || isLoading) {
     return (
       <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-        <NebulaBackdrop />
+        {/* <NebulaBackdrop /> */}
         <div className="relative z-10 flex min-h-screen flex-col items-center justify-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <span className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
@@ -128,7 +128,7 @@ function WorkspaceView() {
   if (isError && (error as { response?: { status?: number } })?.response?.status !== 404) {
     return (
       <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-        <NebulaBackdrop />
+        {/* <NebulaBackdrop /> */}
         <div className="relative z-10 flex flex-col items-center justify-center gap-3 px-6 text-center">
           <AlertCircle className="h-10 w-10 text-rose-500" />
           <p className="max-w-md text-xs text-muted-foreground">
@@ -155,7 +155,7 @@ function WorkspaceView() {
 function EmptyState() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <NebulaBackdrop />
+      {/* <NebulaBackdrop /> */}
       <Empty className="relative z-10 mx-auto max-w-md py-24">
         <EmptyHeader>
           <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-white/5 bg-white/5 text-muted-foreground">

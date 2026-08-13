@@ -50,7 +50,7 @@ export default function LoginPage() {
     try {
       await loginMutation.mutateAsync(data);
       toast.success("Successfully logged in!");
-      router.replace("/launch");
+      router.replace("/");
     } catch (err: any) {
       const errorMessage =
         err?.response?.data?.message ||

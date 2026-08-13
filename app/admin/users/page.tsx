@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Users } from "lucide-react";
-import { AdminPagePlaceholder } from "@/components/admin/AdminPagePlaceholder";
+import { AdminUsers } from "@/components/admin/users/AdminUsers";
 
 export const metadata: Metadata = {
   title: "Admin — Users",
@@ -8,11 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminUsersPage() {
-  return (
-    <AdminPagePlaceholder
-      title="Users"
-      description="Manage user accounts, roles, and platform access."
-      icon={Users}
-    />
-  );
+  return <AdminUsers />;
 }

@@ -8,7 +8,8 @@ export function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // Protected paths requiring active session
-  const isProtectedRoute = path.startsWith("/settings");
+  const isProtectedRoute =
+    path.startsWith("/settings") || path.startsWith("/admin");
 
   // Auth pages (unauthenticated users only)
   const isAuthRoute =
@@ -35,6 +36,7 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/settings/:path*",
+    "/admin/:path*",
     "/login",
     "/register",
     "/forgot-password",

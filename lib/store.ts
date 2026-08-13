@@ -9,6 +9,7 @@ export interface User {
   isEmailVerified: boolean;
   defaultWorkspaceType?: "PERSONAL" | "ORGANIZATION";
   defaultOrganizationId?: string | null;
+  role?: "USER" | "ADMIN";
 }
 
 interface AuthState {

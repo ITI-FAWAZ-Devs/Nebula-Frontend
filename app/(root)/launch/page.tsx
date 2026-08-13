@@ -16,12 +16,15 @@ import { Button } from "@/components/ui/button";
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
 
 import { useImportedReposQuery, useDeleteRepoMutation, Repository } from "@/hooks/use-repository";
+import { useWorkspaceStore } from "@/lib/store";
 import { useArchDocStatusQuery, useRegenerateMutation } from "@/hooks/use-arch-doc";
 import { Starfield } from "@/components/landing/Starfield";
 
 export default function HangarPage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const { workspace } = useWorkspaceStore();
+  const activeOrgId = workspace.type === "organization" ? workspace.organizationId : null;
   
   // UI states for modals/drawers
   const [searchOpen, setSearchOpen] = useState(false);
@@ -30,8 +33,8 @@ export default function HangarPage() {
   const [launching, setLaunching] = useState<Repository | null>(null);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
 
-  // Queries & Mutations
-  const { data: repos, isLoading, error, refetch } = useImportedReposQuery();
+  // Queries & Mutations — scoped by workspace
+  const { data: repos, isLoading, error, refetch } = useImportedReposQuery(activeOrgId);
   const { data: docStatus } = useArchDocStatusQuery();
   const deleteMutation = useDeleteRepoMutation();
   const regenerateMutation = useRegenerateMutation();

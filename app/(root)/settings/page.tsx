@@ -12,10 +12,11 @@ import { Field, FieldLabel, FieldContent, FieldError, FieldTitle } from "@/compo
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useState } from "react";
-import { FiLock, FiUser, FiActivity } from "react-icons/fi";
-import { Key, ShieldCheck } from "lucide-react";
-import { GithubTokenModal } from "@/components/integrations/GithubTokenModal";
-import { useGithubTokenStatusQuery } from "@/hooks/use-github-token";
+import { FiLock, FiUser, FiActivity, FiGithub } from "react-icons/fi";
+import { Building2, UserCircle2, Trash2 } from "lucide-react";
+import { useUserConnectionsQuery, useDeleteUserConnectionMutation, GitHubConnection } from "@/hooks/use-organization";
+import { ConnectGithubButton } from "@/components/integrations/ConnectGithubButton";
+import { cn } from "@/lib/utils";
 
 const changePasswordSchema = z
   .object({
@@ -39,9 +40,17 @@ type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 export default function SettingsPage() {
   const user = useAuthStore((state) => state.user);
   const changePasswordMutation = useChangePasswordMutation();
-  const { data: patStatus } = useGithubTokenStatusQuery();
+  const { data: userConnections } = useUserConnectionsQuery();
+  const deleteConnectionMutation = useDeleteUserConnectionMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [patModalOpen, setPatModalOpen] = useState(false);
+
+  const handleDeleteConnection = (conn: GitHubConnection) => {
+    toast.promise(deleteConnectionMutation.mutateAsync(conn.id), {
+      loading: `Removing ${conn.providerAccountLogin ?? conn.label}...`,
+      success: "Connection removed",
+      error: (err: any) => err?.response?.data?.message || "Failed to remove connection",
+    });
+  };
 
   const {
     register,
@@ -156,45 +165,85 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* GitHub PAT Integration Card */}
+              {/* GitHub Connections */}
               <div className="glass-panel p-6">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/5">
                   <div className="flex items-center gap-2">
-                    <Key className="text-primary size-4" />
-                    <h2 className="text-sm font-semibold text-white/90">
-                      GitHub Personal Access Token
-                    </h2>
+                    <FiGithub className="text-primary size-4" />
+                    <h2 className="text-sm font-semibold text-white/90">GitHub Connections</h2>
                   </div>
-                  {patStatus?.hasToken ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[10px] uppercase text-emerald-400">
-                      <ShieldCheck className="h-3 w-3" /> Token Verified
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 font-mono text-[10px] uppercase text-amber-400">
-                      Token Missing
-                    </span>
-                  )}
+                  <ConnectGithubButton
+                    size="sm"
+                    label="Add GitHub"
+                    returnTo="/settings"
+                    className="h-8 px-4 text-xs rounded-full bg-primary hover:bg-primary/90 text-white"
+                  />
                 </div>
 
                 <p className="text-xs text-white/50 mb-4 leading-relaxed">
-                  Required for repository import and workspace synchronization. Tokens are stored encrypted with AES-256-GCM.
+                  Connect GitHub accounts and organizations for repository browsing. OAuth tokens are stored encrypted.
                 </p>
 
-                <div className="flex items-center justify-between pt-2">
-                  <div className="text-[11px] font-mono text-white/40">
-                    {patStatus?.hasToken
-                      ? `Scopes: ${patStatus.scopes?.join(", ") || "repo"}`
-                      : "No PAT configured"}
+                {(!userConnections || userConnections.length === 0) ? (
+                  <div className="flex flex-col items-center justify-center py-8 border border-white/5 rounded-xl text-center">
+                    <FiGithub className="h-8 w-8 text-white/20 mb-3" />
+                    <p className="text-xs text-white/40">No GitHub accounts linked yet.</p>
+                    <div className="mt-4">
+                      <ConnectGithubButton label="Connect GitHub" returnTo="/settings" className="h-9 px-5 text-xs font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white" />
+                    </div>
                   </div>
-                  <Button
-                    onClick={() => setPatModalOpen(true)}
-                    className="h-8 text-xs font-semibold px-4 rounded-full"
-                    style={{ background: "#4493F8" }}
-                  >
-                    <Key className="mr-1.5 h-3.5 w-3.5" />
-                    {patStatus?.hasToken ? "Manage Access Token" : "Configure Access Token"}
-                  </Button>
-                </div>
+                ) : (() => {
+                  const personal = userConnections.filter((c) => c.providerAccountType !== "ORGANIZATION");
+                  const orgs = userConnections.filter((c) => c.providerAccountType === "ORGANIZATION");
+                  const renderConn = (conn: GitHubConnection) => (
+                    <div key={conn.id} className="flex items-center gap-3 p-3.5 rounded-xl border border-white/8 bg-white/[0.02]">
+                      <div className="h-8 w-8 shrink-0 rounded-lg bg-[#24292f] border border-white/10 flex items-center justify-center">
+                        <FiGithub className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0 flex items-center gap-2">
+                        {conn.providerAccountType === "ORGANIZATION" ? (
+                          <Building2 className="h-3.5 w-3.5 text-purple-400 shrink-0" />
+                        ) : (
+                          <UserCircle2 className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                        )}
+                        <p className="text-sm font-medium text-white truncate">
+                          {conn.providerAccountLogin ?? conn.label ?? "GitHub"}
+                        </p>
+                        <span className={cn(
+                          "text-[10px] font-mono px-1.5 py-0.5 rounded border",
+                          conn.isValid ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20" : "text-rose-400 bg-rose-500/10 border-rose-500/20",
+                        )}>
+                          {conn.isValid ? "Active" : "Invalid"}
+                        </span>
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={() => handleDeleteConnection(conn)}
+                        disabled={deleteConnectionMutation.isPending}
+                        className="h-7 w-7 rounded-md text-white/30 hover:text-rose-400 hover:bg-rose-500/10 cursor-pointer shrink-0">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  );
+                  return (
+                    <div className="space-y-4">
+                      {personal.length > 0 && (
+                        <div>
+                          <p className="text-[10px] font-mono text-white/30 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <UserCircle2 className="h-3 w-3 text-blue-400" /> Personal Accounts
+                          </p>
+                          <div className="space-y-2">{personal.map(renderConn)}</div>
+                        </div>
+                      )}
+                      {orgs.length > 0 && (
+                        <div>
+                          <p className="text-[10px] font-mono text-white/30 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                            <Building2 className="h-3 w-3 text-purple-400" /> GitHub Organizations
+                          </p>
+                          <div className="space-y-2">{orgs.map(renderConn)}</div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Password Change Form */}
@@ -304,10 +353,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <GithubTokenModal
-          open={patModalOpen}
-          onOpenChange={setPatModalOpen}
-        />
       </div>
     </ProtectedGuard>
   );

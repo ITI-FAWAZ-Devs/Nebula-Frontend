@@ -46,12 +46,18 @@ export function InviteMemberModal({ orgId, open, onOpenChange }: InviteMemberMod
         email: email.trim(),
         roleId: selectedRoleId,
       });
-      toast.success(`Invitation sent to ${email}!`);
+      const isPending = (res as any)?.data?.pending;
+      toast.success(
+        isPending
+          ? `Invite queued for ${email}. They'll be added automatically when they sign up.`
+          : `Invitation sent to ${email}!`
+      );
       setEmail("");
       setSelectedRoleId("");
       onOpenChange(false);
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || "Failed to send invitation.";
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } }; message?: string })
+        ?.response?.data?.message || (err as Error)?.message || "Failed to send invitation.";
       toast.error(msg);
     }
   };
@@ -69,7 +75,7 @@ export function InviteMemberModal({ orgId, open, onOpenChange }: InviteMemberMod
             </DialogTitle>
           </div>
           <DialogDescription className="text-xs text-white/50">
-            Send an invitation email to a registered Nebula user and assign their access role.
+            Invite by email. If they don't have an account yet, they'll be added automatically when they sign up.
           </DialogDescription>
         </DialogHeader>
 

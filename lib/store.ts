@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface User {
   id: string;
@@ -6,6 +7,8 @@ export interface User {
   fullName?: string;
   avatar?: string | null;
   isEmailVerified: boolean;
+  defaultWorkspaceType?: "PERSONAL" | "ORGANIZATION";
+  defaultOrganizationId?: string | null;
 }
 
 interface AuthState {
@@ -29,3 +32,26 @@ export const useAuthStore = create<AuthState>((set) => ({
   setAccessToken: (accessToken) => set({ accessToken }),
   setInitialized: (isInitialized) => set({ isInitialized }),
 }));
+
+// ── Workspace Context Store ────────────────────────────────────────────────
+
+export type WorkspaceContext =
+  | { type: "personal" }
+  | { type: "organization"; organizationId: string; organizationName?: string };
+
+interface WorkspaceState {
+  workspace: WorkspaceContext;
+  setWorkspace: (ctx: WorkspaceContext) => void;
+}
+
+export const useWorkspaceStore = create<WorkspaceState>()(
+  persist(
+    (set) => ({
+      workspace: { type: "personal" },
+      setWorkspace: (workspace) => set({ workspace }),
+    }),
+    {
+      name: "nebula-workspace",
+    },
+  ),
+);

@@ -17,8 +17,10 @@ interface RolesTabProps {
   userPermissions: string[];
 }
 
+const BUILT_IN_ROLES = ["Owner", "Admin", "Developer", "Viewer"];
+
 export function RolesTab({ orgId, userPermissions }: RolesTabProps) {
-  const canManage = userPermissions.includes("org:manage");
+  const canManage = userPermissions.includes("org.manage_roles") || userPermissions.includes("org:manage");
   const { data: roles, isLoading: loadingRoles } = useOrgRolesQuery(orgId);
   const deleteRoleMutation = useDeleteOrgRoleMutation(orgId);
 
@@ -31,13 +33,17 @@ export function RolesTab({ orgId, userPermissions }: RolesTabProps) {
   };
 
   const handleOpenEdit = (role: Role) => {
+    if (BUILT_IN_ROLES.includes(role.name)) {
+      toast.info(`The ${role.name} role is a built-in role and cannot be edited.`);
+      return;
+    }
     setRoleToEdit(role);
     setRoleModalOpen(true);
   };
 
   const handleDeleteRole = async (role: Role) => {
-    if (role.name === "Owner") {
-      toast.error("The Owner role cannot be deleted.");
+    if (BUILT_IN_ROLES.includes(role.name)) {
+      toast.error(`The ${role.name} role cannot be deleted.`);
       return;
     }
 
@@ -84,7 +90,7 @@ export function RolesTab({ orgId, userPermissions }: RolesTabProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {roles?.map((role) => {
           const isOwnerRole = role.name === "Owner";
-          const isSystemDefault = ["Owner", "Developer", "Team Manager"].includes(role.name);
+          const isSystemDefault = BUILT_IN_ROLES.includes(role.name);
 
           return (
             <div
@@ -133,7 +139,7 @@ export function RolesTab({ orgId, userPermissions }: RolesTabProps) {
               <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[11px] font-mono text-white/40">
                 <span>{role._count?.members || 0} members assigned</span>
 
-                {!isOwnerRole && canManage && (
+                {!isSystemDefault && canManage && (
                   <div className="flex items-center gap-1">
                     <Button
                       variant="ghost"
@@ -151,6 +157,12 @@ export function RolesTab({ orgId, userPermissions }: RolesTabProps) {
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
+                  </div>
+                )}
+                {isSystemDefault && (
+                  <div className="flex items-center gap-1 text-white/25">
+                    <Lock className="h-3 w-3" />
+                    <span className="text-[10px]">Built-in</span>
                   </div>
                 )}
               </div>

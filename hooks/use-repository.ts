@@ -37,11 +37,12 @@ interface GithubReposResponse {
   totalPages?: number;
 }
 
-// Hook: Get live user GitHub repositories
+// Hook: Get live GitHub repositories, optionally scoped to a specific connectionId
 export function useGithubReposQuery(params?: {
   page?: number;
   limit?: number;
   force?: boolean;
+  connectionId?: string;
 }) {
   return useQuery({
     queryKey: ["github-repos", params],
@@ -51,6 +52,7 @@ export function useGithubReposQuery(params?: {
           page: params?.page,
           limit: params?.limit,
           force: params?.force ? "true" : "false",
+          connectionId: params?.connectionId,
         },
       });
       return response.data.data as GithubReposResponse;
@@ -61,11 +63,15 @@ export function useGithubReposQuery(params?: {
   });
 }
 
-// Hook: Get list of imported repositories in Nebula DB
-export function useImportedReposQuery() {
+// Hook: Get list of imported repositories in Nebula DB (workspace-scoped)
+export function useImportedReposQuery(organizationId?: string | null) {
   return useQuery({
-    queryKey: ["imported-repos"],
+    queryKey: ["imported-repos", organizationId ?? "personal"],
     queryFn: async () => {
+      if (organizationId) {
+        const response = await api.get(`/api/organizations/${organizationId}/repositories`);
+        return response.data.data as Repository[];
+      }
       const response = await api.get("/api/repositories");
       return response.data.data as Repository[];
     },

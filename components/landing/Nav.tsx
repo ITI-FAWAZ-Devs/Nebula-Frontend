@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/store";
 import { useLogoutMutation } from "@/hooks/use-auth";
+import { WorkspaceSwitcher } from "@/components/shared/WorkspaceSwitcher";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,8 +86,9 @@ export function Nav() {
         </nav>
         <div className="flex items-center gap-2">
           {user ? (
-            <div className="flex items-center gap-4">
-              <Link className="transition-colors text-white/60 hover:text-white" href="/launch">Launch</Link>
+            <div className="flex items-center gap-3">
+              <WorkspaceSwitcher />
+              <Link className="transition-colors text-white/60 hover:text-white text-sm" href="/launch">Launch</Link>
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 rounded-full p-0.5 border border-white/10 hover:border-white/20 hover:bg-white/3 transition-colors outline-none cursor-pointer">
                   <Avatar size="sm">

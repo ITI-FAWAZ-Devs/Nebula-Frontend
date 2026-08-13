@@ -24,9 +24,9 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect authenticated user trying to access login/register to dashboard/home
+  // Redirect authenticated user trying to access login/register to hangar
   if (isAuthRoute && (accessToken || refreshToken)) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/launch", request.url));
   }
 
   return NextResponse.next();

@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/store";
 import { useLogoutMutation } from "@/hooks/use-auth";
+import { WorkspaceSwitcher } from "@/components/shared/WorkspaceSwitcher";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +16,8 @@ import {
 } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { toast } from "sonner";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+
 function NebulaMark({ className }: { className?: string }) {
   return (
     <svg
@@ -29,13 +31,20 @@ function NebulaMark({ className }: { className?: string }) {
   );
 }
 
+const MARKETING_LINKS = [
+  { label: "Features", href: "/#features" },
+  { label: "How it works", href: "/#product" },
+  { label: "Use cases", href: "/#agents" },
+  { label: "Docs", href: "/docs" },
+  { label: "Pricing", href: "/#cta" },
+  { label: "Changelog", href: "/#timeline" },
+];
+
+/** Marketing / landing navbar. App routes use AppSidebar via AppShell. */
 export function Nav() {
   const user = useAuthStore((state) => state.user);
   const logoutMutation = useLogoutMutation();
   const router = useRouter();
-  const pathname = usePathname();
-
-  if (pathname === "/workspace" || pathname === "/docs") return null;
 
   const handleLogout = async () => {
     try {
@@ -47,15 +56,6 @@ export function Nav() {
     }
   };
 
-  const navLinks = [
-    { label: "Features", href: "/#features" },
-    { label: "How it works", href: "/#product" },
-    { label: "Use cases", href: "/#agents" },
-    { label: "Docs", href: "/docs" },
-    { label: "Pricing", href: "/#cta" },
-    { label: "Changelog", href: "/#timeline" },
-  ];
-
   return (
     <motion.header
       initial={{ opacity: 0, y: -10 }}
@@ -63,9 +63,9 @@ export function Nav() {
       transition={{ delay: 0.4, duration: 0.6 }}
       className="fixed left-0 right-0 top-0 z-40"
     >
-      <div className="mx-auto mt-3 flex max-w-[90rem] items-center justify-between overflow-x-auto rounded-full border border-white/8 bg-[#0B0E14]/70 px-5 py-2.5 backdrop-blur-xl">
+      <div className="mx-auto mt-3 flex max-w-360 items-center justify-between overflow-x-auto rounded-full border border-white/8 bg-[#0B0E14]/70 px-5 py-2.5 backdrop-blur-xl">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-[#8B5CF6] to-[#3B82F6] text-white shadow-[0_0_16px_rgba(99,102,241,0.45)]">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-[#8B5CF6] to-[#3B82F6] text-white shadow-[0_0_16px_rgba(99,102,241,0.45)]">
             <NebulaMark className="h-4 w-4" />
           </div>
           <Link href="/" className="font-display text-lg font-semibold text-white">
@@ -73,7 +73,7 @@ export function Nav() {
           </Link>
         </div>
         <nav className="hidden items-center gap-0.5 text-sm text-white/55 lg:flex">
-          {navLinks.map((link) => (
+          {MARKETING_LINKS.map((link) => (
             <Link
               key={link.label}
               className="rounded-full px-3 py-1.5 transition-colors duration-200 hover:bg-white/5 hover:text-white"
@@ -85,37 +85,53 @@ export function Nav() {
         </nav>
         <div className="flex items-center gap-2">
           {user ? (
-            <div className="flex items-center gap-4">
-              <Link className="transition-colors text-white/60 hover:text-white" href="/launch">Launch</Link>
+            <div className="flex items-center gap-3">
+              {/* <WorkspaceSwitcher /> */}
+              <Link
+                className="text-sm text-white/60 transition-colors hover:text-white"
+                href="/launch"
+              >
+                Open app
+              </Link>
               <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-2 rounded-full p-0.5 border border-white/10 hover:border-white/20 hover:bg-white/3 transition-colors outline-none cursor-pointer">
+                <DropdownMenuTrigger className="flex cursor-pointer items-center gap-2 rounded-full border border-white/10 p-0.5 outline-none transition-colors hover:border-white/20 hover:bg-white/3">
                   <Avatar size="sm">
-                    <AvatarImage src={user.avatar || undefined} alt={user.fullName || "User"} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-semibold">
+                    <AvatarImage
+                      src={user.avatar || undefined}
+                      alt={user.fullName || "User"}
+                    />
+                    <AvatarFallback className="bg-primary/10 text-[10px] font-semibold text-primary">
                       {(user.fullName || user.email).substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 glass-panel border border-white/10 bg-popover/90 backdrop-blur p-1 mt-1 text-white">
+                <DropdownMenuContent
+                  align="end"
+                  className="mt-1 w-56 glass-panel border border-white/10 bg-popover/90 p-1 text-white backdrop-blur"
+                >
                   <div className="px-2 py-1.5">
-                    <p className="text-xs font-semibold truncate">{user.fullName || "User"}</p>
-                    <p className="text-[10px] text-white/50 truncate font-mono">{user.email}</p>
+                    <p className="truncate text-xs font-semibold">
+                      {user.fullName || "User"}
+                    </p>
+                    <p className="truncate font-mono text-[10px] text-white/50">
+                      {user.email}
+                    </p>
                   </div>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem className="hover:bg-white/5 text-white/80 focus:bg-white/5 cursor-pointer rounded-md">
-                    <Link href="/organizations" className="flex items-center w-full">
-                      Organizations
+                  <DropdownMenuItem className="cursor-pointer rounded-md text-white/80 hover:bg-white/5 focus:bg-white/5">
+                    <Link href="/launch" className="flex w-full items-center">
+                      Repositories
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="hover:bg-white/5 text-white/80 focus:bg-white/5 cursor-pointer rounded-md">
-                    <Link href="/settings" className="flex items-center w-full">
+                  <DropdownMenuItem className="cursor-pointer rounded-md text-white/80 hover:bg-white/5 focus:bg-white/5">
+                    <Link href="/settings" className="flex w-full items-center">
                       Settings
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem
                     onClick={handleLogout}
-                    className="text-destructive focus:bg-destructive/10 hover:bg-destructive/10 cursor-pointer rounded-md"
+                    className="cursor-pointer rounded-md text-destructive hover:bg-destructive/10 focus:bg-destructive/10"
                   >
                     Log out
                   </DropdownMenuItem>

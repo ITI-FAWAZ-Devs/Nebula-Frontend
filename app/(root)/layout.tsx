@@ -1,4 +1,4 @@
-import { Nav } from "@/components/landing/Nav";
+import { AppShell } from "@/components/shared/AppShell";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -11,10 +11,5 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <>
-      <Nav/>
-      {children}
-    </>
-  );
+  return <AppShell>{children}</AppShell>;
 }

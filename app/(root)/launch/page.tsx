@@ -1,47 +1,87 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Search, Plus, Database, AlertCircle, Loader2 } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Database,
+  AlertCircle,
+  Loader2,
+  ListFilter,
+  ChevronDown,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { NebulaBackdrop } from "@/components/landing/NebulaBackdrop";
-import { RepoCard } from "@/components/launch/RepoCard";
+import { RepoTable, matchesStatusFilter, type StatusFilter } from "@/components/launch/RepoTable";
 import { LaunchOverlay } from "@/components/launch/LaunchOverlay";
-import { ImportRepoPicker } from "@/components/launch/ImportRepoPicker";
 import { RepoDeleteConfirm } from "@/components/launch/RepoDeleteConfirm";
 import { RepoDetailModal } from "@/components/launch/RepoDetailModal";
 import { Button } from "@/components/ui/button";
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from "@/components/ui/empty";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-import { useImportedReposQuery, useDeleteRepoMutation, Repository } from "@/hooks/use-repository";
+import {
+  useImportedReposQuery,
+  useDeleteRepoMutation,
+  Repository,
+} from "@/hooks/use-repository";
+import { useUiStore, useWorkspaceStore } from "@/lib/store";
 import { useArchDocStatusQuery, useRegenerateMutation } from "@/hooks/use-arch-doc";
-import { Starfield } from "@/components/landing/Starfield";
+import { cn } from "@/lib/utils";
+
+const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "indexed", label: "Indexed" },
+  { id: "indexing", label: "Indexing" },
+  { id: "pending", label: "Pending" },
+  { id: "failed", label: "Failed" },
+];
 
 export default function HangarPage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  
-  // UI states for modals/drawers
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const { workspace } = useWorkspaceStore();
+  const activeOrgId = workspace.type === "organization" ? workspace.organizationId : null;
+
+  const setImportPickerOpen = useUiStore((s) => s.setImportPickerOpen);
   const [detailRepoId, setDetailRepoId] = useState<string | null>(null);
   const [deleteRepo, setDeleteRepo] = useState<Repository | null>(null);
   const [launching, setLaunching] = useState<Repository | null>(null);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
 
-  // Queries & Mutations
-  const { data: repos, isLoading, error, refetch } = useImportedReposQuery();
+  const { data: repos, isLoading, error, refetch } = useImportedReposQuery(activeOrgId);
   const { data: docStatus } = useArchDocStatusQuery();
   const deleteMutation = useDeleteRepoMutation();
   const regenerateMutation = useRegenerateMutation();
 
-  const docStatusByRepo = (docStatus || []).reduce<Record<string, { hasDoc: boolean }>>(
-    (acc, entry) => {
-      acc[entry.repositoryId] = { hasDoc: entry.hasDoc };
-      return acc;
-    },
-    {}
+  const docStatusByRepo = useMemo(
+    () =>
+      (docStatus || []).reduce<Record<string, { hasDoc: boolean; version: number | null }>>(
+        (acc, entry) => {
+          acc[entry.repositoryId] = {
+            hasDoc: entry.hasDoc,
+            version: entry.version,
+          };
+          return acc;
+        },
+        {}
+      ),
+    [docStatus]
   );
 
   const handleLaunch = (r: Repository) => {
@@ -57,6 +97,14 @@ export default function HangarPage() {
     router.push(
       `/workspace?repoId=${r.id}&repo=${encodeURIComponent(`${r.owner}/${r.name}`)}`
     );
+  };
+
+  const handleOpen = (r: Repository) => {
+    if (docStatusByRepo[r.id]?.hasDoc) {
+      handleOpenWorkspace(r);
+    } else {
+      handleLaunch(r);
+    }
   };
 
   const handleRegenerate = async (r: Repository) => {
@@ -85,169 +133,202 @@ export default function HangarPage() {
   const handleDeleteConfirm = async () => {
     if (!deleteRepo) return;
 
-    toast.promise(
-      deleteMutation.mutateAsync(deleteRepo.id),
-      {
-        loading: `Removing ${deleteRepo.name}...`,
-        success: () => {
-          setDeleteRepo(null);
-          return `Successfully disconnected ${deleteRepo.name}`;
-        },
-        error: (err: any) => {
-          const msg = err?.response?.data?.message || err?.message || "Failed to delete repository.";
-          return `Error: ${msg}`;
-        }
-      }
-    );
+    toast.promise(deleteMutation.mutateAsync(deleteRepo.id), {
+      loading: `Removing ${deleteRepo.name}...`,
+      success: () => {
+        setDeleteRepo(null);
+        return `Successfully disconnected ${deleteRepo.name}`;
+      },
+      error: (err: unknown) => {
+        const msg =
+          (err as { response?: { data?: { message?: string } }; message?: string })?.response
+            ?.data?.message ||
+          (err as Error)?.message ||
+          "Failed to delete repository.";
+        return `Error: ${msg}`;
+      },
+    });
   };
 
-  // Filter local state list
-  const filtered = (repos || []).filter(r => {
-    const matchesQuery = r.name.toLowerCase().includes(query.toLowerCase()) || 
-                         r.owner.toLowerCase().includes(query.toLowerCase());
-    return matchesQuery;
-  });
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return (repos || []).filter((r) => {
+      const matchesQuery =
+        !q ||
+        r.name.toLowerCase().includes(q) ||
+        r.owner.toLowerCase().includes(q);
+      return matchesQuery && matchesStatusFilter(r, statusFilter);
+    });
+  }, [repos, query, statusFilter]);
+
+  const totalCount = repos?.length ?? 0;
+  const activeFilterLabel =
+    STATUS_FILTERS.find((f) => f.id === statusFilter)?.label ?? "All";
 
   return (
-    <div className="relative min-h-screen bg-background pt-28 pb-16 px-4 sm:px-6 overflow-hidden text-foreground">
+    <div className="relative min-h-screen bg-background pt-10 pb-16 px-4 sm:px-6 overflow-hidden text-foreground md:pt-8">
       <NebulaBackdrop />
 
-      <main className="relative z-10 mx-auto max-w-7xl px-2 pb-24">
-        {/* Hero Banner */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ duration: 0.8 }}
-          className="mt-6 mb-14"
-        >
-          <h1 className="font-display text-5xl font-semibold leading-tight tracking-tight md:text-6xl text-white">
-            Select a repository. <br />
-            <span className="text-gradient">Prepare it for launch.</span>
-          </h1>
-          <p className="mt-4 max-w-xl text-base text-muted-foreground">
-            Every codebase becomes a living celestial body inside your Nebula. Pick a payload — we'll ignite the analysis engines and open the galaxy.
-          </p>
-        </motion.div>
-
-        {/* Search and Filters panel bar */}
-        <motion.div 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
-          transition={{ delay: 0.3 }}
-          className="premium-panel mb-10 flex flex-wrap items-center gap-3 p-3"
-        >
-          <div className="flex flex-1 items-center gap-2 rounded-md bg-white/5 px-3 py-2">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <input 
-              value={query} 
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Search imported repositories…"
-              className="w-full bg-transparent font-mono text-sm placeholder:text-muted-foreground focus:outline-none text-white" 
-            />
-          </div>
-          <Button 
-            onClick={() => setSearchOpen(true)}
-            className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-2 h-9 font-mono text-xs text-muted-foreground hover:text-white cursor-pointer hover:bg-white/10"
+      <main className="relative z-10 mx-auto max-w-7xl px-2 pb-16">
+        <section>
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
           >
-            <Plus className="h-3.5 w-3.5" /> Import repository
-          </Button>
-        </motion.div>
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+                Repositories
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                All repositories you&apos;ve connected to Nebula.
+              </p>
+            </div>
 
-        {/* Loading Spinner */}
-        {isLoading && (
-          <div className="flex flex-col items-center justify-center py-20 gap-3 text-muted-foreground">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="text-xs font-mono tracking-widest uppercase">Loading hangar payloads...</span>
-          </div>
-        )}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex min-w-[220px] flex-1 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 sm:flex-none sm:w-64">
+                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search repositories..."
+                  className="w-full bg-transparent text-sm text-white placeholder:text-muted-foreground focus:outline-none"
+                />
+              </div>
 
-        {/* Error Alert Box */}
-        {error && !isLoading && (
-          <div className="flex flex-col items-center justify-center py-16 px-6 text-center premium-panel border-rose-500/20 bg-rose-500/5 max-w-md mx-auto">
-            <AlertCircle className="h-10 w-10 text-rose-500 mb-3" />
-            <p className="text-xs text-muted-foreground">
-              {(error as any)?.response?.data?.message || error.message || "Failed to load database repositories."}
-            </p>
-            <Button variant="ghost" className="mt-3 text-xs text-primary cursor-pointer" onClick={() => refetch()}>
-              Retry Fetch
-            </Button>
-          </div>
-        )}
+              <DropdownMenu>
+                <DropdownMenuTrigger className="inline-flex h-9 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-3 text-xs text-muted-foreground hover:bg-white/5 hover:text-white cursor-pointer">
+                  <ListFilter className="h-3.5 w-3.5" />
+                  {activeFilterLabel}
+                  <ChevronDown className="h-3.5 w-3.5 opacity-60" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-40 glass-panel border border-white/10 bg-popover/90 backdrop-blur p-1 text-white"
+                >
+                  {STATUS_FILTERS.map((filter) => (
+                    <DropdownMenuItem
+                      key={filter.id}
+                      className={cn(
+                        "cursor-pointer rounded-md text-xs",
+                        statusFilter === filter.id && "bg-white/10 text-white"
+                      )}
+                      onClick={() => setStatusFilter(filter.id)}
+                    >
+                      {filter.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-        {/* Repositories Cards Grid Layout */}
-        {!isLoading && !error && (
-          <>
-            {filtered.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filtered.map((repo, i) => (
-                  <RepoCard 
-                    key={repo.id} 
-                    repo={repo} 
-                    index={i} 
-                    hasDoc={docStatusByRepo[repo.id]?.hasDoc}
-                    isRegenerating={regeneratingId === repo.id}
-                    onLaunch={handleLaunch} 
-                    onOpenWorkspace={handleOpenWorkspace}
+              <Button
+                onClick={() => setImportPickerOpen(true)}
+                className="inline-flex h-9 items-center gap-2 rounded-xl bg-white px-3 text-xs font-medium text-black hover:bg-white/90 cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Import repository
+              </Button>
+            </div>
+          </motion.div>
+
+          {isLoading && (
+            <div className="flex flex-col items-center justify-center py-20 gap-3 text-muted-foreground">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="text-xs font-mono tracking-widest uppercase">
+                Loading repositories...
+              </span>
+            </div>
+          )}
+
+          {error && !isLoading && (
+            <div className="mx-auto flex max-w-md flex-col items-center justify-center border-rose-500/20 bg-rose-500/5 px-6 py-16 text-center premium-panel">
+              <AlertCircle className="mb-3 h-10 w-10 text-rose-500" />
+              <p className="text-xs text-muted-foreground">
+                {(error as { response?: { data?: { message?: string } } })?.response?.data
+                  ?.message ||
+                  error.message ||
+                  "Failed to load repositories."}
+              </p>
+              <Button
+                variant="ghost"
+                className="mt-3 cursor-pointer text-xs text-primary"
+                onClick={() => refetch()}
+              >
+                Retry Fetch
+              </Button>
+            </div>
+          )}
+
+          {!isLoading && !error && (
+            <>
+              {filtered.length > 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.08, duration: 0.35 }}
+                >
+                  <RepoTable
+                    repos={filtered}
+                    docStatusByRepo={docStatusByRepo}
+                    regeneratingId={regeneratingId}
+                    onOpen={handleOpen}
+                    onDetailClick={(r) => setDetailRepoId(r.id)}
                     onRegenerate={handleRegenerate}
                     onDeleteClick={(r) => setDeleteRepo(r)}
-                    onDetailClick={(r) => setDetailRepoId(r.id)}
                   />
-                ))}
-              </div>
-            ) : (
-              <Empty className="border-white/5 bg-white/[0.02] py-20 rounded-2xl">
-                <EmptyHeader>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 border border-white/5 text-muted-foreground mb-4">
-                    <Database className="h-6 w-6" />
-                  </div>
-                  <EmptyTitle className="text-white text-base">No Hangar Payloads</EmptyTitle>
-                  <EmptyDescription className="text-muted-foreground mt-1 max-w-sm">
-                    {query 
-                      ? `No repositories found matching "${query}" in this filter.` 
-                      : "Your hangar control center is empty. Import codebases to ignite telemetry models."}
-                  </EmptyDescription>
-                </EmptyHeader>
-                {!query && (
-                  <EmptyContent>
-                    <Button 
-                      onClick={() => setSearchOpen(true)}
-                      className="rounded-full font-mono text-xs uppercase tracking-widest text-white mt-3 cursor-pointer px-6"
-                      style={{
-                        background: "#4493F8",
-                        boxShadow: "0 4px 16px -4px #4493F899",
-                      }}
-                    >
-                      Import First Repository
-                    </Button>
-                  </EmptyContent>
-                )}
-              </Empty>
-            )}
-          </>
-        )}
+                  <p className="mt-4 text-center text-xs text-muted-foreground">
+                    Showing {filtered.length} of {totalCount} repositories.
+                  </p>
+                </motion.div>
+              ) : (
+                <Empty className="rounded-2xl border-white/5 bg-white/[0.02] py-20">
+                  <EmptyHeader>
+                    <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-white/5 bg-white/5 text-muted-foreground">
+                      <Database className="h-6 w-6" />
+                    </div>
+                    <EmptyTitle className="text-base text-white">No repositories</EmptyTitle>
+                    <EmptyDescription className="mt-1 max-w-sm text-muted-foreground">
+                      {query || statusFilter !== "all"
+                        ? "No repositories match your search or filter."
+                        : "Connect a codebase to start indexing and drafting architecture docs."}
+                    </EmptyDescription>
+                  </EmptyHeader>
+                  {!query && statusFilter === "all" && (
+                    <EmptyContent>
+                      <Button
+                        onClick={() => setImportPickerOpen(true)}
+                        className="mt-3 cursor-pointer rounded-full px-6 font-mono text-xs uppercase tracking-widest text-white"
+                        style={{
+                          background: "#4493F8",
+                          boxShadow: "0 4px 16px -4px #4493F899",
+                        }}
+                      >
+                        Connect repository
+                      </Button>
+                    </EmptyContent>
+                  )}
+                </Empty>
+              )}
+            </>
+          )}
+        </section>
       </main>
 
-      {/* Slide / Popup Dialog elements */}
-      <ImportRepoPicker 
-        open={searchOpen} 
-        onOpenChange={setSearchOpen} 
-      />
-
-      <RepoDeleteConfirm 
-        open={!!deleteRepo} 
-        onOpenChange={(open) => !open && setDeleteRepo(null)} 
-        repoName={deleteRepo?.name || ""} 
+      <RepoDeleteConfirm
+        open={!!deleteRepo}
+        onOpenChange={(open) => !open && setDeleteRepo(null)}
+        repoName={deleteRepo?.name || ""}
         onConfirm={handleDeleteConfirm}
         isDeleting={deleteMutation.isPending}
       />
 
-      <RepoDetailModal 
-        repoId={detailRepoId} 
-        open={!!detailRepoId} 
-        onOpenChange={(open) => !open && setDetailRepoId(null)} 
+      <RepoDetailModal
+        repoId={detailRepoId}
+        open={!!detailRepoId}
+        onOpenChange={(open) => !open && setDetailRepoId(null)}
       />
 
-      {/* Launch Overlay modal */}
       <LaunchOverlay launching={launching} />
     </div>
   );

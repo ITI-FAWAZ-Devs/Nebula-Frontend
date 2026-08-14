@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,12 +29,9 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const loginMutation = useLoginMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  const redirectUrl = searchParams.get("redirect") || "/";
 
   const {
     register,
@@ -53,7 +50,7 @@ export default function LoginPage() {
     try {
       await loginMutation.mutateAsync(data);
       toast.success("Successfully logged in!");
-      router.replace(redirectUrl);
+      router.replace("/");
     } catch (err: any) {
       const errorMessage =
         err?.response?.data?.message ||

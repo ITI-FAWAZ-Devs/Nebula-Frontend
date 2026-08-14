@@ -1,13 +1,29 @@
 "use client";
 
-import { Loader2, GitBranch, Lock, Globe, Database } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Loader2, GitBranch, Lock, Globe, Database, Trash2 } from "lucide-react";
 import { FiGithub } from "react-icons/fi";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useOrgRepositoriesQuery } from "@/hooks/use-organization";
+import { useDeleteRepoMutation } from "@/hooks/use-repository";
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from "@/components/ui/empty";
 
 interface OrgReposTabProps {
   orgId: string;
+  canDelete?: boolean;
 }
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
@@ -33,8 +49,25 @@ const STATUS_STYLES: Record<string, { label: string; className: string }> = {
   },
 };
 
-export function OrgReposTab({ orgId }: OrgReposTabProps) {
+export function OrgReposTab({ orgId, canDelete = false }: OrgReposTabProps) {
   const { data: repos, isLoading } = useOrgRepositoriesQuery(orgId);
+  const deleteMutation = useDeleteRepoMutation();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (repoId: string, repoName: string) => {
+    setDeletingId(repoId);
+    try {
+      await deleteMutation.mutateAsync(repoId);
+      toast.success(`Repository "${repoName}" removed`);
+    } catch (err: unknown) {
+      const message = err && typeof err === "object" && "response" in err
+        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      toast.error(message || "Failed to remove repository");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -46,7 +79,7 @@ export function OrgReposTab({ orgId }: OrgReposTabProps) {
 
   if (!repos || repos.length === 0) {
     return (
-      <Empty className="border-white/5 bg-white/[0.02] py-16 rounded-xl">
+      <Empty className="border-white/5 bg-white/2 py-16 rounded-xl">
         <EmptyHeader>
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/5 border border-white/5 text-muted-foreground mb-4">
             <Database className="h-6 w-6" />
@@ -74,6 +107,7 @@ export function OrgReposTab({ orgId }: OrgReposTabProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {repos.map((repo) => {
           const statusStyle = STATUS_STYLES[repo.status] || STATUS_STYLES.IMPORTED;
+          const isDeleting = deletingId === repo.id;
           return (
             <div
               key={repo.id}
@@ -95,12 +129,52 @@ export function OrgReposTab({ orgId }: OrgReposTabProps) {
                     </div>
                   </div>
 
-                  <Badge
-                    variant="outline"
-                    className={`text-[9px] font-mono shrink-0 ${statusStyle.className}`}
-                  >
-                    {statusStyle.label}
-                  </Badge>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Badge
+                      variant="outline"
+                      className={`text-[9px] font-mono ${statusStyle.className}`}
+                    >
+                      {statusStyle.label}
+                    </Badge>
+
+                    {canDelete && (
+                      <AlertDialog>
+                        <AlertDialogTrigger>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={isDeleting}
+                            className="h-7 w-7 rounded-lg text-white/20 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all cursor-pointer"
+                          >
+                            {isDeleting ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-3.5 w-3.5" />
+                            )}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="bg-[#0f0f0f] border-white/10">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-white">Remove repository?</AlertDialogTitle>
+                            <AlertDialogDescription className="text-white/50">
+                              This will remove <span className="text-white font-semibold">{repo.owner}/{repo.name}</span> from this organization. Indexed data will be lost.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10 cursor-pointer">
+                              Cancel
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(repo.id, repo.name)}
+                              className="bg-rose-600 hover:bg-rose-700 text-white cursor-pointer"
+                            >
+                              Remove
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-3 mt-3">

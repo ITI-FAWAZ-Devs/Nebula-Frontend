@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/utils/api";
-import { useAuthStore, User } from "@/lib/store";
+import { useAuthStore, useWorkspaceStore, User } from "@/lib/store";
 
 // Hook: Get Current Authenticated User profile
 export function useMeQuery() {
@@ -22,6 +22,28 @@ export function useMeQuery() {
     retry: false,
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000, // 5 minutes cache before stale
+  });
+}
+
+// Hook: Register via invite token (sets name + password, no email required)
+export function useRegisterFromInviteMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      inviteToken: string;
+      fullName: string;
+      password: string;
+    }) => {
+      const response = await api.post("/api/auth/register-from-invite", payload);
+      return response.data.data;
+    },
+    onSuccess: (data) => {
+      if (data?.user) {
+        useAuthStore.getState().setUser(data.user);
+        queryClient.setQueryData(["me"], data.user);
+        useWorkspaceStore.getState().setWorkspace({ type: "personal" });
+      }
+    },
   });
 }
 
@@ -50,10 +72,10 @@ export function useLoginMutation() {
     },
     onSuccess: (data) => {
       const { user, accessToken } = data;
-      // Set Zustand client store auth details
       useAuthStore.getState().setAuth(user, accessToken);
-      // Hydrate TanStack query cache for "me" query with user data directly
       queryClient.setQueryData(["me"], user);
+      // Always enter the app in the personal workspace
+      useWorkspaceStore.getState().setWorkspace({ type: "personal" });
     },
   });
 }
@@ -113,6 +135,7 @@ export function useLogoutMutation() {
     onSuccess: () => {
       // Clear Zustand client state
       useAuthStore.getState().clearAuth();
+      useWorkspaceStore.getState().setWorkspace({ type: "personal" });
       // Remove query cache details for all queries
       queryClient.setQueryData(["me"], null);
       queryClient.clear();
@@ -120,6 +143,7 @@ export function useLogoutMutation() {
     onError: () => {
       // Fallback: clear client session anyway on logout issues
       useAuthStore.getState().clearAuth();
+      useWorkspaceStore.getState().setWorkspace({ type: "personal" });
       queryClient.setQueryData(["me"], null);
       queryClient.clear();
     },

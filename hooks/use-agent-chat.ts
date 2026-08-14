@@ -31,6 +31,15 @@ interface AgentDonePayload {
   citations: AgentCitation[];
   citedNodeIds: string[];
   toolsUsed: string[];
+  followups?: string[];
+}
+
+export type AnswerMode = "fast" | "standard" | "deep" | null;
+
+export interface ResearchProgress {
+  step: number;
+  total: number;
+  subQuestion: string;
 }
 
 interface StreamCallbacks {
@@ -38,6 +47,9 @@ interface StreamCallbacks {
   onToken: (token: string) => void;
   onDone: (payload: AgentDonePayload) => void;
   onError: (message: string) => void;
+  onFollowups: (followups: string[]) => void;
+  onMode: (mode: "fast" | "standard" | "deep") => void;
+  onProgress: (progress: ResearchProgress) => void;
 }
 
 const QUESTION_MAX_LENGTH = 4000;
@@ -76,6 +88,7 @@ function saveSessionId(repositoryId: string, sessionId: string) {
 function clearSessionId(repositoryId: string) {
   try {
     sessionStorage.removeItem(sessionKey(repositoryId));
+    sessionStorage.removeItem(messagesKey(repositoryId));
   } catch {
     // ignore
   }
@@ -204,6 +217,21 @@ function dispatchSSEEvent(
         callbacks.onToken(token);
         break;
       }
+      case "followups": {
+        const followups = JSON.parse(raw) as string[];
+        callbacks.onFollowups(followups);
+        break;
+      }
+      case "mode": {
+        const mode = JSON.parse(raw) as "fast" | "standard" | "deep";
+        callbacks.onMode(mode);
+        break;
+      }
+      case "progress": {
+        const progress = JSON.parse(raw) as ResearchProgress;
+        callbacks.onProgress(progress);
+        break;
+      }
       case "done": {
         const payload = JSON.parse(raw) as AgentDonePayload;
         callbacks.onDone(payload);
@@ -233,6 +261,7 @@ async function streamAgentMessage(
   repositoryId: string,
   sessionId: string,
   question: string,
+  options: { mode?: "standard" | "deep"; model?: string },
   callbacks: StreamCallbacks,
   signal?: AbortSignal
 ): Promise<void> {
@@ -240,7 +269,7 @@ async function streamAgentMessage(
 
   const response = await authFetch(url, {
     method: "POST",
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({ question, mode: options.mode, model: options.model }),
     signal,
   });
 
@@ -268,6 +297,10 @@ export function useAgentChat(repositoryId: string | null) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [suggestedFollowups, setSuggestedFollowups] = useState<string[]>([]);
+  const [answerMode, setAnswerMode] = useState<AnswerMode>(null);
+  const [researchProgress, setResearchProgress] = useState<ResearchProgress | null>(null);
+  const [activeCitation, setActiveCitation] = useState<AgentCitation | null>(null);
 
   const sessionIdRef = useRef<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -281,6 +314,9 @@ export function useAgentChat(repositoryId: string | null) {
     messagesRef.current = stored;
     setMessages(stored);
     setError(null);
+    setSuggestedFollowups([]);
+    setAnswerMode(null);
+    setResearchProgress(null);
   }, [repositoryId]);
 
   // Persist messages whenever they change (excluding streaming flag churn)
@@ -291,6 +327,18 @@ export function useAgentChat(repositoryId: string | null) {
   }, [messages, repositoryId]);
 
   const clearError = useCallback(() => setError(null), []);
+
+  const clearConversation = useCallback(() => {
+    if (!repositoryId) return;
+    sessionIdRef.current = null;
+    clearSessionId(repositoryId);
+    setMessages([]);
+    messagesRef.current = [];
+    setSuggestedFollowups([]);
+    setAnswerMode(null);
+    setResearchProgress(null);
+    setError(null);
+  }, [repositoryId]);
 
   const ensureSession = useCallback(async (): Promise<string> => {
     if (!repositoryId) throw new Error("No repository selected");
@@ -304,7 +352,10 @@ export function useAgentChat(repositoryId: string | null) {
   }, [repositoryId]);
 
   const sendMessage = useCallback(
-    async (question: string) => {
+    async (
+      question: string,
+      options?: { mode?: "standard" | "deep"; model?: string }
+    ) => {
       if (!repositoryId) {
         setError("No repository selected");
         return;
@@ -339,6 +390,9 @@ export function useAgentChat(repositoryId: string | null) {
       setMessages((prev) => [...prev, userMsg, assistantMsg]);
       setIsStreaming(true);
       setError(null);
+      setSuggestedFollowups([]);
+      setAnswerMode(options?.mode ?? null);
+      setResearchProgress(null);
 
       try {
         const sessionId = await ensureSession();
@@ -347,6 +401,7 @@ export function useAgentChat(repositoryId: string | null) {
           repositoryId,
           sessionId,
           trimmed,
+          options ?? {},
           {
             onCitation: (citation) => {
               setMessages((prev) =>
@@ -366,6 +421,15 @@ export function useAgentChat(repositoryId: string | null) {
                 )
               );
             },
+            onFollowups: (followups) => {
+              setSuggestedFollowups(followups);
+            },
+            onMode: (mode) => {
+              setAnswerMode(mode);
+            },
+            onProgress: (progress) => {
+              setResearchProgress(progress);
+            },
             onDone: (payload) => {
               setMessages((prev) =>
                 prev.map((m) =>
@@ -381,6 +445,9 @@ export function useAgentChat(repositoryId: string | null) {
                     : m
                 )
               );
+              if (payload.followups && payload.followups.length > 0) {
+                setSuggestedFollowups(payload.followups);
+              }
             },
             onError: (message) => {
               setMessages((prev) =>
@@ -448,7 +515,11 @@ export function useAgentChat(repositoryId: string | null) {
     messages,
     isStreaming,
     error,
+    suggestedFollowups,
+    answerMode,
+    researchProgress,
     sendMessage,
     clearError,
+    clearConversation,
   };
 }

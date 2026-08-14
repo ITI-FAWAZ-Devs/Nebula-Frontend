@@ -113,7 +113,14 @@ export const chatMdComponents = {
     </a>
   ),
   code: ({ children, className }: any) => {
+    const isMermaid = className === "language-mermaid";
+    const rawCode = extractTextFromChildren(children).replace(/\n$/, "");
     const isBlock = className?.includes("language-");
+
+    if (isMermaid) {
+      return <MermaidDiagram chart={rawCode} />;
+    }
+
     if (isBlock) {
       return (
         <pre className="overflow-x-auto rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-[11px] my-2 text-foreground/80 scrollbar-thin">

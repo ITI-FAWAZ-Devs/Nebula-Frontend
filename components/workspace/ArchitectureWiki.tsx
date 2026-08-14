@@ -19,6 +19,8 @@ import { ArchitectureWikiHeader } from "./ArchitectureWikiHeader";
 import { ArchitectureWikiSidebar } from "./ArchitectureWikiSidebar";
 import { ArchitectureWikiToc } from "./ArchitectureWikiToc";
 import { ArchitectureWikiChat } from "./ArchitectureWikiChat";
+import { DeepWikiAnswerView } from "./DeepWikiAnswerView";
+import { Sparkles, BookOpen } from "lucide-react";
 
 export { getGithubFileUrl };
 
@@ -52,12 +54,22 @@ export function ArchitectureWiki({
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [chatInput, setChatInput] = useState("");
   const [chatExpanded, setChatExpanded] = useState(false);
+  const [viewMode, setViewMode] = useState<"docs" | "deepwiki">("docs");
 
   const contentRef = useRef<HTMLDivElement>(null);
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
-  const { messages, isStreaming, error, sendMessage, clearError } =
-    useAgentChat(repositoryId);
+  const {
+    messages,
+    isStreaming,
+    error,
+    suggestedFollowups,
+    answerMode,
+    researchProgress,
+    sendMessage,
+    clearError,
+    clearConversation,
+  } = useAgentChat(repositoryId);
 
   // Expand chat when messages exist
   useEffect(() => {
@@ -131,7 +143,7 @@ export function ArchitectureWiki({
     [currentSection, repoName, data.commitSha]
   );
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (options?: { mode?: "standard" | "deep"; model?: string }) => {
     const q = chatInput.trim();
     if (!q || isStreaming) return;
     if (q.length > 4000) {
@@ -139,11 +151,11 @@ export function ArchitectureWiki({
       return;
     }
     setChatInput("");
-    await sendMessage(q);
+    await sendMessage(q, options);
   };
 
   return (
-    <div className="flex h-full flex-col text-foreground">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-background">
       {/* ── App header ── */}
       <ArchitectureWikiHeader
         shortSha={shortSha}

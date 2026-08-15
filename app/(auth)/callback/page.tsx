@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore, useWorkspaceStore } from "@/lib/store";
 import { useMeQuery } from "@/hooks/use-auth";
+import { resolvePostLoginRedirect } from "@/lib/auth-redirect";
 import { toast } from "sonner";
 import { motion } from "motion/react";
 import { AuthCard } from "@/components/auth/AuthCard";
@@ -33,6 +34,9 @@ export default function OAuthCallbackPage() {
           setWorkspace({ type: "personal" });
           toast.success("Successfully logged in via OAuth!");
           router.replace("/launch");
+          const requestedPath =
+            searchParams.get("redirect_to") ?? searchParams.get("redirect");
+          router.replace(resolvePostLoginRedirect(result.data, requestedPath));
         } else {
           toast.error("Session verification failed. Please login manually.");
           router.replace("/login");

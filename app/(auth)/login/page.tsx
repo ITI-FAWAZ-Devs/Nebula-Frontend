@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useLoginMutation } from "@/hooks/use-auth";
+import { resolvePostLoginRedirect } from "@/lib/auth-redirect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldContent, FieldError, FieldTitle } from "@/components/ui/field";
@@ -33,6 +34,9 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const requestedPath =
+    searchParams.get("redirect_to") ?? searchParams.get("redirect");
+
   const {
     register,
     handleSubmit,
@@ -48,9 +52,10 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
     try {
-      await loginMutation.mutateAsync(data);
+      const result = await loginMutation.mutateAsync(data);
       toast.success("Successfully logged in!");
       router.replace("/");
+      router.replace(resolvePostLoginRedirect(result.user, requestedPath));
     } catch (err: any) {
       const errorMessage =
         err?.response?.data?.message ||

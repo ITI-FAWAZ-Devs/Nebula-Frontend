@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { FolderGit2 } from "lucide-react";
-import { AdminPagePlaceholder } from "@/components/admin/AdminPagePlaceholder";
+import { AdminRepositories } from "@/components/admin/repositories/AdminRepositories";
 
 export const metadata: Metadata = {
   title: "Admin — Repositories",
@@ -8,11 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminRepositoriesPage() {
-  return (
-    <AdminPagePlaceholder
-      title="Repositories"
-      description="Inspect all repositories across the platform, their status, and documentation coverage."
-      icon={FolderGit2}
-    />
-  );
+  return <AdminRepositories />;
 }

@@ -15,14 +15,10 @@ import {
   ProgressBar,
 } from "./DashboardSection";
 
-const SUCCESS_COLOR = "#34d399";
-const FAILED_COLOR = "#f87171";
-const IN_PROGRESS_COLOR = "#fbbf24";
-
 const chartConfig = {
-  successful: { label: "Successful", color: SUCCESS_COLOR },
-  failed: { label: "Failed", color: FAILED_COLOR },
-  inProgress: { label: "In progress", color: IN_PROGRESS_COLOR },
+  successful: { label: "Successful", color: "var(--color-emerald-400)" },
+  failed: { label: "Failed", color: "var(--color-rose-400)" },
+  inProgress: { label: "In progress", color: "var(--color-amber-400)" },
 } satisfies ChartConfig;
 
 export function DocumentationStatsCard({ stats }: { stats: DashboardStats }) {
@@ -52,10 +48,18 @@ export function DocumentationStatsCard({ stats }: { stats: DashboardStats }) {
     {
       name: "successful",
       value: stats.successfulDocumentationJobs,
-      fill: SUCCESS_COLOR,
+      fill: "var(--color-emerald-400)",
     },
-    { name: "failed", value: stats.failedDocumentationJobs, fill: FAILED_COLOR },
-    { name: "inProgress", value: inProgressJobs, fill: IN_PROGRESS_COLOR },
+    {
+      name: "failed",
+      value: stats.failedDocumentationJobs,
+      fill: "var(--color-rose-400)",
+    },
+    {
+      name: "inProgress",
+      value: inProgressJobs,
+      fill: "var(--color-amber-400)",
+    },
   ];
 
   return (
@@ -72,45 +76,68 @@ export function DocumentationStatsCard({ stats }: { stats: DashboardStats }) {
         />
       ) : (
         <>
-          <ChartContainer
-            config={chartConfig}
-            className="mx-auto aspect-square max-h-[220px] min-h-[180px]"
-          >
-            <PieChart>
-              <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-              <Pie
-                data={data}
-                dataKey="value"
-                nameKey="name"
-                innerRadius={52}
-                strokeWidth={5}
+          <div className="flex min-h-0 flex-1 flex-col justify-center">
+            <div className="relative mx-auto aspect-square min-h-[170px] w-full max-w-[240px] max-h-[210px]">
+              <ChartContainer
+                config={chartConfig}
+                className="absolute inset-0"
               >
-                {data
-                  .filter((entry) => entry.value > 0)
-                  .map((entry) => (
-                    <Cell key={entry.name} fill={entry.fill} />
-                  ))}
-              </Pie>
-            </PieChart>
-          </ChartContainer>
+                <PieChart>
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
+                  />
+                  <Pie
+                    data={data}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius="62%"
+                    outerRadius="92%"
+                    paddingAngle={2}
+                    cornerRadius={4}
+                    strokeWidth={0}
+                  >
+                    {data
+                      .filter((entry) => entry.value > 0)
+                      .map((entry) => (
+                        <Cell key={entry.name} fill={entry.fill} />
+                      ))}
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5 text-center">
+                <span className="font-display text-2xl font-semibold tracking-tight text-white tabular-nums">
+                  {stats.totalDocumentationJobs.toLocaleString()}
+                </span>
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                  Jobs
+                </span>
+                <span className="font-mono text-xs font-medium text-emerald-400 tabular-nums">
+                  {successRate}% success
+                </span>
+              </div>
+            </div>
+          </div>
 
-          <div className="mt-4 flex flex-col gap-3">
+          <div className="mt-auto flex flex-col gap-3 pt-4">
             <ProgressBar
               label="Successful"
               value={successRate}
-              color={SUCCESS_COLOR}
+              color="var(--color-emerald-400)"
               hint={`${stats.successfulDocumentationJobs.toLocaleString()} · ${successRate}%`}
             />
             <ProgressBar
               label="Failed"
               value={failedRate}
-              color={FAILED_COLOR}
+              color="var(--color-rose-400)"
               hint={`${stats.failedDocumentationJobs.toLocaleString()} · ${failedRate}%`}
             />
             <ProgressBar
               label="In progress"
               value={inProgressRate}
-              color={IN_PROGRESS_COLOR}
+              color="var(--color-amber-400)"
               hint={`${inProgressJobs.toLocaleString()} · ${inProgressRate}%`}
             />
           </div>

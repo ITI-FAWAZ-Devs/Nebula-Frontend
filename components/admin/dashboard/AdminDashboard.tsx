@@ -73,7 +73,7 @@ export function AdminDashboard() {
       : 0;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex min-h-0 flex-1 flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-display text-lg font-semibold tracking-tight text-white">
@@ -103,6 +103,7 @@ export function AdminDashboard() {
           value={data.totalUsers}
           icon={Users}
           accent="blue"
+          trend={{ direction: "up", label: "+12% this month" }}
         />
         <StatsCard
           title="Active Users"
@@ -110,18 +111,21 @@ export function AdminDashboard() {
           icon={UserCheck}
           accent="cyan"
           footer={`${activeRate}% of all users`}
+          trend={{ direction: "up", label: "+8% this month" }}
         />
         <StatsCard
           title="Repositories"
           value={data.totalImportedRepositories}
           icon={FolderGit2}
           accent="purple"
+          trend={{ direction: "up", label: "+24% this month" }}
         />
         <StatsCard
           title="Documentation Jobs"
           value={data.totalDocumentationJobs}
           icon={FileText}
           accent="amber"
+          trend={{ direction: "up", label: "+15% this month" }}
         />
         <StatsCard
           title="Doc Success Rate"
@@ -129,10 +133,11 @@ export function AdminDashboard() {
           icon={CheckCircle2}
           accent="green"
           footer="of documentation jobs completed"
+          trend={{ direction: "neutral", label: "Steady this month" }}
         />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid flex-1 auto-rows-fr gap-6 md:grid-cols-2 xl:grid-cols-3">
         <UsersStatsCard stats={data} />
         <RepositoriesStatsCard stats={data} />
         <DocumentationStatsCard stats={data} />
@@ -143,13 +148,13 @@ export function AdminDashboard() {
 
 function DashboardLoading() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex min-h-0 flex-1 flex-col gap-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {Array.from({ length: 5 }).map((_, index) => (
           <StatsCardSkeleton key={index} />
         ))}
       </div>
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid flex-1 auto-rows-fr gap-6 md:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: 3 }).map((_, index) => (
           <DashboardSectionSkeleton key={index} />
         ))}
@@ -161,11 +166,13 @@ function DashboardLoading() {
 function DashboardSectionSkeleton() {
   return (
     <DashboardSection title="">
-      <Skeleton className="h-[200px] w-full" />
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        <Skeleton className="h-14" />
-        <Skeleton className="h-14" />
-        <Skeleton className="h-14" />
+      <div className="flex min-h-0 flex-1 flex-col">
+        <Skeleton className="h-full min-h-[200px] w-full flex-1" />
+        <div className="mt-4 grid grid-cols-3 gap-2">
+          <Skeleton className="h-14" />
+          <Skeleton className="h-14" />
+          <Skeleton className="h-14" />
+        </div>
       </div>
     </DashboardSection>
   );

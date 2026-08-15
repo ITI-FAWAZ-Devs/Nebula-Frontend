@@ -379,3 +379,113 @@ export function useRegenerateAdminDocumentationMutation() {
     },
   });
 }
+
+export interface AdminDocumentationJobRepository {
+  id: string;
+  name: string;
+  owner: string;
+  githubUrl: string;
+  isPrivate: boolean;
+}
+
+export interface AdminDocumentationJobUser {
+  id: string;
+  email: string | null;
+  fullName: string | null;
+  avatar: string | null;
+}
+
+export interface AdminDocumentationJobSummary {
+  id: string;
+  status: AdminDocumentationJobStatus;
+  stage: string | null;
+  progress: number | null;
+  error: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  repository: AdminDocumentationJobRepository;
+  user: AdminDocumentationJobUser;
+}
+
+export interface AdminDocumentationJobDetail extends AdminDocumentationJobSummary {
+  queueJobId: string | null;
+  resumeCount: number;
+}
+
+export interface AdminDocumentationJobsResponse {
+  items: AdminDocumentationJobSummary[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface AdminDocumentationJobsQueryParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  status?: AdminDocumentationJobStatus;
+}
+
+export function useAdminDocumentationJobsQuery(
+  params: AdminDocumentationJobsQueryParams = {}
+) {
+  const { page, pageSize, search, status } = params;
+  return useQuery({
+    queryKey: ["admin", "documentation-jobs", page, pageSize, search, status],
+    queryFn: async () => {
+      const response = await api.get<AdminApiResponse<AdminDocumentationJobsResponse>>(
+        "/api/admin/documentation-jobs",
+        {
+          params: {
+            page,
+            pageSize,
+            ...(search ? { search } : {}),
+            ...(status ? { status } : {}),
+          },
+        }
+      );
+      return response.data.data;
+    },
+    placeholderData: (previousData) => previousData,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+}
+
+export function useAdminDocumentationJobQuery(jobId: string | null) {
+  return useQuery({
+    queryKey: ["admin", "documentation-jobs", jobId, "detail"],
+    queryFn: async () => {
+      const response = await api.get<AdminApiResponse<AdminDocumentationJobDetail>>(
+        `/api/admin/documentation-jobs/${jobId}`
+      );
+      return response.data.data;
+    },
+    enabled: !!jobId,
+    staleTime: 30 * 1000,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+}
+
+export function useRetryAdminDocumentationJobMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (jobId: string) => {
+      const response = await api.post<
+        AdminApiResponse<AdminDocumentationJobDetail>
+      >(`/api/admin/documentation-jobs/${jobId}/retry`);
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "documentation-jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "dashboard-stats"] });
+    },
+  });
+}

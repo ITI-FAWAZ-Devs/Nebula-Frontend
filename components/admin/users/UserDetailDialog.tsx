@@ -129,11 +129,6 @@ export function UserDetailDialog({ user, onOpenChange }: UserDetailDialogProps) 
 
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 <DetailStat label="Repositories" value={detail.repositoriesCount} />
-                <DetailStat
-                  label="AI / Q&A"
-                  value={detail.usageLogsCount}
-                  hint="AI usage & Q&A interactions"
-                />
                 <DetailStat label="Organizations" value={detail.organizationsCount} />
                 <DetailStat label="Owned Orgs" value={detail.ownedOrganizationsCount} />
                 <DetailStat label="Generations" value={detail.totalGenerationsUsed} />
@@ -141,16 +136,7 @@ export function UserDetailDialog({ user, onOpenChange }: UserDetailDialogProps) 
                   label="This Period"
                   value={detail.generationsUsedThisPeriod}
                 />
-                <DetailStat
-                  label="Last Activity"
-                  value={detail.lastUsageAt ? formatDate(detail.lastUsageAt) : "—"}
-                  className="col-span-2 sm:col-span-1"
-                />
-                <DetailStat
-                  label="Joined"
-                  value={formatDate(detail.createdAt)}
-                  className="col-span-2 sm:col-span-1"
-                />
+                <DetailStat label="Joined" value={formatDate(detail.createdAt)} />
               </div>
 
               <div className="flex flex-col gap-2 rounded-lg border border-white/8 bg-white/[0.02] p-3">
@@ -218,12 +204,10 @@ export function UserDetailDialog({ user, onOpenChange }: UserDetailDialogProps) 
 function DetailStat({
   label,
   value,
-  hint,
   className,
 }: {
   label: string;
   value: string | number;
-  hint?: string;
   className?: string;
 }) {
   return (
@@ -232,7 +216,6 @@ function DetailStat({
         "flex min-w-0 flex-col gap-1 rounded-lg border border-white/5 bg-white/[0.02] p-2.5",
         className
       )}
-      title={hint}
     >
       <span className="truncate font-display text-base font-semibold text-white tabular-nums">
         {typeof value === "number" ? value.toLocaleString() : value}

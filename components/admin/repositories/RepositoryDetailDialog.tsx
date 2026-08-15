@@ -155,8 +155,6 @@ export function RepositoryDetailDialog({
               </div>
 
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                <DetailStat label="Q&A Requests" value={detail.qaRequestsCount} />
-                <DetailStat label="Usage Logs" value={detail.usageLogsCount} />
                 <DetailStat
                   label="Doc Jobs"
                   value={detail.documentationJobsCount}

@@ -62,9 +62,6 @@ export function UsersTable({
             <TableHead className="px-3">Status</TableHead>
             <TableHead className="px-3">GitHub</TableHead>
             <TableHead className="px-3 text-right">Repos</TableHead>
-            <TableHead className="px-3 text-right" title="AI usage & Q&A interactions">
-              AI / Q&amp;A
-            </TableHead>
             <TableHead className="hidden px-3 lg:table-cell">Joined</TableHead>
             <TableHead className="w-10 px-3 text-right">
               <span className="sr-only">Actions</span>
@@ -149,9 +146,6 @@ export function UsersTable({
                 </TableCell>
                 <TableCell className="px-3 text-right text-xs text-white/80 tabular-nums">
                   {user.repositoriesCount.toLocaleString()}
-                </TableCell>
-                <TableCell className="px-3 text-right text-xs text-white/80 tabular-nums">
-                  {user.usageLogsCount.toLocaleString()}
                 </TableCell>
                 <TableCell className="hidden px-3 text-xs text-muted-foreground whitespace-nowrap lg:table-cell">
                   {formatDate(user.createdAt)}

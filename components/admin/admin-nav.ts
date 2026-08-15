@@ -1,9 +1,7 @@
 import {
-  Bot,
   FileText,
   FolderGit2,
   LayoutDashboard,
-  ScrollText,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -39,18 +37,6 @@ export const adminNavItems: AdminNavItem[] = [
     href: "/admin/documentation-jobs",
     icon: FileText,
     description: "Monitor documentation generation jobs and history.",
-  },
-  {
-    title: "AI / Q&A",
-    href: "/admin/ai-qa",
-    icon: Bot,
-    description: "Review AI interactions and question history.",
-  },
-  {
-    title: "Activity Logs",
-    href: "/admin/activity-logs",
-    icon: ScrollText,
-    description: "Audit trail of administrative actions.",
   },
 ];
 

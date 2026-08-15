@@ -74,9 +74,6 @@ export function RepositoriesTable({
             <TableHead className="hidden px-3 md:table-cell">
               Last generation
             </TableHead>
-            <TableHead className="px-3 text-right" title="AI Q&A requests against this repository">
-              Q&amp;A
-            </TableHead>
             <TableHead className="w-10 px-3 text-right">
               <span className="sr-only">Actions</span>
             </TableHead>
@@ -183,11 +180,6 @@ export function RepositoriesTable({
                   ) : (
                     formatDate(repository.lastArchDocGeneratedAt)
                   )}
-                </TableCell>
-                <TableCell className="px-3 text-right text-xs whitespace-nowrap text-white/80 tabular-nums">
-                  <span title="AI Q&A requests">
-                    {repository.qaRequestsCount.toLocaleString()}
-                  </span>
                 </TableCell>
                 <TableCell className="px-3 text-right">
                   <DropdownMenu>

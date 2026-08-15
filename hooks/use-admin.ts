@@ -23,7 +23,6 @@ export interface AdminUserSummary {
   subscriptionTier: AdminSubscriptionTier;
   githubConnected: boolean;
   repositoriesCount: number;
-  usageLogsCount: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -42,7 +41,6 @@ export interface AdminUserDetail extends AdminUserSummary {
   generationsUsedThisPeriod: number;
   organizationsCount: number;
   ownedOrganizationsCount: number;
-  lastUsageAt: string | null;
   accounts: AdminAccountSummary[];
 }
 
@@ -181,8 +179,6 @@ export interface AdminRepositorySummary {
   documentationStatus: AdminDocumentationStatus;
   lastDocumentationGeneration: string | null;
   lastArchDocGeneratedAt: string | null;
-  qaRequestsCount: number;
-  usageLogsCount: number;
 }
 
 export interface AdminRepositoriesResponse {
@@ -243,8 +239,6 @@ export interface AdminRepositoryDetail {
   generatedDocVersions: AdminRepositoryGeneratedDocVersion[];
   documentationJobsCount: number;
   analysisJobsCount: number;
-  usageLogsCount: number;
-  qaRequestsCount: number;
   createdAt: string;
   updatedAt: string;
 }

@@ -26,7 +26,7 @@ interface Token {
     | "plain";
 }
 
-function tokenizeLine(line: string, lang: string): Token[] {
+export function tokenizeLine(line: string, lang: string): Token[] {
   const isBash = lang === "bash" || lang === "sh" || lang === "shell" || line.trim().startsWith("$");
 
   if (isBash) {
@@ -98,7 +98,7 @@ function tokenizeLine(line: string, lang: string): Token[] {
   return tokens;
 }
 
-function renderToken(token: Token, key: number) {
+export function renderToken(token: Token, key: number) {
   switch (token.type) {
     case "keyword":
       return <span key={key} className="text-purple-400 font-medium">{token.text}</span>;

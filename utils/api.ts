@@ -56,9 +56,16 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Guard: ignore if it's an auth endpoint where 401 is expected (login, register, refresh itself)
     const url = originalRequest.url || "";
+    const apiMessage = error.response?.data?.message;
+    const looksLikeGithubToken =
+      (typeof apiMessage === "string" && /github token/i.test(apiMessage)) ||
+      url.includes("/repositories/github");
+
+    // Guard: ignore if it's an auth endpoint where 401 is expected (login, register, refresh itself)
+    // or a GitHub-token failure (must not log the user out of Nebula).
     if (
+      looksLikeGithubToken ||
       url.includes("/auth/login") ||
       url.includes("/auth/refresh") ||
       url.includes("/auth/register") ||

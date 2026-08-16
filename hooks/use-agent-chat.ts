@@ -10,6 +10,8 @@ export interface AgentCitation {
   filePath: string;
   lineRange: string | null;
   nodeId: string;
+  /** Source snippet for the right-pane code viewer */
+  snippet?: string;
 }
 
 export interface ChatMessage {
@@ -19,6 +21,18 @@ export interface ChatMessage {
   citations?: AgentCitation[];
   isStreaming?: boolean;
   failed?: boolean;
+}
+
+export interface ScanEvent {
+  filePath: string;
+  tool: string;
+}
+
+export interface WebSource {
+  title: string;
+  url: string;
+  snippet: string;
+  score: number;
 }
 
 interface AgentSessionData {
@@ -50,6 +64,8 @@ interface StreamCallbacks {
   onFollowups: (followups: string[]) => void;
   onMode: (mode: "fast" | "standard" | "deep") => void;
   onProgress: (progress: ResearchProgress) => void;
+  onScanning: (event: ScanEvent) => void;
+  onWebSource: (source: WebSource) => void;
 }
 
 const QUESTION_MAX_LENGTH = 4000;
@@ -242,6 +258,16 @@ function dispatchSSEEvent(
         callbacks.onError(err.message ?? "An error occurred");
         break;
       }
+      case "scanning": {
+        const scan = JSON.parse(raw) as ScanEvent;
+        callbacks.onScanning(scan);
+        break;
+      }
+      case "web_source": {
+        const source = JSON.parse(raw) as WebSource;
+        callbacks.onWebSource(source);
+        break;
+      }
     }
   } catch {
     // ignore malformed SSE payloads
@@ -301,6 +327,8 @@ export function useAgentChat(repositoryId: string | null) {
   const [answerMode, setAnswerMode] = useState<AnswerMode>(null);
   const [researchProgress, setResearchProgress] = useState<ResearchProgress | null>(null);
   const [activeCitation, setActiveCitation] = useState<AgentCitation | null>(null);
+  const [scanLog, setScanLog] = useState<ScanEvent[]>([]);
+  const [webSources, setWebSources] = useState<WebSource[]>([]);
 
   const sessionIdRef = useRef<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -338,6 +366,8 @@ export function useAgentChat(repositoryId: string | null) {
     setAnswerMode(null);
     setResearchProgress(null);
     setError(null);
+    setScanLog([]);
+    setWebSources([]);
   }, [repositoryId]);
 
   const ensureSession = useCallback(async (): Promise<string> => {
@@ -393,6 +423,8 @@ export function useAgentChat(repositoryId: string | null) {
       setSuggestedFollowups([]);
       setAnswerMode(options?.mode ?? null);
       setResearchProgress(null);
+      setScanLog([]);
+      setWebSources([]);
 
       try {
         const sessionId = await ensureSession();
@@ -429,6 +461,12 @@ export function useAgentChat(repositoryId: string | null) {
             },
             onProgress: (progress) => {
               setResearchProgress(progress);
+            },
+            onScanning: (event) => {
+              setScanLog((prev) => [...prev, event]);
+            },
+            onWebSource: (source) => {
+              setWebSources((prev) => [...prev, source]);
             },
             onDone: (payload) => {
               setMessages((prev) =>
@@ -511,6 +549,45 @@ export function useAgentChat(repositoryId: string | null) {
     [repositoryId, ensureSession]
   );
 
+  const loadThread = useCallback(
+    async (threadId: string) => {
+      if (!repositoryId) return;
+      abortRef.current?.abort();
+      try {
+        const response = await api.get(
+          `/api/repositories/${repositoryId}/agent/threads/${threadId}`
+        );
+        const data = response.data.data as {
+          messages: Array<{
+            id: string;
+            role: string;
+            content: string;
+            citations?: AgentCitation[] | null;
+          }>;
+        };
+        const loaded: ChatMessage[] = (data.messages ?? []).map((m) => ({
+          id: m.id,
+          role: m.role === "assistant" ? "assistant" : "user",
+          content: m.content,
+          citations: Array.isArray(m.citations) ? m.citations : undefined,
+          isStreaming: false,
+        }));
+        sessionIdRef.current = null;
+        setMessages(loaded);
+        messagesRef.current = loaded;
+        setSuggestedFollowups([]);
+        setAnswerMode(null);
+        setResearchProgress(null);
+        setScanLog([]);
+        setWebSources([]);
+        setError(null);
+      } catch (err) {
+        setError((err as Error)?.message ?? "Failed to load conversation");
+      }
+    },
+    [repositoryId]
+  );
+
   return {
     messages,
     isStreaming,
@@ -518,8 +595,11 @@ export function useAgentChat(repositoryId: string | null) {
     suggestedFollowups,
     answerMode,
     researchProgress,
+    scanLog,
+    webSources,
     sendMessage,
     clearError,
     clearConversation,
+    loadThread,
   };
 }

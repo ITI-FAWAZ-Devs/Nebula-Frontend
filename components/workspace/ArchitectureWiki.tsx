@@ -20,7 +20,6 @@ import { ArchitectureWikiSidebar } from "./ArchitectureWikiSidebar";
 import { ArchitectureWikiToc } from "./ArchitectureWikiToc";
 import { ArchitectureWikiChat } from "./ArchitectureWikiChat";
 import { DeepWikiAnswerView } from "./DeepWikiAnswerView";
-import { Sparkles, BookOpen } from "lucide-react";
 
 export { getGithubFileUrl };
 
@@ -53,11 +52,9 @@ export function ArchitectureWiki({
   const [activeHeading, setActiveHeading] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [chatInput, setChatInput] = useState("");
-  const [chatExpanded, setChatExpanded] = useState(false);
   const [viewMode, setViewMode] = useState<"docs" | "deepwiki">("docs");
 
   const contentRef = useRef<HTMLDivElement>(null);
-  const chatScrollRef = useRef<HTMLDivElement>(null);
 
   const {
     messages,
@@ -66,15 +63,13 @@ export function ArchitectureWiki({
     suggestedFollowups,
     answerMode,
     researchProgress,
+    scanLog,
+    webSources,
     sendMessage,
     clearError,
     clearConversation,
+    loadThread,
   } = useAgentChat(repositoryId);
-
-  // Expand chat when messages exist
-  useEffect(() => {
-    if (messages.length > 0) setChatExpanded(true);
-  }, [messages.length]);
 
   // Toast errors
   useEffect(() => {
@@ -83,11 +78,6 @@ export function ArchitectureWiki({
       clearError();
     }
   }, [error, clearError]);
-
-  // Auto-scroll chat to bottom
-  useEffect(() => {
-    chatScrollRef.current?.scrollTo({ top: 9999, behavior: "smooth" });
-  }, [messages]);
 
   const currentSection = useMemo(
     () => data.sections.find((s) => s.key === activeSection) ?? data.sections[0],
@@ -151,6 +141,7 @@ export function ArchitectureWiki({
       return;
     }
     setChatInput("");
+    setViewMode("deepwiki");
     await sendMessage(q, options);
   };
 
@@ -170,96 +161,127 @@ export function ArchitectureWiki({
         isRegenerating={isRegenerating}
       />
 
-      {/* ── Sub header (sidebar toggle + breadcrumb) ── */}
-      <div className="flex shrink-0 items-center gap-3 border-b border-white/5 bg-background/50 px-4 py-2 backdrop-blur-sm">
-        <button
-          onClick={() => setSidebarOpen((v) => !v)}
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
-        >
-          <Menu className="h-4 w-4" />
-        </button>
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <span className="font-mono text-primary/60 uppercase tracking-wider">{repoName}</span>
-          <ChevronRight className="h-3 w-3 text-white/20" />
-          <span>{currentSection?.title}</span>
+      {viewMode === "deepwiki" ? (
+        <div className="flex-1 overflow-hidden">
+          <DeepWikiAnswerView
+            repoName={repoName}
+            repositoryId={repositoryId}
+            repository={repository}
+            messages={messages}
+            isStreaming={isStreaming}
+            suggestedFollowups={suggestedFollowups}
+            answerMode={answerMode}
+            researchProgress={researchProgress}
+            scanLog={scanLog}
+            webSources={webSources}
+            chatInput={chatInput}
+            setChatInput={setChatInput}
+            onSendMessage={handleSendMessage}
+            onClearConversation={() => {
+              clearConversation();
+              setViewMode("docs");
+            }}
+            onSelectThread={async (threadId) => {
+              await loadThread(threadId);
+              setViewMode("deepwiki");
+            }}
+            onBackToDocs={() => setViewMode("docs")}
+          />
         </div>
-      </div>
-
-      {/* ── Body ── */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* ── Left Sidebar ── */}
-        <ArchitectureWikiSidebar
-          sections={data.sections}
-          activeSection={activeSection}
-          activeHeading={activeHeading}
-          sidebarOpen={sidebarOpen}
-          onSectionSelect={setActiveSection}
-          onHeadingSelect={scrollToHeading}
-        />
-
-        {/* ── Main Content (Scrolls independently) ── */}
-        <main
-          ref={contentRef}
-          className="flex-1 h-full overflow-y-auto no-scrollbar"
-        >
-          {currentSection && (
-            <div className="mx-auto max-w-3xl px-8 py-8">
-              {/* Section heading */}
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="font-display text-xl font-semibold text-white">
-                  {currentSection.title}
-                </h2>
-                {currentSection.verified && (
-                  <span className="flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-emerald-400">
-                    <CheckCircle2 className="h-2.5 w-2.5" /> verified
-                  </span>
-                )}
-              </div>
-
-              {/* Markdown content */}
-              <article className="min-w-0">
-                <ReactMarkdown components={mdComponents as Record<string, React.ElementType>}>
-                  {processedMarkdown}
-                </ReactMarkdown>
-              </article>
-
-              {/* Dependency Graph */}
-              {currentSection.diagramMermaid && (
-                <DependencyGraphPanel diagram={currentSection.diagramMermaid} />
-              )}
-
-              {/* Source files */}
-              <SourceFilesPanel
-                files={currentSection.sourceFiles}
-                repoName={repoName}
-                commitSha={data.commitSha}
-              />
+      ) : (
+        <>
+          {/* ── Sub header (sidebar toggle + breadcrumb) ── */}
+          <div className="flex shrink-0 items-center gap-3 border-b border-white/5 bg-background/50 px-4 py-2 backdrop-blur-sm">
+            <button
+              onClick={() => setSidebarOpen((v) => !v)}
+              className="rounded-md p-1.5 text-muted-foreground hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
+            >
+              <Menu className="h-4 w-4" />
+            </button>
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <span className="font-mono text-primary/60 uppercase tracking-wider">{repoName}</span>
+              <ChevronRight className="h-3 w-3 text-white/20" />
+              <span>{currentSection?.title}</span>
             </div>
-          )}
-        </main>
+          </div>
 
-        {/* ── Right TOC ── */}
-        <ArchitectureWikiToc
-          headings={tocHeadings}
-          activeHeading={activeHeading}
-          onHeadingSelect={scrollToHeading}
-        />
-      </div>
+          {/* ── Body ── */}
+          <div className="flex flex-1 overflow-hidden">
+            {/* ── Left Sidebar ── */}
+            <ArchitectureWikiSidebar
+              sections={data.sections}
+              activeSection={activeSection}
+              activeHeading={activeHeading}
+              sidebarOpen={sidebarOpen}
+              onSectionSelect={setActiveSection}
+              onHeadingSelect={scrollToHeading}
+            />
 
-      {/* ── Bottom Chat Bar ── */}
-      <ArchitectureWikiChat
-        repoName={repoName}
-        repositoryId={repositoryId}
-        repository={repository}
-        messages={messages}
-        isStreaming={isStreaming}
-        chatInput={chatInput}
-        setChatInput={setChatInput}
-        chatExpanded={chatExpanded}
-        setChatExpanded={setChatExpanded}
-        onSendMessage={handleSendMessage}
-        chatScrollRef={chatScrollRef}
-      />
+            {/* ── Main Content (Scrolls independently) ── */}
+            <main
+              ref={contentRef}
+              className="flex-1 h-full overflow-y-auto no-scrollbar"
+            >
+              {currentSection && (
+                <div className="mx-auto max-w-3xl px-8 py-8">
+                  {/* Section heading */}
+                  <div className="mb-6 flex items-center justify-between">
+                    <h2 className="font-display text-xl font-semibold text-white">
+                      {currentSection.title}
+                    </h2>
+                    {currentSection.verified && (
+                      <span className="flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-emerald-400">
+                        <CheckCircle2 className="h-2.5 w-2.5" /> verified
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Markdown content */}
+                  <article className="min-w-0">
+                    <ReactMarkdown components={mdComponents as Record<string, React.ElementType>}>
+                      {processedMarkdown}
+                    </ReactMarkdown>
+                  </article>
+
+                  {/* Dependency Graph */}
+                  {currentSection.diagramMermaid && (
+                    <DependencyGraphPanel diagram={currentSection.diagramMermaid} />
+                  )}
+
+                  {/* Source files */}
+                  <SourceFilesPanel
+                    files={currentSection.sourceFiles}
+                    repoName={repoName}
+                    commitSha={data.commitSha}
+                  />
+                </div>
+              )}
+            </main>
+
+            {/* ── Right TOC ── */}
+            <ArchitectureWikiToc
+              headings={tocHeadings}
+              activeHeading={activeHeading}
+              onHeadingSelect={scrollToHeading}
+            />
+          </div>
+
+          {/* ── Bottom Chat Bar ── */}
+          <ArchitectureWikiChat
+            repoName={repoName}
+            repositoryId={repositoryId}
+            isStreaming={isStreaming}
+            chatInput={chatInput}
+            setChatInput={setChatInput}
+            onSendMessage={handleSendMessage}
+            onClearConversation={clearConversation}
+            onSelectThread={async (threadId) => {
+              await loadThread(threadId);
+              setViewMode("deepwiki");
+            }}
+          />
+        </>
+      )}
     </div>
   );
 }

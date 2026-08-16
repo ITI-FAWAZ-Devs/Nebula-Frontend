@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSaveGithubConnectionsMutation } from "@/hooks/use-organization";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { Building2, UserCircle2, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { motion } from "motion/react";
+import { api } from "@/utils/api";
+import { ConnectGithubButton } from "@/components/integrations/ConnectGithubButton";
 
 interface GithubAccount {
   login: string;
@@ -26,41 +28,77 @@ interface ConnectData {
   userId: string | null;
   workspace: "personal" | "organization";
   organizationId: string | null;
-  /** Logins of connections that are already saved for this user/org. */
   existingLogins: string[];
-  /** Path to navigate back to after saving (e.g. /settings, /organizations). */
   returnTo: string | null;
+}
+
+function safeAppPath(path: string | null | undefined): string {
+  if (!path || !path.startsWith("/") || path.startsWith("//") || path.includes("://")) {
+    return "/launch";
+  }
+  return path;
+}
+
+function parseLegacyDataParam(raw: string | null): ConnectData | null {
+  if (!raw) return null;
+  try {
+    return JSON.parse(atob(decodeURIComponent(raw))) as ConnectData;
+  } catch {
+    return null;
+  }
 }
 
 function GithubConnectSelectContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const saveConnections = useSaveGithubConnectionsMutation();
+  const sid = searchParams.get("sid");
 
-  const data = useMemo<ConnectData | null>(() => {
-    const raw = searchParams.get("data");
-    if (!raw) return null;
-    try {
-      return JSON.parse(atob(decodeURIComponent(raw))) as ConnectData;
-    } catch {
-      toast.error("Invalid connection data");
-      return null;
-    }
-  }, [searchParams]);
-
-  // Pre-select accounts that are NOT already saved
-  const [selected, setSelected] = useState<Set<string>>(() => {
-    if (!data) return new Set();
-    const existing = new Set(data.existingLogins ?? []);
-    // Pre-select personal account if it's not already saved
-    const initial = new Set<string>();
-    if (!existing.has(data.user?.login)) {
-      initial.add(data.user?.login);
-    }
-    return initial;
-  });
-
+  const [data, setData] = useState<ConnectData | null>(() =>
+    parseLegacyDataParam(searchParams.get("data")),
+  );
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (!sid) {
+      if (!data) setLoadError("Invalid connection data");
+      return;
+    }
+
+    let cancelled = false;
+    api
+      .get("/api/auth/github/connect/pending", { params: { sid } })
+      .then((res) => {
+        if (cancelled) return;
+        setData(res.data.data as ConnectData);
+        setLoadError(null);
+      })
+      .catch((err: { response?: { data?: { message?: string } } }) => {
+        if (cancelled) return;
+        setLoadError(
+          err?.response?.data?.message ||
+            "GitHub connect session expired. Please try connecting again.",
+        );
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // Intentionally run once per sid; `data` is a fallback for the legacy query param.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sid]);
+
+  useEffect(() => {
+    if (!data) return;
+    const existing = new Set(data.existingLogins ?? []);
+    const initial = new Set<string>();
+    if (data.user?.login && !existing.has(data.user.login)) {
+      initial.add(data.user.login);
+    }
+    setSelected(initial);
+  }, [data]);
 
   const existingLogins = useMemo(
     () => new Set(data?.existingLogins ?? []),
@@ -68,7 +106,7 @@ function GithubConnectSelectContent() {
   );
 
   const toggle = (login: string) => {
-    if (existingLogins.has(login)) return; // already saved — not toggleable
+    if (existingLogins.has(login)) return;
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(login)) {
@@ -94,11 +132,12 @@ function GithubConnectSelectContent() {
         selections,
         workspace: data.workspace,
         organizationId: data.organizationId,
+        sid: sid ?? undefined,
       });
       toast.success(
         `${selections.length} GitHub connection${selections.length > 1 ? "s" : ""} saved`,
       );
-      router.push(data.returnTo ?? "/launch");
+      router.push(safeAppPath(data.returnTo));
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } }; message?: string })?.response
@@ -111,28 +150,49 @@ function GithubConnectSelectContent() {
     }
   };
 
-  if (!data) {
+  if (loadError && !data) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-white/40 text-sm">Loading...</div>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
+        <p className="max-w-md text-sm text-white/60">{loadError}</p>
+        <ConnectGithubButton
+          returnTo="/launch?import=1"
+          label="Connect GitHub again"
+          className="h-10 rounded-xl bg-primary px-6 font-mono text-xs text-white hover:bg-primary/90"
+        />
+        <button
+          type="button"
+          onClick={() => router.push("/launch?import=1")}
+          className="text-xs text-primary hover:underline"
+        >
+          Back to import
+        </button>
       </div>
     );
   }
 
-  const allAccounts: GithubAccount[] = [data.user, ...data.orgs];
+  if (!data) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-sm text-white/40">Loading...</div>
+      </div>
+    );
+  }
+
+  const allAccounts: GithubAccount[] = [data.user, ...(data.orgs ?? [])];
   const newSelectionCount = selected.size;
   const alreadyCount = existingLogins.size;
+  const backHref = safeAppPath(data.returnTo);
 
   return (
     <div className="mx-auto max-w-lg px-4 py-20">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center gap-3 mb-8">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#24292f] border border-white/10">
+        <div className="mb-8 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-[#24292f]">
             <FiGithub className="h-5 w-5 text-white" />
           </div>
           <div>
             <h1 className="text-lg font-bold text-white">Connect GitHub accounts</h1>
-            <p className="text-xs text-white/45 mt-0.5">
+            <p className="mt-0.5 text-xs text-white/45">
               Select which GitHub accounts to link to your{" "}
               {data.workspace === "organization" ? "organization" : "personal"} workspace.
             </p>
@@ -140,13 +200,13 @@ function GithubConnectSelectContent() {
         </div>
 
         {alreadyCount > 0 && (
-          <p className="text-[11px] font-mono text-white/35 mb-3 px-1">
-            <CheckCircle2 className="h-3 w-3 text-emerald-400 inline mr-1 -mt-0.5" />
+          <p className="mb-3 px-1 font-mono text-[11px] text-white/35">
+            <CheckCircle2 className="mr-1 -mt-0.5 inline h-3 w-3 text-emerald-400" />
             {alreadyCount} account{alreadyCount !== 1 ? "s" : ""} already connected — shown below.
           </p>
         )}
 
-        <div className="space-y-2 mb-6">
+        <div className="mb-6 space-y-2">
           {allAccounts.map((account) => {
             const isAlready = existingLogins.has(account.login);
             const isSelected = selected.has(account.login);
@@ -157,15 +217,15 @@ function GithubConnectSelectContent() {
                 onClick={() => toggle(account.login)}
                 disabled={isAlready}
                 className={cn(
-                  "w-full flex items-center gap-3 p-4 rounded-xl border transition-all text-left",
+                  "flex w-full items-center gap-3 rounded-xl border p-4 text-left transition-all",
                   isAlready
-                    ? "border-emerald-500/20 bg-emerald-500/5 cursor-default opacity-70"
+                    ? "cursor-default border-emerald-500/20 bg-emerald-500/5 opacity-70"
                     : isSelected
-                      ? "border-primary/40 bg-primary/5 cursor-pointer"
-                      : "border-white/8 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/15 cursor-pointer",
+                      ? "cursor-pointer border-primary/40 bg-primary/5"
+                      : "cursor-pointer border-white/8 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.04]",
                 )}
               >
-                <div className="shrink-0 h-9 w-9 rounded-lg overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-white/5">
                   {account.avatarUrl ? (
                     <img src={account.avatarUrl} alt={account.login} className="h-full w-full object-cover" />
                   ) : account.type === "ORGANIZATION" ? (
@@ -174,23 +234,23 @@ function GithubConnectSelectContent() {
                     <UserCircle2 className="h-4 w-4 text-blue-400" />
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">{account.login}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-white">{account.login}</p>
                   <p className="text-[11px] text-white/40">
                     {account.type === "ORGANIZATION" ? "GitHub Organization" : "Personal Account"}
                     {isAlready && (
-                      <span className="ml-2 text-emerald-400 font-mono">• already connected</span>
+                      <span className="ml-2 font-mono text-emerald-400">• already connected</span>
                     )}
                   </p>
                 </div>
                 <div
                   className={cn(
-                    "shrink-0 h-5 w-5 rounded-md border flex items-center justify-center transition-all",
+                    "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-all",
                     isAlready
-                      ? "bg-emerald-500/20 border-emerald-500/40"
+                      ? "border-emerald-500/40 bg-emerald-500/20"
                       : isSelected
-                        ? "bg-primary border-primary"
-                        : "bg-transparent border-white/20",
+                        ? "border-primary bg-primary"
+                        : "border-white/20 bg-transparent",
                   )}
                 >
                   {(isAlready || isSelected) && (
@@ -205,7 +265,7 @@ function GithubConnectSelectContent() {
         <Button
           onClick={handleSave}
           disabled={isSaving || newSelectionCount === 0}
-          className="w-full h-10 rounded-xl text-sm font-semibold text-white"
+          className="h-10 w-full rounded-xl text-sm font-semibold text-white"
           style={{ background: "linear-gradient(135deg, #4493F8 0%, #6366F1 100%)" }}
         >
           {isSaving
@@ -217,8 +277,8 @@ function GithubConnectSelectContent() {
 
         <button
           type="button"
-          onClick={() => router.push(data.returnTo ?? "/launch")}
-          className="w-full mt-3 text-xs text-white/35 hover:text-white/60 transition-colors py-2"
+          onClick={() => router.push(backHref)}
+          className="mt-3 w-full py-2 text-xs text-white/35 transition-colors hover:text-white/60"
         >
           {data.returnTo ? "Go back" : "Skip for now"}
         </button>

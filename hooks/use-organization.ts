@@ -564,6 +564,7 @@ export function useSaveGithubConnectionsMutation() {
       selections: Array<{ login: string; id: string; type: "USER" | "ORGANIZATION" }>;
       workspace: "personal" | "organization";
       organizationId?: string | null;
+      sid?: string;
     }) => {
       const response = await api.post("/api/auth/github/connect/select", payload);
       return response.data;

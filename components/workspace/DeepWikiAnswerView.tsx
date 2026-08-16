@@ -9,20 +9,19 @@ import {
   Loader2,
   Copy,
   Check,
-  Search,
   Sparkles,
   RefreshCw,
-  Plus,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import type { ChatMessage, AnswerMode, ResearchProgress, AgentCitation } from "@/hooks/use-agent-chat";
+import type { ChatMessage, AnswerMode, ResearchProgress, AgentCitation, ScanEvent, WebSource } from "@/hooks/use-agent-chat";
 import type { Repository } from "@/hooks/use-repository";
-import { InlineCitationPill, InlineCitationBadge } from "./InlineCitations";
+import { InlineCitationPill } from "./InlineCitations";
 import { ModeBadge, DeepResearchProgress } from "./DeepResearchProgress";
 import { CitedSourceViewer } from "./CitedSourceViewer";
+import { ScanningLog } from "./ScanningLog";
 import { chatMdComponents } from "./wiki-markdown";
 import { ModelPicker } from "./ModelPicker";
+import { ConversationThreads } from "./ConversationThreads";
 
 interface DeepWikiAnswerViewProps {
   repoName: string;
@@ -33,10 +32,13 @@ interface DeepWikiAnswerViewProps {
   suggestedFollowups?: string[];
   answerMode?: AnswerMode;
   researchProgress?: ResearchProgress | null;
+  scanLog?: ScanEvent[];
+  webSources?: WebSource[];
   chatInput: string;
   setChatInput: (val: string) => void;
   onSendMessage: (options?: { mode?: "standard" | "deep"; model?: string }) => void;
   onClearConversation?: () => void;
+  onSelectThread?: (threadId: string) => void;
   onBackToDocs?: () => void;
 }
 
@@ -49,10 +51,13 @@ export function DeepWikiAnswerView({
   suggestedFollowups = [],
   answerMode = null,
   researchProgress = null,
+  scanLog = [],
+  webSources = [],
   chatInput,
   setChatInput,
   onSendMessage,
   onClearConversation,
+  onSelectThread,
   onBackToDocs,
 }: DeepWikiAnswerViewProps) {
   const [deepMode, setDeepMode] = useState(false);
@@ -67,19 +72,15 @@ export function DeepWikiAnswerView({
     leftPaneScrollRef.current?.scrollTo({ top: 9999, behavior: "smooth" });
   }, [messages, isStreaming]);
 
-  // Extract all citations from current conversation turns
+  // Extract citations from the latest assistant turn for the right pane
   const currentAssistantMsg = messages.filter((m) => m.role === "assistant").slice(-1)[0];
-  const lastUserMsg = messages.filter((m) => m.role === "user").slice(-1)[0];
 
   const allCitations = React.useMemo(() => {
-    const citations: AgentCitation[] = [];
-    for (const m of messages) {
-      if (m.role === "assistant" && m.citations) {
-        citations.push(...m.citations);
-      }
-    }
-    return citations;
-  }, [messages]);
+    return currentAssistantMsg?.citations ?? [];
+  }, [currentAssistantMsg]);
+
+  const showScanningPane =
+    isStreaming && allCitations.length === 0;
 
   const handleCopyAnswer = async (msgId: string, content: string) => {
     try {
@@ -113,16 +114,24 @@ export function DeepWikiAnswerView({
             <span className="font-mono text-[11px]">← {repoName}</span>
           </button>
 
-          {onClearConversation && (
-            <button
-              type="button"
-              onClick={onClearConversation}
-              className="flex items-center gap-1 text-[11px] font-mono text-white/40 hover:text-white transition-colors"
-            >
-              <RefreshCw className="h-3 w-3" />
-              <span>New Thread</span>
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            <ConversationThreads
+              repositoryId={repositoryId}
+              onSelectThread={onSelectThread}
+              onNewConversation={onClearConversation ?? (() => {})}
+              placement="below"
+            />
+            {onClearConversation && (
+              <button
+                type="button"
+                onClick={onClearConversation}
+                className="flex items-center gap-1 text-[11px] font-mono text-white/40 hover:text-white transition-colors"
+              >
+                <RefreshCw className="h-3 w-3" />
+                <span>New Thread</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Scrollable Conversation Content */}
@@ -233,6 +242,40 @@ export function DeepWikiAnswerView({
                         </div>
                       </div>
                     )}
+
+                    {isLastAssistant && webSources.length > 0 && (
+                      <div className="border-t border-white/5 pt-3 mt-2">
+                        <div className="text-[11px] font-mono text-white/40 mb-2">
+                          Web sources
+                        </div>
+                        <ul className="space-y-1.5">
+                          {webSources.map((source, sIdx) => (
+                            <li key={`${source.url}-${sIdx}`}>
+                              <a
+                                href={source.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group flex items-start gap-2 text-xs text-sky-300 hover:text-sky-200"
+                              >
+                                <span className="mt-0.5 text-white/30 font-mono text-[10px]">
+                                  {sIdx + 1}.
+                                </span>
+                                <span className="min-w-0">
+                                  <span className="underline-offset-2 group-hover:underline line-clamp-1">
+                                    {source.title || source.url}
+                                  </span>
+                                  {source.snippet && (
+                                    <span className="block text-[11px] text-white/40 line-clamp-2 mt-0.5 no-underline">
+                                      {source.snippet}
+                                    </span>
+                                  )}
+                                </span>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -310,15 +353,19 @@ export function DeepWikiAnswerView({
         </div>
       </div>
 
-      {/* ── RIGHT PANE (~58% width) Cited Source Code Viewer ── */}
+      {/* ── RIGHT PANE (~58% width) Scanning log, then cited sources ── */}
       <div className="hidden md:block flex-1 h-full overflow-hidden">
-        <CitedSourceViewer
-          citations={allCitations}
-          repoName={repoName}
-          repository={repository}
-          activeCitation={activeCitation}
-          onSelectCitation={setActiveCitation}
-        />
+        {showScanningPane ? (
+          <ScanningLog scanLog={scanLog} isStreaming={isStreaming} />
+        ) : (
+          <CitedSourceViewer
+            citations={allCitations}
+            repoName={repoName}
+            repository={repository}
+            activeCitation={activeCitation}
+            onSelectCitation={setActiveCitation}
+          />
+        )}
       </div>
     </div>
   );

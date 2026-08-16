@@ -43,9 +43,11 @@ export function useGithubReposQuery(params?: {
   limit?: number;
   force?: boolean;
   connectionId?: string;
+  organizationId?: string | null;
+  enabled?: boolean;
 }) {
   return useQuery({
-    queryKey: ["github-repos", params],
+    queryKey: ["github-repos", params?.connectionId ?? "all", params?.organizationId ?? "personal"],
     queryFn: async () => {
       const response = await api.get("/api/repositories/github", {
         params: {
@@ -53,11 +55,13 @@ export function useGithubReposQuery(params?: {
           limit: params?.limit,
           force: params?.force ? "true" : "false",
           connectionId: params?.connectionId,
+          organizationId: params?.organizationId ?? undefined,
         },
       });
       return response.data.data as GithubReposResponse;
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes cache
+    enabled: params?.enabled ?? true,
+    staleTime: 2 * 60 * 1000,
     refetchOnWindowFocus: false,
     retry: 1,
   });

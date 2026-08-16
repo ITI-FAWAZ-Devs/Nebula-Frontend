@@ -112,23 +112,25 @@ export const chatMdComponents = {
       {children}
     </a>
   ),
+  pre: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
   code: ({ children, className }: any) => {
     const isMermaid = className === "language-mermaid";
     const rawCode = extractTextFromChildren(children).replace(/\n$/, "");
-    const isBlock = className?.includes("language-");
+    const isBlock = className?.includes("language-") || rawCode.includes("\n");
 
     if (isMermaid) {
       return <MermaidDiagram chart={rawCode} />;
     }
 
     if (isBlock) {
-      return (
-        <pre className="overflow-x-auto rounded-lg border border-white/10 bg-black/40 p-3 font-mono text-[11px] my-2 text-foreground/80 scrollbar-thin">
-          <code>{children}</code>
-        </pre>
-      );
+      const lang = className?.replace("language-", "") || "typescript";
+      return <EditorCodeBlock code={rawCode} language={lang} />;
     }
-    return <code className="rounded bg-white/10 px-1 py-0.5 font-mono text-[11px]">{children}</code>;
+    return (
+      <code className="rounded bg-white/5 border border-white/10 px-1.5 py-0.5 font-mono text-[11px] text-primary/90">
+        {children}
+      </code>
+    );
   },
   ul: ({ children }: any) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
   ol: ({ children }: any) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,

@@ -39,7 +39,7 @@ export function ConnectionsTab({ orgId, canManage }: ConnectionsTabProps) {
             organizationId={orgId}
             size="sm"
             label="Add GitHub"
-            returnTo="/organizations"
+            returnTo={`/organizations?org=${orgId}&tab=connections`}
             className="h-8 px-4 text-xs rounded-lg bg-primary hover:bg-primary/90 text-white cursor-pointer"
           />
         )}
@@ -63,7 +63,7 @@ export function ConnectionsTab({ orgId, canManage }: ConnectionsTabProps) {
               <ConnectGithubButton
                 organizationId={orgId}
                 label="Connect GitHub"
-                returnTo="/organizations"
+                returnTo={`/organizations?org=${orgId}&tab=connections`}
                 className="h-10 px-6 rounded-xl text-sm font-semibold text-white bg-primary hover:bg-primary/90"
               />
             </div>

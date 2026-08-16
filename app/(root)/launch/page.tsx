@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import {
@@ -63,6 +63,14 @@ export default function HangarPage() {
   const [deleteRepo, setDeleteRepo] = useState<Repository | null>(null);
   const [launching, setLaunching] = useState<Repository | null>(null);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("import") !== "1") return;
+    setImportPickerOpen(true);
+    window.history.replaceState({}, "", "/launch");
+  }, [setImportPickerOpen]);
 
   const { data: repos, isLoading, error, refetch } = useImportedReposQuery(activeOrgId);
   const { data: docStatus } = useArchDocStatusQuery();

@@ -14,6 +14,29 @@ import { cn } from "@/lib/utils";
 import type { AgentCitation } from "@/hooks/use-agent-chat";
 import type { Repository } from "@/hooks/use-repository";
 import { buildGitHubFileUrl, buildVsCodeUrl } from "./InlineCitations";
+import { renderToken, tokenizeLine } from "./EditorCodeBlock";
+
+const EXT_LANGUAGE: Record<string, string> = {
+  ts: "typescript",
+  tsx: "typescript",
+  js: "javascript",
+  jsx: "javascript",
+  mjs: "javascript",
+  cjs: "javascript",
+  json: "json",
+  py: "python",
+  sh: "bash",
+  bash: "bash",
+  zsh: "bash",
+  prisma: "typescript",
+  go: "go",
+  rs: "rust",
+};
+
+function languageFromFilePath(filePath: string): string {
+  const ext = filePath.split(".").pop()?.toLowerCase() ?? "";
+  return EXT_LANGUAGE[ext] ?? ext ?? "typescript";
+}
 
 interface CitedSourceViewerProps {
   citations: AgentCitation[];
@@ -185,6 +208,8 @@ export function CitedSourceViewer({
             }
           }
 
+          const snippetLang = languageFromFilePath(group.filePath);
+
           return (
             <div
               key={group.filePath}
@@ -269,6 +294,7 @@ export function CitedSourceViewer({
                           primaryCitation.lineRange &&
                           currentLineNum >= startLine &&
                           currentLineNum <= endLine;
+                        const tokens = tokenizeLine(line, snippetLang);
 
                         return (
                           <tr
@@ -276,15 +302,17 @@ export function CitedSourceViewer({
                             className={cn(
                               "transition-colors",
                               isHighlighted
-                                ? "bg-primary/20 border-l-2 border-primary text-sky-200"
-                                : "hover:bg-white/5 text-white/70"
+                                ? "bg-primary/20 border-l-2 border-primary"
+                                : "hover:bg-white/5"
                             )}
                           >
                             <td className="w-10 select-none text-right pr-3 text-[10px] text-white/30 font-mono">
                               {currentLineNum}
                             </td>
                             <td className="whitespace-pre pl-2 py-0.5 font-mono">
-                              {line || " "}
+                              {tokens.length > 0
+                                ? tokens.map((token, tIdx) => renderToken(token, tIdx))
+                                : " "}
                             </td>
                           </tr>
                         );

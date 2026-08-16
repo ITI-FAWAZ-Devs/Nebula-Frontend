@@ -5,7 +5,13 @@ import { useRouter, usePathname } from "next/navigation";
 import { useMeQuery } from "@/hooks/use-auth";
 import { useAuthStore } from "@/lib/store";
 
-export function ProtectedGuard({ children }: { children: React.ReactNode }) {
+export function ProtectedGuard({
+  children,
+  requireRole,
+}: {
+  children: React.ReactNode;
+  requireRole?: "USER" | "ADMIN";
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const { isLoading } = useMeQuery();
@@ -13,13 +19,21 @@ export function ProtectedGuard({ children }: { children: React.ReactNode }) {
   const isInitialized = useAuthStore((state) => state.isInitialized);
 
   useEffect(() => {
+    if (!isInitialized || isLoading) return;
+
     // If auth initialization has completed and user is null
-    if (isInitialized && !user && !isLoading) {
+    if (!user) {
       const loginUrl = new URL("/login", window.location.origin);
       loginUrl.searchParams.set("redirect", pathname);
       router.replace(loginUrl.pathname + loginUrl.search);
+      return;
     }
-  }, [isInitialized, user, isLoading, pathname, router]);
+
+    // If a role is required and the user does not hold it, bounce to the app
+    if (requireRole && user.role !== requireRole) {
+      router.replace("/");
+    }
+  }, [isInitialized, user, isLoading, pathname, router, requireRole]);
 
   // Show a clean loader while verifying the session
   if (!isInitialized || isLoading) {
@@ -40,8 +54,8 @@ export function ProtectedGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If session initialized and user exists, render the actual page
-  if (user) {
+  // If session initialized and user exists (and holds the required role), render the actual page
+  if (user && (!requireRole || user.role === requireRole)) {
     return <>{children}</>;
   }
 

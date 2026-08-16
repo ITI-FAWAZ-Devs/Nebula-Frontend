@@ -1,0 +1,142 @@
+import { ArrowDownRight, ArrowUpRight, Minus, type LucideIcon } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+
+const accentStyles = {
+  blue: "border-primary/20 bg-primary/10 text-primary",
+  cyan: "border-cyan-500/20 bg-cyan-500/10 text-cyan-400",
+  purple: "border-purple-500/20 bg-purple-500/10 text-purple-400",
+  amber: "border-amber-500/20 bg-amber-500/10 text-amber-400",
+  green: "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+  rose: "border-rose-500/20 bg-rose-500/10 text-rose-400",
+} as const;
+
+export type StatsCardAccent = keyof typeof accentStyles;
+
+const trendStyles = {
+  up: "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+  down: "border-rose-500/20 bg-rose-500/10 text-rose-400",
+  neutral: "border-white/10 bg-white/5 text-muted-foreground",
+} as const;
+
+export type TrendDirection = keyof typeof trendStyles;
+
+export interface StatsCardTrend {
+  direction: TrendDirection;
+  label: string;
+}
+
+export interface StatsCardProps {
+  title: string;
+  value: string | number;
+  icon: LucideIcon;
+  accent?: StatsCardAccent;
+  footer?: React.ReactNode;
+  trend?: StatsCardTrend;
+}
+
+const trendIcons = {
+  up: ArrowUpRight,
+  down: ArrowDownRight,
+  neutral: Minus,
+} as const;
+
+export function StatsCard({
+  title,
+  value,
+  icon: Icon,
+  accent = "blue",
+  footer,
+  trend,
+}: StatsCardProps) {
+  return (
+    <div className="glass-panel flex flex-col gap-3 p-4">
+      <div className="flex flex-1 items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <span className="truncate font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+            {title}
+          </span>
+          <span className="font-display text-2xl font-semibold tracking-tight text-white tabular-nums">
+            {typeof value === "number" ? value.toLocaleString() : value}
+          </span>
+        </div>
+        <div
+          className={cn(
+            "flex size-9 shrink-0 items-center justify-center rounded-lg border",
+            accentStyles[accent]
+          )}
+        >
+          <Icon className="size-4" />
+        </div>
+      </div>
+      {trend || footer ? (
+        <div className="flex min-w-0 items-center gap-2">
+          {trend ? <TrendBadge trend={trend} /> : null}
+          {footer ? (
+            <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+              {footer}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function TrendBadge({ trend }: { trend: StatsCardTrend }) {
+  const Icon = trendIcons[trend.direction];
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-medium tabular-nums",
+        trendStyles[trend.direction]
+      )}
+    >
+      <Icon className="size-3" />
+      {trend.label}
+    </span>
+  );
+}
+
+export interface MiniStatProps {
+  label: string;
+  value: string | number;
+  color?: string;
+}
+
+export function MiniStat({ label, value, color }: MiniStatProps) {
+  return (
+    <div className="flex min-w-0 flex-col gap-1 rounded-lg border border-white/5 bg-white/[0.02] p-2.5">
+      <span className="truncate font-display text-base font-semibold text-white tabular-nums">
+        {typeof value === "number" ? value.toLocaleString() : value}
+      </span>
+      <span className="flex min-w-0 items-center gap-1.5 truncate text-[10px] uppercase tracking-wider text-muted-foreground">
+        {color ? (
+          <span
+            className="size-1.5 shrink-0 rounded-full"
+            style={{ backgroundColor: color }}
+          />
+        ) : null}
+        {label}
+      </span>
+    </div>
+  );
+}
+
+export function StatsCardSkeleton() {
+  return (
+    <div className="glass-panel flex flex-col gap-3 p-4">
+      <div className="flex flex-1 items-start justify-between gap-3">
+        <div className="flex flex-1 flex-col gap-2">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-7 w-16" />
+        </div>
+        <Skeleton className="size-9 rounded-lg" />
+      </div>
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-5 w-20 rounded-full" />
+        <Skeleton className="h-3 w-24" />
+      </div>
+    </div>
+  );
+}

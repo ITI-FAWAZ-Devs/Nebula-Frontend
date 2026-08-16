@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useLoginMutation } from "@/hooks/use-auth";
+import { resolvePostLoginRedirect } from "@/lib/auth-redirect";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field, FieldLabel, FieldContent, FieldError, FieldTitle } from "@/components/ui/field";
@@ -13,7 +14,8 @@ import { AuthCard } from "@/components/auth/AuthCard";
 import { FiGithub, FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { Loader2 } from "lucide-react";
 
 const loginSchema = z.object({
   email: z
@@ -27,11 +29,15 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+function LoginView() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const loginMutation = useLoginMutation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const requestedPath =
+    searchParams.get("redirect_to") ?? searchParams.get("redirect");
 
   const {
     register,
@@ -48,9 +54,10 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true);
     try {
-      await loginMutation.mutateAsync(data);
+      const result = await loginMutation.mutateAsync(data);
       toast.success("Successfully logged in!");
       router.replace("/");
+      router.replace(resolvePostLoginRedirect(result.user, requestedPath));
     } catch (err: any) {
       const errorMessage =
         err?.response?.data?.message ||
@@ -194,5 +201,19 @@ export default function LoginPage() {
         </Link>
       </p>
     </AuthCard>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-[#0C1017]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <LoginView />
+    </Suspense>
   );
 }

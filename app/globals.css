@@ -135,16 +135,21 @@
   scrollbar-width: none;
 }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+/* Hide Spline watermark, logos and external links */
+.spline-container a,
+.spline-container a[href*="spline"],
+.spline-container div[style*="position: absolute"][style*="bottom"],
+.spline-container [id*="spline"],
+.spline-container [class*="spline-logo"],
+.spline-container [class*="watermark"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
-
 @utility text-gradient {
-  background: linear-gradient(135deg, #F48C50, #4493F8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #3E85E0;
 }
 
 @utility nebula-bg {

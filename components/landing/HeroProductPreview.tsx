@@ -312,7 +312,7 @@ export function HeroProductPreview() {
             <span className="h-2.5 w-2.5 rounded-full bg-[#FEBC2E]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#28C840]" />
           </div>
-          <span className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-[#8B5CF6] to-[#3B82F6]">
+          <span className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-primary">
             <GitBranch className="h-3 w-3 text-white" />
           </span>
           <span className="truncate font-mono text-[11px] text-white/60">

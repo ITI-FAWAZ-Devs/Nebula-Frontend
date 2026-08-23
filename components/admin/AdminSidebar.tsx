@@ -7,7 +7,7 @@ import { LogOut, Settings } from "lucide-react";
 import { useAuthStore } from "@/lib/store";
 import { useLogoutMutation } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { NebulaMark } from "@/components/shared/Logo";
+import { Logo } from "@/components/shared/Logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -50,23 +50,13 @@ export function AdminSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-white/8">
-      <SidebarHeader className="group-data-[collapsible=icon]:px-1.5">
-        <Link
-          href="/admin"
-          className="flex items-center gap-2.5 rounded-xl px-1.5 py-2 outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring"
-        >
-          <div className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600/30 via-indigo-600/30 to-blue-600/30 border border-white/20 shadow-md">
-            <NebulaMark className="h-5 w-5" />
-          </div>
-          <div className="group-data-[collapsible=icon]:hidden flex min-w-0 flex-col">
-            <span className="font-display text-base font-bold tracking-tight text-white">
-              Nebula
-            </span>
-            <span className="mt-0.5 font-mono text-[9px] font-semibold uppercase tracking-widest text-primary">
-              Admin
-            </span>
-          </div>
-        </Link>
+      <SidebarHeader className="group-data-[collapsible=icon]:px-1.5 px-3 py-3">
+        <div className="group-data-[collapsible=icon]:hidden">
+          <Logo variant="full" size="lg" href="/admin" />
+        </div>
+        <div className="group-data-[collapsible=icon]:block hidden">
+          <Logo variant="small" size="md" href="/admin" />
+        </div>
       </SidebarHeader>
 
       <SidebarContent>

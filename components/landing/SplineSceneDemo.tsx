@@ -24,11 +24,16 @@ export function SplineSceneBasic() {
       <Spotlight
         className="-top-40 left-0 md:left-60 md:-top-20"
       />
-      <div className="spline-container absolute inset-0 [&>iframe]:!overflow-hidden [&>iframe]:![clip-path:polygon(0_0,100%_0,100%_92%,92%_100%,0_100%)]">
-        <SplineScene
-          scene="https://prod.spline.design/tbiegWCjcBbBTRbH/scene.splinecode"
-          className="w-full h-full"
-        />
+      <div
+        className="spline-container absolute inset-0 overflow-hidden"
+        style={{ clipPath: "inset(0 0 45px 0)" }}
+      >
+        <div className="h-full w-full scale-[1.08] origin-center">
+          <SplineScene
+            scene="https://prod.spline.design/tbiegWCjcBbBTRbH/scene.splinecode"
+            className="w-full h-full"
+          />
+        </div>
       </div>
 
       <AnimatePresence>

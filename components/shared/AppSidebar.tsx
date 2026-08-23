@@ -28,19 +28,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ORG_NAV, VALID_ORG_TABS, orgTabHref, type OrgTab } from "@/lib/org-nav";
 import { cn } from "@/lib/utils";
-
-function NebulaMark({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M12 1.6c.35 0 .64.2.78.52l2.3 5.2 5.55.5c.72.06 1.02.96.47 1.43l-4.2 3.6 1.3 5.4c.17.7-.58 1.25-1.18.88L12 16.7l-4.92 2.83c-.6.37-1.35-.18-1.18-.88l1.3-5.4-4.2-3.6c-.55-.47-.25-1.37.47-1.43l5.55-.5 2.3-5.2c.14-.32.43-.52.78-.52Z" />
-    </svg>
-  );
-}
+import { Logo } from "@/components/shared/Logo";
 
 function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const user = useAuthStore((s) => s.user);
@@ -83,19 +71,8 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <aside className="flex h-full w-60 flex-col border-r border-white/8 bg-[#070A12]/95 backdrop-blur-xl">
-      <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-white/8 px-4">
-        <Link
-          href="/"
-          className="flex items-center gap-2.5"
-          onClick={onNavigate}
-        >
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-[#8B5CF6] to-[#3B82F6] text-white shadow-[0_0_16px_rgba(99,102,241,0.45)]">
-            <NebulaMark className="h-4 w-4" />
-          </div>
-          <span className="font-display text-base font-semibold text-white">
-            Nebula
-          </span>
-        </Link>
+      <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-white/8 px-4 pt-2">
+        <Logo variant="full" size="lg" href="/" onClick={onNavigate} />
       </div>
 
       <div className="border-b border-white/8 px-3 py-3">

@@ -77,13 +77,7 @@ export function Hero() {
             <br />
             Get architecture
             <br />
-            <span
-              className="bg-clip-text text-transparent"
-              style={{
-                backgroundImage:
-                  "linear-gradient(90deg, #8B5CF6 0%, #6366F1 45%, #3B82F6 100%)",
-              }}
-            >
+            <span className="text-[#3E85E0]">
               you can trust.
             </span>
           </motion.h1>
@@ -108,14 +102,8 @@ export function Hero() {
           >
             <Link href="/login">
               <Button
-                className="group relative inline-flex h-12 items-center gap-2.5 overflow-hidden rounded-xl px-6 text-sm font-medium text-white transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #3B82F6 100%)",
-                  boxShadow: "0 12px 40px -12px rgba(99, 102, 241, 0.7)",
-                }}
+                className="group relative inline-flex h-12 items-center gap-2.5 rounded-xl bg-primary px-6 text-sm font-medium text-primary-foreground transition-all duration-300 hover:bg-primary/90 hover:-translate-y-0.5 active:translate-y-0 shadow-lg"
               >
-                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-500 group-hover:translate-x-full" />
                 <FiGithub className="h-4 w-4" />
                 Connect GitHub
               </Button>
@@ -126,7 +114,7 @@ export function Hero() {
                 className="inline-flex h-12 items-center gap-2.5 rounded-xl border-white/15 bg-transparent px-6 text-sm font-medium text-white/85 transition-all duration-300 hover:border-white/25 hover:bg-white/[0.04] hover:text-white hover:-translate-y-0.5"
               >
                 {/* <span className="flex h-5 w-5 items-center justify-center rounded-full border border-white/25"> */}
-                  <Play className="h-2.5 w-2.5 fill-current" />
+                <Play className="h-2.5 w-2.5 fill-current" />
                 {/* </span> */}
                 See how it works
               </Button>

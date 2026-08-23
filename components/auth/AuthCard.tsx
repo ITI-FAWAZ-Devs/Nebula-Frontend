@@ -1,8 +1,7 @@
 "use client";
 
 import React from "react";
-import { NebulaMark } from "@/components/shared/Logo";
-import Link from "next/link";
+import { Logo } from "@/components/shared/Logo";
 
 interface AuthCardProps {
   children: React.ReactNode;
@@ -40,26 +39,11 @@ export function AuthCard({ children, maxWidth = "max-w-[440px]" }: AuthCardProps
 
       {/* Main Container */}
       <div className={`relative z-10 w-full ${maxWidth}`}>
-        {/* Brand Header */}
         <div className="flex flex-col items-center text-center mb-8">
-          <Link href="/" className="flex flex-col items-center gap-3 group outline-none">
-            {/* <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#8B5CF6] to-[#3B82F6] text-white shadow-[0_0_24px_rgba(99,102,241,0.45)]">
-              <NebulaMark className="h-6 w-6" />
-            </div> */}
-            <div>
-              <div className="font-display text-2xl font-bold tracking-tight text-white">
-                Nebula <span className="text-gradient">OS</span>
-              </div>
-              <p className="text-[10px] font-mono text-white/45 tracking-widest uppercase mt-0.5">
-                AI Software Command Center
-              </p>
-            </div>
-          </Link>
+          <Logo variant="full" size="lg" href="/" showSubtext showBadge />
         </div>
 
-        {/* Auth Glass Card Panel */}
         <div className="relative rounded-3xl border border-white/12 bg-[#0C1017]/85 backdrop-blur-2xl p-7 sm:p-9 shadow-[0_16px_48px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.12)]">
-          {/* Top highlight bar */}
           <div className="absolute top-0 left-12 right-12 h-[1px] bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
           
           {children}

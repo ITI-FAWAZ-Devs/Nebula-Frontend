@@ -1,17 +1,51 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+export type LogoVariant = "full" | "small" | "icon" | "auto";
+export type LogoColor = "default" | "white";
+export type LogoSize = "sm" | "md" | "lg" | "xl" | "2xl";
+
 export interface LogoProps {
-  size?: "sm" | "md" | "lg" | "xl";
+  variant?: LogoVariant;
+  color?: LogoColor;
+  white?: boolean;
+  size?: LogoSize | number;
+  href?: string | null;
+  className?: string;
+  imageClassName?: string;
+  priority?: boolean;
+  alt?: string;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement | HTMLDivElement>) => void;
+  iconOnly?: boolean;
   showBadge?: boolean;
   showSubtext?: boolean;
-  href?: string;
-  iconOnly?: boolean;
-  className?: string;
 }
 
+const LOGO_METADATA = {
+  full: {
+    default: { src: "/full.png", width: 707, height: 353, aspect: 2.0 },
+    white: { src: "/full.png", width: 707, height: 353, aspect: 2.0 },
+  },
+  small: {
+    default: { src: "/small.png", width: 500, height: 500, aspect: 1.0 },
+    white: { src: "/small.png", width: 500, height: 500, aspect: 1.0 },
+  },
+};
+
+const HEIGHT_PRESETS: Record<LogoSize, number> = {
+  sm: 26,
+  md: 38,
+  lg: 50,
+  xl: 100,
+  "2xl": 140,
+};
+
+/**
+ * Backward-compatible SVG Nebula mark
+ */
 export function NebulaMark({ className }: { className?: string }) {
   return (
     <svg
@@ -28,8 +62,6 @@ export function NebulaMark({ className }: { className?: string }) {
           <stop offset="100%" stopColor="#3B82F6" />
         </linearGradient>
       </defs>
-      
-      {/* Clean Starburst Nebula Icon */}
       <path
         d="M12 2C12.5 7.5 16.5 11.5 22 12C16.5 12.5 12.5 16.5 12 22C11.5 16.5 7.5 12.5 2 12C7.5 11.5 11.5 7.5 12 2Z"
         fill="url(#nebula-mark-grad)"
@@ -40,88 +72,113 @@ export function NebulaMark({ className }: { className?: string }) {
 }
 
 export function Logo({
+  variant = "full",
+  color = "white",
+  white,
   size = "md",
-  showBadge = false,
-  showSubtext = false,
   href = "/",
-  iconOnly = false,
   className,
+  imageClassName,
+  priority = true,
+  alt = "Nebula OS",
+  onClick,
+  iconOnly,
+  showBadge,
+  showSubtext,
 }: LogoProps) {
-  const sizeClasses = {
-    sm: {
-      box: "h-7 w-7 rounded-lg p-1.5",
-      text: "text-base",
-      badge: "text-[9px] px-1.5 py-0.5",
-      subtext: "text-[9px]",
-      gap: "gap-2",
-    },
-    md: {
-      box: "h-8.5 w-8.5 rounded-xl p-2",
-      text: "text-lg",
-      badge: "text-[10px] px-2 py-0.5",
-      subtext: "text-[10px]",
-      gap: "gap-2.5",
-    },
-    lg: {
-      box: "h-11 w-11 rounded-2xl p-2.5",
-      text: "text-2xl",
-      badge: "text-xs px-2.5 py-0.5",
-      subtext: "text-xs",
-      gap: "gap-3",
-    },
-    xl: {
-      box: "h-14 w-14 rounded-2xl p-3",
-      text: "text-3xl",
-      badge: "text-xs px-2.5 py-1",
-      subtext: "text-xs",
-      gap: "gap-3.5",
-    },
+  // Resolve color (defaults to 'white')
+  const activeColor: LogoColor = white !== undefined ? (white ? "white" : "default") : color;
+
+  // Resolve variant with backwards compatibility
+  const resolvedVariant: LogoVariant = iconOnly ? "small" : variant;
+
+  // Resolve height
+  const heightInPx =
+    typeof size === "number" ? size : HEIGHT_PRESETS[size] || HEIGHT_PRESETS.md;
+
+  const renderLogoImage = (type: "full" | "small", extraClass?: string) => {
+    const meta = LOGO_METADATA[type][activeColor];
+    const computedWidth = Math.round(heightInPx * meta.aspect);
+
+    return (
+      <Image
+        src={meta.src}
+        alt={alt}
+        width={computedWidth}
+        height={heightInPx}
+        priority={priority}
+        style={{ height: `${heightInPx}px`, width: "auto" }}
+        className={cn(
+          "object-contain shrink-0 transition-opacity duration-200",
+          imageClassName,
+          extraClass
+        )}
+      />
+    );
   };
 
-  const currentSize = sizeClasses[size];
+  const renderContent = () => {
+    if (resolvedVariant === "auto") {
+      return (
+        <div
+          onClick={onClick}
+          className={cn("inline-flex items-center shrink-0 select-none", className)}
+        >
+          {renderLogoImage("small", "block sm:hidden")}
+          {renderLogoImage("full", "hidden sm:block")}
+        </div>
+      );
+    }
 
-  const content = (
-    <div className={cn("inline-flex items-center select-none", currentSize.gap, className)}>
-      {/* Icon Emblem Container */}
+    if (resolvedVariant === "icon" || resolvedVariant === "small") {
+      return (
+        <div
+          onClick={onClick}
+          className={cn("inline-flex items-center shrink-0 select-none", className)}
+        >
+          {renderLogoImage("small")}
+        </div>
+      );
+    }
+
+    return (
       <div
+        onClick={onClick}
         className={cn(
-          "flex items-center justify-center bg-gradient-to-br from-violet-600/30 via-indigo-600/30 to-blue-600/30 border border-white/20 shadow-md",
-          currentSize.box
+          "inline-flex select-none shrink-0",
+          showSubtext ? "flex-col items-center justify-center gap-1" : "items-center gap-2",
+          className
         )}
       >
-        <NebulaMark />
-      </div>
-
-      {!iconOnly && (
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <span className={cn("font-display font-bold tracking-tight text-white", currentSize.text)}>
-              Nebula
-            </span>
-            {showBadge && (
-              <span
-                className={cn(
-                  "font-mono font-semibold rounded-full bg-white/10 border border-white/15 text-primary",
-                  currentSize.badge
-                )}
-              >
-                OS
-              </span>
-            )}
-          </div>
-          {showSubtext && (
-            <span className={cn("font-mono text-white/50 tracking-wider uppercase font-medium mt-0.5", currentSize.subtext)}>
-              AI Software Command Center
+        <div className="flex items-center gap-2">
+          {renderLogoImage("full")}
+          {showBadge && (
+            <span className="font-mono text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/10 border border-white/15 text-primary shrink-0">
+              OS
             </span>
           )}
         </div>
-      )}
-    </div>
-  );
+        {showSubtext && (
+          <span className="font-mono text-[10px] text-white/45 tracking-widest uppercase font-medium shrink-0 mt-0.5 text-center">
+            AI Command Center
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  const content = renderContent();
 
   if (href) {
     return (
-      <Link href={href} className="inline-block outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-xl">
+      <Link
+        href={href}
+        onClick={onClick}
+        className={cn(
+          "inline-flex items-center shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-xl transition-transform hover:opacity-95 active:scale-[0.98]",
+          className
+        )}
+      >
         {content}
       </Link>
     );
@@ -129,3 +186,18 @@ export function Logo({
 
   return content;
 }
+
+/**
+ * Convenience component specifically for the Small / Mark Logo
+ */
+export function LogoSmall(props: Omit<LogoProps, "variant">) {
+  return <Logo {...props} variant="small" />;
+}
+
+/**
+ * Convenience component specifically for the Full Logo
+ */
+export function LogoFull(props: Omit<LogoProps, "variant">) {
+  return <Logo {...props} variant="full" />;
+}
+

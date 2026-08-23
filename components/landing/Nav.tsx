@@ -17,19 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
-function NebulaMark({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M12 1.6c.35 0 .64.2.78.52l2.3 5.2 5.55.5c.72.06 1.02.96.47 1.43l-4.2 3.6 1.3 5.4c.17.7-.58 1.25-1.18.88L12 16.7l-4.92 2.83c-.6.37-1.35-.18-1.18-.88l1.3-5.4-4.2-3.6c-.55-.47-.25-1.37.47-1.43l5.55-.5 2.3-5.2c.14-.32.43-.52.78-.52Z" />
-    </svg>
-  );
-}
+import { Logo } from "@/components/shared/Logo";
 
 const MARKETING_LINKS = [
   { label: "Features", href: "/#features" },
@@ -63,15 +51,8 @@ export function Nav() {
       transition={{ delay: 0.4, duration: 0.6 }}
       className="fixed left-0 right-0 top-0 z-40"
     >
-      <div className="mx-auto mt-3 flex max-w-360 items-center justify-between overflow-x-auto rounded-full border border-white/8 bg-[#0B0E14]/70 px-5 py-2.5 backdrop-blur-xl">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-linear-to-br from-[#8B5CF6] to-[#3B82F6] text-white shadow-[0_0_16px_rgba(99,102,241,0.45)]">
-            <NebulaMark className="h-4 w-4" />
-          </div>
-          <Link href="/" className="font-display text-lg font-semibold text-white">
-            Nebula
-          </Link>
-        </div>
+      <div className="mx-auto mt-3 flex max-w-360 items-center justify-between overflow-x-auto rounded-full border border-white/8 bg-[#0B0E14]/70 px-5 backdrop-blur-xl">
+        <Logo variant="auto" size="lg" href="/" />
         <nav className="hidden items-center gap-0.5 text-sm text-white/55 lg:flex">
           {MARKETING_LINKS.map((link) => (
             <Link
@@ -148,11 +129,7 @@ export function Nav() {
               </Link>
               <Link href="/login">
                 <Button
-                  className="group inline-flex h-9 items-center gap-1.5 rounded-xl px-4 text-xs font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-6px_rgba(99,102,241,0.75)]"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #8B5CF6 0%, #6366F1 50%, #3B82F6 100%)",
-                  }}
+                  className="group inline-flex h-9 items-center gap-1.5 rounded-xl bg-primary px-4 text-xs font-medium text-primary-foreground transition-all duration-300 hover:bg-primary/90 hover:-translate-y-0.5"
                 >
                   <FiGithub className="h-3.5 w-3.5" /> Connect GitHub
                 </Button>

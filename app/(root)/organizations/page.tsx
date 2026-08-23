@@ -22,6 +22,12 @@ import {
 } from "@/lib/org-nav";
 import { cn } from "@/lib/utils";
 
+/** Tabs that Viewer and Developer roles cannot access. */
+const RESTRICTED_TABS: OrgTab[] = ["members", "roles", "connections", "audit", "settings"];
+
+/** Built-in role names considered read-only / limited-access on org management. */
+const READ_ONLY_ROLE_NAMES = ["Viewer", "Developer"];
+
 function OrganizationsView() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -45,6 +51,11 @@ function OrganizationsView() {
   const currentOrg = orgs?.find((o) => o.id === activeOrgId);
   const myPermissions = currentOrg?.userRole?.permissions ?? [];
   const isOwner = !!user && !!currentOrg && currentOrg.ownerId === user.id;
+
+  // Detect Viewer / Developer roles — they get a restricted, read-only experience
+  const roleName = currentOrg?.userRole?.name ?? "";
+  const isRestrictedRole =
+    !isOwner && READ_ONLY_ROLE_NAMES.includes(roleName);
 
   const navItem = useMemo(
     () => ORG_NAV.find((t) => t.id === activeTab) ?? ORG_NAV[0],
@@ -80,6 +91,8 @@ function OrganizationsView() {
   }, [activeOrgId, activeTab, orgParam, orgs, router, setWorkspace, workspace]);
 
   const canViewTab = (tab: OrgTab) => {
+    // Viewer / Developer cannot access members, roles, or connections tabs
+    if (isRestrictedRole && RESTRICTED_TABS.includes(tab)) return false;
     if (tab === "audit") return isOwner || can(myPermissions, "audit.read");
     if (tab === "settings")
       return isOwner || can(myPermissions, "org.manage_settings");
@@ -89,10 +102,12 @@ function OrganizationsView() {
   useEffect(() => {
     if (!currentOrg) return;
     if (!canViewTab(activeTab)) {
-      router.replace(orgTabHref(currentOrg.id, "members"), { scroll: false });
+      // Redirect restricted users to repositories instead of members
+      const fallback = isRestrictedRole ? "repositories" : "members";
+      router.replace(orgTabHref(currentOrg.id, fallback), { scroll: false });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, currentOrg, isOwner, myPermissions]);
+  }, [activeTab, currentOrg, isOwner, isRestrictedRole, myPermissions]);
 
   const handleOrgDeleted = () => {
     setWorkspace({ type: "personal" });
@@ -105,7 +120,9 @@ function OrganizationsView() {
       organizationId: orgId,
       organizationName: orgName,
     });
-    router.push(orgTabHref(orgId, "members"));
+    // Navigate restricted users straight to repositories
+    const defaultTab = isRestrictedRole ? "repositories" : "members";
+    router.push(orgTabHref(orgId, defaultTab));
   };
 
   return (
@@ -199,20 +216,22 @@ function OrganizationsView() {
                     {navItem.description}
                   </p>
                 </div>
-                <Button
-                  onClick={() => setCreateOrgOpen(true)}
-                  variant="outline"
-                  className="h-9 cursor-pointer self-start rounded-xl border-white/10 bg-white/[0.03] px-3 text-xs text-white/70 hover:bg-white/5 hover:text-white"
-                >
-                  <Plus className="mr-1.5 h-3.5 w-3.5" /> New org
-                </Button>
+                {!isRestrictedRole && (
+                  <Button
+                    onClick={() => setCreateOrgOpen(true)}
+                    variant="outline"
+                    className="h-9 cursor-pointer self-start rounded-xl border-white/10 bg-white/[0.03] px-3 text-xs text-white/70 hover:bg-white/5 hover:text-white"
+                  >
+                    <Plus className="mr-1.5 h-3.5 w-3.5" /> New org
+                  </Button>
+                )}
               </div>
 
               <div className="glass-panel p-6">
-                {activeTab === "members" && (
-                  <MembersTab orgId={currentOrg.id} />
+                {activeTab === "members" && !isRestrictedRole && (
+                  <MembersTab orgId={currentOrg.id} readOnly={false} />
                 )}
-                {activeTab === "roles" && (
+                {activeTab === "roles" && !isRestrictedRole && (
                   <RolesTab
                     orgId={currentOrg.id}
                     userPermissions={myPermissions}
@@ -221,16 +240,16 @@ function OrganizationsView() {
                 {activeTab === "repositories" && (
                   <OrgReposTab
                     orgId={currentOrg.id}
-                    canDelete={isOwner || can(myPermissions, "repo.delete")}
+                    canDelete={!isRestrictedRole && (isOwner || can(myPermissions, "repo.delete"))}
                   />
                 )}
                 {activeTab === "teams" && (
                   <TeamsTab
                     orgId={currentOrg.id}
-                    canManage={isOwner || can(myPermissions, "team.manage")}
+                    canManage={!isRestrictedRole && (isOwner || can(myPermissions, "team.manage"))}
                   />
                 )}
-                {activeTab === "connections" && (
+                {activeTab === "connections" && !isRestrictedRole && (
                   <ConnectionsTab
                     orgId={currentOrg.id}
                     canManage={

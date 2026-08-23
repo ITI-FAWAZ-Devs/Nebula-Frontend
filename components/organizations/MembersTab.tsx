@@ -23,9 +23,11 @@ import { InviteMemberModal } from "./InviteMemberModal";
 
 interface MembersTabProps {
   orgId: string;
+  /** When true, hides all management actions (invite, role change, remove). */
+  readOnly?: boolean;
 }
 
-export function MembersTab({ orgId }: MembersTabProps) {
+export function MembersTab({ orgId, readOnly = false }: MembersTabProps) {
   const { data: members, isLoading: loadingMembers } = useOrgMembersQuery(orgId);
   const { data: roles } = useOrgRolesQuery(orgId);
 
@@ -77,13 +79,15 @@ export function MembersTab({ orgId }: MembersTabProps) {
           </p>
         </div>
 
-        <Button
-          onClick={() => setInviteModalOpen(true)}
-          className="h-8 text-xs font-semibold px-4 rounded-full"
-          style={{ background: "#4493F8" }}
-        >
-          <UserPlus className="mr-1.5 h-3.5 w-3.5" /> Invite Member
-        </Button>
+        {!readOnly && (
+          <Button
+            onClick={() => setInviteModalOpen(true)}
+            className="h-8 text-xs font-semibold px-4 rounded-full"
+            style={{ background: "#4493F8" }}
+          >
+            <UserPlus className="mr-1.5 h-3.5 w-3.5" /> Invite Member
+          </Button>
+        )}
       </div>
 
       {/* Members list */}
@@ -150,33 +154,42 @@ export function MembersTab({ orgId }: MembersTabProps) {
               </div>
 
               <div className="flex items-center gap-3">
-                {/* Role dropdown — disabled for email-only invites since user doesn't exist yet */}
-                <Select
-                  value={member.role.id}
-                  disabled={isEmailOnly}
-                  onValueChange={(newRoleId) => newRoleId && handleRoleChange(member.id, newRoleId)}
-                >
-                  <SelectTrigger className="h-8 bg-black/20 border-white/10 text-white text-[11px] font-mono w-40 disabled:opacity-50">
-                    <SelectValue placeholder={member.role.name}>{member.role.name}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent className="glass-panel border-white/10 bg-popover/95 text-white">
-                    {roles?.map((r) => (
-                      <SelectItem key={r.id} value={r.id} className="text-[11px] font-mono">
-                        {r.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {readOnly ? (
+                  /* Read-only: just show role name as a badge */
+                  <span className="h-8 flex items-center px-3 rounded-lg bg-black/20 border border-white/10 text-white/70 text-[11px] font-mono">
+                    {member.role.name}
+                  </span>
+                ) : (
+                  <>
+                    {/* Role dropdown — disabled for email-only invites since user doesn't exist yet */}
+                    <Select
+                      value={member.role.id}
+                      disabled={isEmailOnly}
+                      onValueChange={(newRoleId) => newRoleId && handleRoleChange(member.id, newRoleId)}
+                    >
+                      <SelectTrigger className="h-8 bg-black/20 border-white/10 text-white text-[11px] font-mono w-40 disabled:opacity-50">
+                        <SelectValue placeholder={member.role.name}>{member.role.name}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent className="glass-panel border-white/10 bg-popover/95 text-white">
+                        {roles?.map((r) => (
+                          <SelectItem key={r.id} value={r.id} className="text-[11px] font-mono">
+                            {r.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleRemoveMember(member.id, displayEmail)}
-                  className="h-8 w-8 text-white/40 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
-                  title="Remove Member"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveMember(member.id, displayEmail)}
+                      className="h-8 w-8 text-white/40 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                      title="Remove Member"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           );

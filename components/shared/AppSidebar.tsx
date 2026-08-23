@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ORG_NAV, VALID_ORG_TABS, orgTabHref, type OrgTab } from "@/lib/org-nav";
+import { useOrganizationsQuery } from "@/hooks/use-organization";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/shared/Logo";
 
@@ -38,6 +39,25 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   const { workspace } = useWorkspaceStore();
   const setImportPickerOpen = useUiStore((s) => s.setImportPickerOpen);
   const logoutMutation = useLogoutMutation();
+
+  // Detect whether the current user is Viewer/Developer in this org
+  const { data: orgs } = useOrganizationsQuery();
+  const READ_ONLY_ROLE_NAMES = ["Viewer", "Developer"];
+  const RESTRICTED_SIDEBAR_TABS: OrgTab[] = ["members", "roles", "connections", "audit", "settings"];
+  const currentOrg =
+    workspace.type === "organization"
+      ? orgs?.find((o) => o.id === workspace.organizationId)
+      : null;
+  const currentRoleName = currentOrg?.userRole?.name ?? "";
+  const isOrgOwner =
+    !!user && !!currentOrg && currentOrg.ownerId === user.id;
+  const isRestrictedSidebarRole =
+    !isOrgOwner && READ_ONLY_ROLE_NAMES.includes(currentRoleName);
+
+  const visibleOrgNav = ORG_NAV.filter(
+    (item) =>
+      !isRestrictedSidebarRole || !RESTRICTED_SIDEBAR_TABS.includes(item.id)
+  );
 
   const isOrg = workspace.type === "organization";
   const tabParam = searchParams.get("tab");
@@ -96,7 +116,7 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
             <div className="px-2.5 pb-1 text-[10px] font-mono uppercase tracking-wider text-white/35">
               Organization
             </div>
-            {ORG_NAV.map((item) => {
+            {visibleOrgNav.map((item) => {
               const Icon = item.icon;
               const active = onOrgs && activeOrgTab === item.id;
               return (
@@ -129,19 +149,21 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
         )}
       </nav>
 
-      <div className="border-t border-white/8 px-2.5 py-3">
-        <button
-          type="button"
-          onClick={() => {
-            setImportPickerOpen(true);
-            onNavigate?.();
-          }}
-          className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] text-white/55 transition-colors hover:bg-white/4 hover:text-white/90"
-        >
-          <Plus className="h-4 w-4 shrink-0 opacity-80" />
-          Import Repository
-        </button>
-      </div>
+      {!isRestrictedSidebarRole && (
+        <div className="border-t border-white/8 px-2.5 py-3">
+          <button
+            type="button"
+            onClick={() => {
+              setImportPickerOpen(true);
+              onNavigate?.();
+            }}
+            className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] text-white/55 transition-colors hover:bg-white/4 hover:text-white/90"
+          >
+            <Plus className="h-4 w-4 shrink-0 opacity-80" />
+            Import Repository
+          </button>
+        </div>
+      )}
 
       <div className="space-y-0.5 border-t border-white/8 px-2.5 py-3">
         <Link

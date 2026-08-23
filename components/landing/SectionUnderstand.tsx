@@ -7,10 +7,10 @@ export function SectionUnderstand() {
     <section className="relative py-24 lg:py-36">
       <div className="mx-auto grid max-w-[90rem] grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2 lg:gap-16">
         <div>
-          <SectionEyebrow>Interactive Code Intelligence</SectionEyebrow>
+          <SectionEyebrow>Understand your software</SectionEyebrow>
           <h2 className="font-display text-4xl leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Meet your{" "}
-            <span className="text-gradient">AI Software Architect.</span>
+            Understand your{" "}
+            <span className="text-gradient">entire software</span> at a glance.
           </h2>
           <p className="mt-6 max-w-lg text-base leading-relaxed text-white/65 sm:text-lg">
             Nebula Agent acts as your 24/7 technical co-pilot inside your repository. Converse directly with an intelligent companion that indexes your codebase, maps complex software dependencies, and guides your engineering decisions in real time.

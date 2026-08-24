@@ -17,6 +17,8 @@ export interface VoiceMessage {
 
 export interface SessionStartPayload {
   repositoryId: string;
+  /** Existing conversation thread to continue (optional). */
+  threadId?: string;
 }
 
 // ─── Socket.IO events: server → client ────────────────────────────────────
@@ -42,6 +44,12 @@ export interface AgentDoneEvent {
   citations: AgentCitation[];
   citedNodeIds: string[];
   toolsUsed: string[];
+}
+
+/** Emitted after each turn is durably saved to a conversation thread */
+export interface ConversationSavedEvent {
+  sessionId: string;
+  threadId: string;
 }
 
 export interface ErrorEvent {

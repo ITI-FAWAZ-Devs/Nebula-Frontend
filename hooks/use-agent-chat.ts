@@ -38,6 +38,18 @@ export interface WebSource {
 interface AgentSessionData {
   sessionId: string;
   repositoryId: string;
+  threadId?: string | null;
+}
+
+/** Identifies the conversation everything must append to. */
+interface ChatPointer {
+  sessionId: string | null;
+  threadId: string | null;
+}
+
+interface AgentSessionPayload {
+  sessionId: string;
+  threadId: string;
 }
 
 interface AgentDonePayload {
@@ -66,9 +78,16 @@ interface StreamCallbacks {
   onProgress: (progress: ResearchProgress) => void;
   onScanning: (event: ScanEvent) => void;
   onWebSource: (source: WebSource) => void;
+  onSession: (payload: AgentSessionPayload) => void;
 }
 
 const QUESTION_MAX_LENGTH = 4000;
+
+function generateId() {
+  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+// ─── Storage helpers ────────────────────────────────────────────────────────
 
 function sessionKey(repositoryId: string) {
   return `nebula-agent-session:${repositoryId}`;
@@ -78,33 +97,36 @@ function messagesKey(repositoryId: string) {
   return `nebula-agent-messages:${repositoryId}`;
 }
 
-function generateId() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-}
-
-// ─── Storage helpers ────────────────────────────────────────────────────────
-
-function loadSessionId(repositoryId: string): string | null {
-  if (typeof window === "undefined") return null;
+function loadChatPointer(repositoryId: string): ChatPointer {
+  if (typeof window === "undefined") return { sessionId: null, threadId: null };
   try {
-    return sessionStorage.getItem(sessionKey(repositoryId));
+    const raw = localStorage.getItem(sessionKey(repositoryId));
+    if (!raw) return { sessionId: null, threadId: null };
+    const parsed = JSON.parse(raw) as Partial<ChatPointer>;
+    return {
+      sessionId:
+        typeof parsed.sessionId === "string" ? parsed.sessionId : null,
+      threadId: typeof parsed.threadId === "string" ? parsed.threadId : null,
+    };
   } catch {
-    return null;
+    // Unparseable/legacy value — start fresh rather than forking silently.
+    return { sessionId: null, threadId: null };
   }
 }
 
-function saveSessionId(repositoryId: string, sessionId: string) {
+function saveChatPointer(repositoryId: string, pointer: ChatPointer) {
   try {
-    sessionStorage.setItem(sessionKey(repositoryId), sessionId);
+    localStorage.setItem(sessionKey(repositoryId), JSON.stringify(pointer));
   } catch {
     // ignore quota errors
   }
 }
 
-function clearSessionId(repositoryId: string) {
+/** Drop the session/thread binding and the cached transcript. */
+function clearConversationCache(repositoryId: string) {
   try {
-    sessionStorage.removeItem(sessionKey(repositoryId));
-    sessionStorage.removeItem(messagesKey(repositoryId));
+    localStorage.removeItem(sessionKey(repositoryId));
+    localStorage.removeItem(messagesKey(repositoryId));
   } catch {
     // ignore
   }
@@ -113,7 +135,7 @@ function clearSessionId(repositoryId: string) {
 function loadMessages(repositoryId: string): ChatMessage[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = sessionStorage.getItem(messagesKey(repositoryId));
+    const raw = localStorage.getItem(messagesKey(repositoryId));
     if (!raw) return [];
     const parsed = JSON.parse(raw) as ChatMessage[];
     return parsed.map((m) => ({ ...m, isStreaming: false }));
@@ -125,7 +147,7 @@ function loadMessages(repositoryId: string): ChatMessage[] {
 function saveMessages(repositoryId: string, messages: ChatMessage[]) {
   try {
     const toSave = messages.map(({ isStreaming: _, ...rest }) => rest);
-    sessionStorage.setItem(messagesKey(repositoryId), JSON.stringify(toSave));
+    localStorage.setItem(messagesKey(repositoryId), JSON.stringify(toSave));
   } catch {
     // ignore quota errors
   }
@@ -268,6 +290,11 @@ function dispatchSSEEvent(
         callbacks.onWebSource(source);
         break;
       }
+      case "session": {
+        const payload = JSON.parse(raw) as AgentSessionPayload;
+        callbacks.onSession(payload);
+        break;
+      }
     }
   } catch {
     // ignore malformed SSE payloads
@@ -287,7 +314,11 @@ async function streamAgentMessage(
   repositoryId: string,
   sessionId: string,
   question: string,
-  options: { mode?: "standard" | "deep"; model?: string },
+  options: {
+    mode?: "standard" | "deep";
+    model?: string;
+    threadId?: string | null;
+  },
   callbacks: StreamCallbacks,
   signal?: AbortSignal
 ): Promise<void> {
@@ -295,7 +326,12 @@ async function streamAgentMessage(
 
   const response = await authFetch(url, {
     method: "POST",
-    body: JSON.stringify({ question, mode: options.mode, model: options.model }),
+    body: JSON.stringify({
+      question,
+      mode: options.mode,
+      model: options.model,
+      threadId: options.threadId ?? undefined,
+    }),
     signal,
   });
 
@@ -331,13 +367,16 @@ export function useAgentChat(repositoryId: string | null) {
   const [webSources, setWebSources] = useState<WebSource[]>([]);
 
   const sessionIdRef = useRef<string | null>(null);
+  const threadIdRef = useRef<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const messagesRef = useRef<ChatMessage[]>([]);
 
   // Restore persisted state on mount / repo change
   useEffect(() => {
     if (!repositoryId) return;
-    sessionIdRef.current = loadSessionId(repositoryId);
+    const pointer = loadChatPointer(repositoryId);
+    sessionIdRef.current = pointer.sessionId;
+    threadIdRef.current = pointer.threadId;
     const stored = loadMessages(repositoryId);
     messagesRef.current = stored;
     setMessages(stored);
@@ -359,7 +398,8 @@ export function useAgentChat(repositoryId: string | null) {
   const clearConversation = useCallback(() => {
     if (!repositoryId) return;
     sessionIdRef.current = null;
-    clearSessionId(repositoryId);
+    threadIdRef.current = null;
+    clearConversationCache(repositoryId);
     setMessages([]);
     messagesRef.current = [];
     setSuggestedFollowups([]);
@@ -377,7 +417,12 @@ export function useAgentChat(repositoryId: string | null) {
 
     const session = await createAgentSession(repositoryId);
     sessionIdRef.current = session.sessionId;
-    saveSessionId(repositoryId, session.sessionId);
+    // Keep any existing thread binding so messages continue the same
+    // conversation even after the old session expired.
+    saveChatPointer(repositoryId, {
+      sessionId: session.sessionId,
+      threadId: threadIdRef.current,
+    });
     return session.sessionId;
   }, [repositoryId]);
 
@@ -433,7 +478,12 @@ export function useAgentChat(repositoryId: string | null) {
           repositoryId,
           sessionId,
           trimmed,
-          options ?? {},
+          {
+            mode: options?.mode,
+            model: options?.model,
+            // Reuse the active conversation thread on every message.
+            threadId: threadIdRef.current,
+          },
           {
             onCitation: (citation) => {
               setMessages((prev) =>
@@ -487,6 +537,16 @@ export function useAgentChat(repositoryId: string | null) {
                 setSuggestedFollowups(payload.followups);
               }
             },
+            onSession: (payload) => {
+              // Server confirmed which thread this conversation belongs to.
+              threadIdRef.current = payload.threadId;
+              if (repositoryId) {
+                saveChatPointer(repositoryId, {
+                  sessionId: sessionIdRef.current,
+                  threadId: payload.threadId,
+                });
+              }
+            },
             onError: (message) => {
               setMessages((prev) =>
                 prev.map((m) =>
@@ -520,10 +580,15 @@ export function useAgentChat(repositoryId: string | null) {
         const message =
           (err as Error)?.message ?? "Failed to send message";
 
-        // Clear invalid session on 404
+        // Recover from an expired/invalid session on 404: drop the session
+        // binding but KEEP the thread id so the retry (new session) still
+        // appends to the same conversation history.
         if (message.toLowerCase().includes("not found")) {
           sessionIdRef.current = null;
-          clearSessionId(repositoryId);
+          saveChatPointer(repositoryId, {
+            sessionId: null,
+            threadId: threadIdRef.current,
+          });
         }
 
         setMessages((prev) =>
@@ -572,7 +637,14 @@ export function useAgentChat(repositoryId: string | null) {
           citations: Array.isArray(m.citations) ? m.citations : undefined,
           isStreaming: false,
         }));
-        sessionIdRef.current = null;
+        if (threadIdRef.current !== threadId) {
+          // Rebind to the loaded conversation. The next message lazily
+          // creates a fresh session that carries this threadId, so follow-ups
+          // are appended to the same history instead of forking a new one.
+          sessionIdRef.current = null;
+          threadIdRef.current = threadId;
+          saveChatPointer(repositoryId, { sessionId: null, threadId });
+        }
         setMessages(loaded);
         messagesRef.current = loaded;
         setSuggestedFollowups([]);

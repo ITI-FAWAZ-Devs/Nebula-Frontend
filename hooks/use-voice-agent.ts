@@ -10,6 +10,7 @@ import type {
   VoiceMessage,
   AgentCitation,
   AgentDoneEvent,
+  ConversationSavedEvent,
 } from "@/lib/voice/types";
 
 /** Ensure a valid access token is in the store, refreshing via cookie if needed. */
@@ -77,6 +78,8 @@ export function useVoiceAgent(repositoryId: string | null) {
   const [error, setError] = useState<string | null>(null);
   const [partialTranscript, setPartialTranscript] = useState<string>("");
   const [streamingAnswer, setStreamingAnswer] = useState<string>("");
+  /** Conversation thread the current voice session is being saved to */
+  const [threadId, setThreadId] = useState<string | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -172,6 +175,10 @@ export function useVoiceAgent(repositoryId: string | null) {
 
       socket.on("tts.audio", (chunk: ArrayBuffer) => {
         enqueueAudio(chunk);
+      });
+
+      socket.on("conversation.saved", (payload: ConversationSavedEvent) => {
+        setThreadId(payload.threadId);
       });
 
       socket.on("error", ({ message }: { message: string }) => {
@@ -408,6 +415,7 @@ export function useVoiceAgent(repositoryId: string | null) {
     setError(null);
     setMessages([]);
     setStreamingAnswer("");
+    setThreadId(null);
 
     // Best-effort: get an in-memory token so the backend has two auth paths.
     // Even if this returns null, the HttpOnly cookie sent by withCredentials
@@ -503,6 +511,7 @@ export function useVoiceAgent(repositoryId: string | null) {
     error,
     partialTranscript,
     streamingAnswer,
+    threadId,
     start,
     stop,
     interrupt: handleInterrupt,

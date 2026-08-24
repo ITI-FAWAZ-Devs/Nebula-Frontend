@@ -70,7 +70,7 @@ export function ArchitectureWikiHeader({
           <Shield className="h-3 w-3 text-emerald-400" />
           <span className="text-emerald-400">Verified</span>
           <span className="text-white/20">·</span>
-          <span>score {verificationScore ?? 0}</span>
+          {/* <span>score {verificationScore ?? 0}</span> */}
         </div>
         <div className="flex items-center gap-1.5">
           <Clock className="h-3 w-3" />

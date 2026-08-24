@@ -111,17 +111,17 @@ export function DeepWikiAnswerView({
             className="flex items-center gap-1.5 text-xs text-white/50 hover:text-white transition-colors group cursor-pointer"
           >
             <ArrowLeft className="h-3.5 w-3.5 group-hover:-translate-x-0.5 transition-transform" />
-            <span className="font-mono text-[11px]">← {repoName}</span>
+            <span className="font-mono text-[11px]">{repoName}</span>
           </button>
 
           <div className="flex items-center gap-2">
-            <ConversationThreads
+            {/* <ConversationThreads
               repositoryId={repositoryId}
               onSelectThread={onSelectThread}
               onNewConversation={onClearConversation ?? (() => {})}
               placement="below"
-            />
-            {onClearConversation && (
+            /> */}
+            {/* {onClearConversation && (
               <button
                 type="button"
                 onClick={onClearConversation}
@@ -130,7 +130,7 @@ export function DeepWikiAnswerView({
                 <RefreshCw className="h-3 w-3" />
                 <span>New Thread</span>
               </button>
-            )}
+            )} */}
           </div>
         </div>
 

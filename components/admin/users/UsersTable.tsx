@@ -1,7 +1,7 @@
 "use client";
 
 import { FiGithub } from "react-icons/fi";
-import { Eye, MoreHorizontalIcon, Trash2 } from "lucide-react";
+import { Eye, MoreHorizontalIcon, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -30,6 +30,7 @@ interface UsersTableProps {
   isFetching?: boolean;
   onView: (user: AdminUserSummary) => void;
   onDelete: (user: AdminUserSummary) => void;
+  onChangeRole: (user: AdminUserSummary) => void;
 }
 
 function formatDate(value: string): string {
@@ -46,6 +47,7 @@ export function UsersTable({
   isFetching = false,
   onView,
   onDelete,
+  onChangeRole,
 }: UsersTableProps) {
   return (
     <div
@@ -166,6 +168,29 @@ export function UsersTable({
                         <Eye className="size-3.5" />
                         View details
                       </DropdownMenuItem>
+                      {user.role === "ADMIN" ? (
+                        <DropdownMenuItem
+                          disabled={isSelf}
+                          title={
+                            isSelf
+                              ? "You cannot change your own role"
+                              : undefined
+                          }
+                          onClick={() => onChangeRole(user)}
+                          className="cursor-pointer gap-2 rounded-md hover:bg-white/5 focus:bg-white/5"
+                        >
+                          <ShieldOff className="size-3.5" />
+                          Demote to user
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem
+                          onClick={() => onChangeRole(user)}
+                          className="cursor-pointer gap-2 rounded-md hover:bg-white/5 focus:bg-white/5"
+                        >
+                          <ShieldCheck className="size-3.5" />
+                          Promote to admin
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuSeparator className="bg-white/10" />
                       <DropdownMenuItem
                         variant="destructive"

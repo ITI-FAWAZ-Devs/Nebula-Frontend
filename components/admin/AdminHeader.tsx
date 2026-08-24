@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Bell, Home, LogOut, Settings } from "lucide-react";
+import { Home, LogOut, Settings } from "lucide-react";
 import { useAuthStore } from "@/lib/store";
 import { useLogoutMutation } from "@/hooks/use-auth";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,12 +16,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { getAdminNavTitle } from "./admin-nav";
@@ -56,27 +50,6 @@ export function AdminHeader() {
           {getAdminNavTitle(pathname)}
         </h1>
       </div>
-
-      {/* Notifications placeholder */}
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          aria-label="Notifications"
-          className="group flex items-center rounded-md outline-none"
-        >
-          <span className="relative flex size-6 items-center justify-center rounded-md text-white/60 transition-all [&_svg:not([class*='size-'])]:size-3 group-hover:bg-white/5 group-hover:text-white">
-            <Bell />
-            <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-primary ring-2 ring-background" />
-          </span>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-72 glass-panel border border-white/10 bg-popover/90 p-1 text-white backdrop-blur">
-          <Empty className="border-0 p-6">
-            <EmptyHeader>
-              <EmptyTitle className="text-sm text-white">No notifications</EmptyTitle>
-              <EmptyDescription>New platform alerts will appear here.</EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        </DropdownMenuContent>
-      </DropdownMenu>
 
       {/* Admin profile */}
       <DropdownMenu>

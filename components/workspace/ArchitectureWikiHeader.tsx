@@ -31,6 +31,7 @@ interface ArchitectureWikiHeaderProps {
   onVersionChange: (version: number) => void;
   onRegenerate: () => void;
   isRegenerating: boolean;
+  canRegenerate?: boolean;
 }
 
 export function ArchitectureWikiHeader({
@@ -44,6 +45,7 @@ export function ArchitectureWikiHeader({
   onVersionChange,
   onRegenerate,
   isRegenerating,
+  canRegenerate = true,
 }: ArchitectureWikiHeaderProps) {
   return (
     <header className="flex shrink-0 items-center justify-between border-b border-white/5 bg-background/70 px-6 py-3 backdrop-blur-md">
@@ -106,18 +108,20 @@ export function ArchitectureWikiHeader({
             ))}
           </SelectContent>
         </Select>
-        <button
-          onClick={onRegenerate}
-          disabled={isRegenerating}
-          className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-white/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-        >
-          {isRegenerating ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <RefreshCw className="h-3 w-3" />
-          )}
-          {isRegenerating ? "Regenerating…" : "Regenerate"}
-        </button>
+        {canRegenerate && (
+          <button
+            onClick={onRegenerate}
+            disabled={isRegenerating}
+            className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:border-white/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+          >
+            {isRegenerating ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3 w-3" />
+            )}
+            {isRegenerating ? "Regenerating…" : "Regenerate"}
+          </button>
+        )}
       </div>
     </header>
   );

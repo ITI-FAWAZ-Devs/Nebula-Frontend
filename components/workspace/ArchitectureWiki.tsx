@@ -34,6 +34,8 @@ export interface ArchitectureWikiProps {
   onVersionChange: (version: number) => void;
   onRegenerate: () => void;
   isRegenerating: boolean;
+  canRegenerate?: boolean;
+  canChatAndVoice?: boolean;
 }
 
 export function ArchitectureWiki({
@@ -47,6 +49,8 @@ export function ArchitectureWiki({
   onVersionChange,
   onRegenerate,
   isRegenerating,
+  canRegenerate = true,
+  canChatAndVoice = true,
 }: ArchitectureWikiProps) {
   const [activeSection, setActiveSection] = useState(data.sections[0]?.key ?? "");
   const [activeHeading, setActiveHeading] = useState("");
@@ -159,9 +163,10 @@ export function ArchitectureWiki({
         onVersionChange={onVersionChange}
         onRegenerate={onRegenerate}
         isRegenerating={isRegenerating}
+        canRegenerate={canRegenerate}
       />
 
-      {viewMode === "deepwiki" ? (
+      {viewMode === "deepwiki" && canChatAndVoice ? (
         <div className="flex-1 overflow-hidden">
           <DeepWikiAnswerView
             repoName={repoName}
@@ -267,19 +272,21 @@ export function ArchitectureWiki({
           </div>
 
           {/* ── Bottom Chat Bar ── */}
-          <ArchitectureWikiChat
-            repoName={repoName}
-            repositoryId={repositoryId}
-            isStreaming={isStreaming}
-            chatInput={chatInput}
-            setChatInput={setChatInput}
-            onSendMessage={handleSendMessage}
-            onClearConversation={clearConversation}
-            onSelectThread={async (threadId) => {
-              await loadThread(threadId);
-              setViewMode("deepwiki");
-            }}
-          />
+          {canChatAndVoice && (
+            <ArchitectureWikiChat
+              repoName={repoName}
+              repositoryId={repositoryId}
+              isStreaming={isStreaming}
+              chatInput={chatInput}
+              setChatInput={setChatInput}
+              onSendMessage={handleSendMessage}
+              onClearConversation={clearConversation}
+              onSelectThread={async (threadId) => {
+                await loadThread(threadId);
+                setViewMode("deepwiki");
+              }}
+            />
+          )}
         </>
       )}
     </div>

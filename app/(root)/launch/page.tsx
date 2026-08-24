@@ -39,7 +39,8 @@ import {
   useDeleteRepoMutation,
   Repository,
 } from "@/hooks/use-repository";
-import { useUiStore, useWorkspaceStore } from "@/lib/store";
+import { useUiStore, useWorkspaceStore, useAuthStore } from "@/lib/store";
+import { useOrganizationsQuery } from "@/hooks/use-organization";
 import { useArchDocStatusQuery, useRegenerateMutation } from "@/hooks/use-arch-doc";
 import { cn } from "@/lib/utils";
 
@@ -51,12 +52,33 @@ const STATUS_FILTERS: { id: StatusFilter; label: string }[] = [
   { id: "failed", label: "Failed" },
 ];
 
+const READ_ONLY_ROLE_NAMES = ["Viewer", "Developer"];
+const VIEWER_ROLE_NAMES = ["Viewer"];
+
 export default function HangarPage() {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const { workspace } = useWorkspaceStore();
   const activeOrgId = workspace.type === "organization" ? workspace.organizationId : null;
+  const user = useAuthStore((s) => s.user);
+  const { data: orgs } = useOrganizationsQuery();
+
+  // Derive role-based permissions when in an org workspace
+  const currentOrg = activeOrgId ? orgs?.find((o) => o.id === activeOrgId) : null;
+  const isOwner = !!user && !!currentOrg && currentOrg.ownerId === user.id;
+  const roleName = currentOrg?.userRole?.name ?? "";
+  const myPermissions = currentOrg?.userRole?.permissions ?? [];
+  const isRestrictedRole = !!activeOrgId && !isOwner && READ_ONLY_ROLE_NAMES.includes(roleName);
+  const isViewerOnly = !!activeOrgId && !isOwner && VIEWER_ROLE_NAMES.includes(roleName);
+
+  // Permission flags
+  // Viewer + Developer: can never import or delete repos — role-name gated, not permission-gated
+  const canImport = !isRestrictedRole;
+  const canDelete = !isRestrictedRole;
+  // Only Viewers cannot launch/regenerate docs
+  const canLaunch = !isViewerOnly;
+  const canRegenerate = !isViewerOnly;
 
   const setImportPickerOpen = useUiStore((s) => s.setImportPickerOpen);
   const [detailRepoId, setDetailRepoId] = useState<string | null>(null);
@@ -230,13 +252,15 @@ export default function HangarPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button
-                onClick={() => setImportPickerOpen(true)}
-                className="inline-flex h-9 items-center gap-2 rounded-xl bg-white px-3 text-xs font-medium text-black hover:bg-white/90 cursor-pointer"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                Import repository
-              </Button>
+              {canImport && (
+                <Button
+                  onClick={() => setImportPickerOpen(true)}
+                  className="inline-flex h-9 items-center gap-2 rounded-xl bg-white px-3 text-xs font-medium text-black hover:bg-white/90 cursor-pointer"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Import repository
+                </Button>
+              )}
             </div>
           </motion.div>
 
@@ -284,6 +308,10 @@ export default function HangarPage() {
                     onDetailClick={(r) => setDetailRepoId(r.id)}
                     onRegenerate={handleRegenerate}
                     onDeleteClick={(r) => setDeleteRepo(r)}
+                    canImport={canImport}
+                    canDelete={canDelete}
+                    canLaunch={canLaunch}
+                    canRegenerate={canRegenerate}
                   />
                   <p className="mt-4 text-center text-xs text-muted-foreground">
                     Showing {filtered.length} of {totalCount} repositories.
@@ -302,7 +330,7 @@ export default function HangarPage() {
                         : "Connect a codebase to start indexing and drafting architecture docs."}
                     </EmptyDescription>
                   </EmptyHeader>
-                  {!query && statusFilter === "all" && (
+                  {!query && statusFilter === "all" && canImport && (
                     <EmptyContent>
                       <Button
                         onClick={() => setImportPickerOpen(true)}

@@ -22,11 +22,26 @@ import {
   isActiveArchDocStatus,
 } from "@/hooks/use-arch-doc";
 import { useRepositoryQuery } from "@/hooks/use-repository";
+import { useOrganizationsQuery } from "@/hooks/use-organization";
+import { useAuthStore, useWorkspaceStore } from "@/lib/store";
 
 function WorkspaceView() {
   const searchParams = useSearchParams();
   const repoId = searchParams.get("repoId");
   const repo = searchParams.get("repo") || "repository";
+
+  const { workspace } = useWorkspaceStore();
+  const activeOrgId = workspace.type === "organization" ? workspace.organizationId : null;
+  const user = useAuthStore((s) => s.user);
+  const { data: orgs } = useOrganizationsQuery();
+
+  // Derive role-based permissions when in an org workspace
+  const currentOrg = activeOrgId ? orgs?.find((o) => o.id === activeOrgId) : null;
+  const isOwner = !!user && !!currentOrg && currentOrg.ownerId === user.id;
+  const roleName = currentOrg?.userRole?.name ?? "";
+  const isViewerOnly = !!activeOrgId && !isOwner && roleName === "Viewer";
+  const canRegenerate = !isViewerOnly;
+  const canChatAndVoice = !isViewerOnly;
 
   const [pickedVersion, setPickedVersion] = useState<number | null>(null);
   const [knownLatest, setKnownLatest] = useState<number | null>(null);
@@ -98,6 +113,8 @@ function WorkspaceView() {
           onVersionChange={setPickedVersion}
           onRegenerate={handleRegenerate}
           isRegenerating={!!activeVersion}
+          canRegenerate={canRegenerate}
+          canChatAndVoice={canChatAndVoice}
         />
       </div>
     );

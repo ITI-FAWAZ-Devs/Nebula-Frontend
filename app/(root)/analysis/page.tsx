@@ -3,6 +3,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AlertCircle, Loader2, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { NebulaBackdrop } from "@/components/landing/NebulaBackdrop";
 import { AnalysisTimeline } from "@/components/analysis/AnalysisTimeline";
@@ -12,6 +13,8 @@ import { CompleteOverlay } from "@/components/analysis/CompleteOverlay";
 import { STEPS, AGENTS } from "@/components/analysis/constants";
 import { LogLine } from "@/components/analysis/types";
 import { useLaunchPipeline } from "@/hooks/use-launch";
+import { useOrganizationsQuery } from "@/hooks/use-organization";
+import { useAuthStore, useWorkspaceStore } from "@/lib/store";
 
 const ANALYSIS_STAGES = [
   "queued",
@@ -61,6 +64,16 @@ function AnalysisMissionControl() {
   const repoId = searchParams.get("repoId");
   const repo = searchParams.get("repo");
 
+  const { workspace } = useWorkspaceStore();
+  const activeOrgId = workspace.type === "organization" ? workspace.organizationId : null;
+  const user = useAuthStore((s) => s.user);
+  const { data: orgs } = useOrganizationsQuery();
+
+  const currentOrg = activeOrgId ? orgs?.find((o) => o.id === activeOrgId) : null;
+  const isOwner = !!user && !!currentOrg && currentOrg.ownerId === user.id;
+  const roleName = currentOrg?.userRole?.name ?? "";
+  const isViewerOnly = !!activeOrgId && !isOwner && roleName === "Viewer";
+
   const { analysis, documentation, archDoc, phase, error, startPipeline } =
     useLaunchPipeline(repoId);
 
@@ -77,12 +90,32 @@ function AnalysisMissionControl() {
   const complete = phase === "docs-ready";
 
   useEffect(() => {
+    if (isViewerOnly) {
+      toast.error("Viewers are not authorized to launch or generate documentation");
+      router.replace("/launch");
+      return;
+    }
+
     if (repoId) {
       const t = setTimeout(() => pushLog("pipeline", "igniting analysis engines"), 0);
       startPipeline();
       return () => clearTimeout(t);
     }
-  }, [repoId, startPipeline, pushLog]);
+  }, [repoId, isViewerOnly, startPipeline, pushLog, router]);
+
+  useEffect(() => {
+    if (
+      phase === "error" &&
+      error &&
+      (error.toLowerCase().includes("access") ||
+        error.toLowerCase().includes("permission") ||
+        error.toLowerCase().includes("forbidden") ||
+        error.toLowerCase().includes("not authorized"))
+    ) {
+      toast.error(error);
+      router.replace("/launch");
+    }
+  }, [phase, error, router]);
 
   useEffect(() => {
     if (phase === "docs-ready") {

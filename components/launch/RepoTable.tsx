@@ -48,6 +48,10 @@ interface RepoTableProps {
   onDetailClick: (repo: Repository) => void;
   onRegenerate: (repo: Repository) => void;
   onDeleteClick: (repo: Repository) => void;
+  canImport?: boolean;
+  canDelete?: boolean;
+  canLaunch?: boolean;
+  canRegenerate?: boolean;
 }
 
 function statusPresentation(status: RepositoryStatus) {
@@ -71,20 +75,24 @@ function statusPresentation(status: RepositoryStatus) {
 
 function primaryAction(
   status: RepositoryStatus,
-  hasDoc: boolean
-): { label: string; icon: LucideIcon; spinning?: boolean } {
+  hasDoc: boolean,
+  canLaunch: boolean
+): { label: string; icon: LucideIcon; spinning?: boolean; disabled?: boolean } | null {
   switch (status) {
     case "READY":
-      return hasDoc
-        ? { label: "Open", icon: BookOpen }
-        : { label: "Generate", icon: FileText };
+      if (hasDoc) {
+        return { label: canLaunch ? "Open" : "View Docs", icon: BookOpen };
+      }
+      // Viewer with no docs: no primary action
+      return canLaunch ? { label: "Generate", icon: FileText } : null;
     case "INDEXING":
     case "CLONING":
       return { label: "View", icon: Loader2, spinning: true };
     case "FAILED":
-      return { label: "Retry", icon: RefreshCw };
+      return canLaunch ? { label: "Retry", icon: RefreshCw } : null;
     default:
-      return { label: "Index", icon: Rocket };
+      // IMPORTED / pending — only show "Index" if user can launch
+      return canLaunch ? { label: "Index", icon: Rocket } : null;
   }
 }
 
@@ -109,6 +117,10 @@ export function RepoTable({
   onDetailClick,
   onRegenerate,
   onDeleteClick,
+  canImport = true,
+  canDelete = true,
+  canLaunch = true,
+  canRegenerate = true,
 }: RepoTableProps) {
   return (
     <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.02]">
@@ -137,8 +149,7 @@ export function RepoTable({
             const status = statusPresentation(repo.status);
             const doc = docStatusByRepo[repo.id];
             const hasDoc = !!doc?.hasDoc;
-            const action = primaryAction(repo.status, hasDoc);
-            const ActionIcon = action.icon;
+            const action = primaryAction(repo.status, hasDoc, canLaunch);
             const isRegenerating = regeneratingId === repo.id;
             const lastIndexed =
               repo.status === "READY"
@@ -202,62 +213,84 @@ export function RepoTable({
 
                 <TableCell className="w-[1%] whitespace-nowrap px-4 py-4">
                   <div className="ml-auto flex w-fit items-center gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => onOpen(repo)}
-                      className="h-8 shrink-0 rounded-lg border border-white/15 bg-transparent px-3.5 text-xs font-medium text-white hover:bg-white/5 cursor-pointer"
-                    >
-                      <ActionIcon
+                    {action && (
+                      <Button
+                        size="sm"
+                        onClick={() => !action.disabled && onOpen(repo)}
+                        disabled={action.disabled}
                         className={cn(
-                          "mr-1.5 h-3.5 w-3.5",
-                          action.spinning && "animate-spin"
+                          "h-8 shrink-0 rounded-lg border border-white/15 bg-transparent px-3.5 text-xs font-medium text-white hover:bg-white/5",
+                          action.disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer"
                         )}
-                      />
-                      {action.label}
-                    </Button>
+                      >
+                        <action.icon
+                          className={cn(
+                            "mr-1.5 h-3.5 w-3.5",
+                            action.spinning && "animate-spin"
+                          )}
+                        />
+                        {action.label}
+                      </Button>
+                    )}
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger
-                        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white cursor-pointer"
-                        aria-label="More actions"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-44 glass-panel border border-white/10 bg-popover/90 backdrop-blur p-1 text-white"
-                      >
-                        <DropdownMenuItem
-                          className="cursor-pointer rounded-md text-xs"
-                          onClick={() => onDetailClick(repo)}
+                    {(hasDoc && canRegenerate || canDelete) ? (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground hover:bg-white/5 hover:text-white cursor-pointer"
+                          aria-label="More actions"
                         >
-                          <Eye className="h-3.5 w-3.5" />
-                          Details
-                        </DropdownMenuItem>
-                        {hasDoc && (
+                          <MoreHorizontal className="h-4 w-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-44 glass-panel border border-white/10 bg-popover/90 backdrop-blur p-1 text-white"
+                        >
                           <DropdownMenuItem
                             className="cursor-pointer rounded-md text-xs"
-                            disabled={isRegenerating}
-                            onClick={() => onRegenerate(repo)}
+                            onClick={() => onDetailClick(repo)}
                           >
-                            {isRegenerating ? (
-                              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                            ) : (
-                              <RefreshCw className="h-3.5 w-3.5" />
-                            )}
-                            Regenerate
+                            <Eye className="h-3.5 w-3.5" />
+                            Details
                           </DropdownMenuItem>
-                        )}
-                        <DropdownMenuSeparator className="bg-white/10" />
-                        <DropdownMenuItem
-                          className="cursor-pointer rounded-md text-xs text-rose-400 focus:text-rose-300"
-                          onClick={() => onDeleteClick(repo)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                          Remove
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          {hasDoc && canRegenerate && (
+                            <DropdownMenuItem
+                              className="cursor-pointer rounded-md text-xs"
+                              disabled={isRegenerating}
+                              onClick={() => onRegenerate(repo)}
+                            >
+                              {isRegenerating ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <RefreshCw className="h-3.5 w-3.5" />
+                              )}
+                              Regenerate
+                            </DropdownMenuItem>
+                          )}
+                          {canDelete && (
+                            <>
+                              <DropdownMenuSeparator className="bg-white/10" />
+                              <DropdownMenuItem
+                                className="cursor-pointer rounded-md text-xs text-rose-400 focus:text-rose-300"
+                                onClick={() => onDeleteClick(repo)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                Remove
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onDetailClick(repo)}
+                        className="h-8 w-8 text-muted-foreground hover:bg-white/5 hover:text-white cursor-pointer"
+                        title="Details"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>

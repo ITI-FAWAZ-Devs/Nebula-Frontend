@@ -11,6 +11,12 @@ interface ConnectGithubButtonProps {
   label?: string;
   /** Path to redirect back to after the connect flow completes (defaults to /launch). */
   returnTo?: string;
+  /**
+   * 'connect' (default): full connect flow — OAuth then the account/org picker.
+   * 'add-org': dedicated Add-Organization flow — after OAuth the picker only
+   * offers organizations not yet connected.
+   */
+  mode?: "connect" | "add-org";
 }
 
 /**
@@ -27,6 +33,7 @@ export function ConnectGithubButton({
   size = "md",
   label = "Connect with GitHub",
   returnTo,
+  mode = "connect",
 }: ConnectGithubButtonProps) {
   const { workspace } = useWorkspaceStore();
   const user = useAuthStore((s) => s.user);
@@ -34,7 +41,17 @@ export function ConnectGithubButton({
   const handleConnect = () => {
     const backendUrl = process.env.NEXT_PUBLIC_API_URL;
     const workspaceType = organizationId ? "organization" : workspace.type;
-    const orgId = organizationId ?? (workspace.type === "organization" ? workspace.organizationId : null);
+    const orgId =
+      organizationId ?? (workspace.type === "organization" ? workspace.organizationId : null);
+
+    if (mode === "add-org") {
+      // Dedicated entry point; userId comes from the JWT cookie server-side.
+      const params = new URLSearchParams();
+      if (orgId) params.set("organizationId", orgId);
+      if (returnTo) params.set("returnTo", returnTo);
+      window.location.href = `${backendUrl}/api/auth/github/connect/add-org?${params.toString()}`;
+      return;
+    }
 
     const statePayload = {
       purpose: "connect",

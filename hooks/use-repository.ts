@@ -10,6 +10,13 @@ export interface GitHubRepoDetails {
   defaultBranch: string;
   isPrivate: boolean;
   cloneUrl: string;
+  updatedAt?: string;
+}
+
+export interface GithubRepoFilterParams {
+  search?: string;
+  visibility?: "public" | "private" | "all";
+  sort?: "name" | "updated";
 }
 
 export interface Repository {
@@ -38,6 +45,7 @@ interface GithubReposResponse {
 }
 
 // Hook: Get live GitHub repositories, optionally scoped to a specific connectionId
+// and filtered/sorted server-side (search by name, visibility, sort order).
 export function useGithubReposQuery(params?: {
   page?: number;
   limit?: number;
@@ -45,9 +53,18 @@ export function useGithubReposQuery(params?: {
   connectionId?: string;
   organizationId?: string | null;
   enabled?: boolean;
-}) {
+} & GithubRepoFilterParams) {
+  const search = params?.search;
+  const visibility = params?.visibility;
+  const sort = params?.sort;
+
   return useQuery({
-    queryKey: ["github-repos", params?.connectionId ?? "all", params?.organizationId ?? "personal"],
+    queryKey: [
+      "github-repos",
+      params?.connectionId ?? "all",
+      params?.organizationId ?? "personal",
+      { search, visibility, sort },
+    ],
     queryFn: async () => {
       const response = await api.get("/api/repositories/github", {
         params: {
@@ -56,6 +73,9 @@ export function useGithubReposQuery(params?: {
           force: params?.force ? "true" : "false",
           connectionId: params?.connectionId,
           organizationId: params?.organizationId ?? undefined,
+          search: search || undefined,
+          visibility: visibility && visibility !== "all" ? visibility : undefined,
+          sort: sort || undefined,
         },
       });
       return response.data.data as GithubReposResponse;

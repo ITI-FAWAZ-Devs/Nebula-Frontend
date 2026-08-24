@@ -30,6 +30,8 @@ interface ConnectData {
   organizationId: string | null;
   existingLogins: string[];
   returnTo: string | null;
+  /** 'add-org' when initiated from the Add Organization flow */
+  flow?: string | null;
 }
 
 function safeAppPath(path: string | null | undefined): string {
@@ -90,20 +92,29 @@ function GithubConnectSelectContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sid]);
 
-  useEffect(() => {
-    if (!data) return;
-    const existing = new Set(data.existingLogins ?? []);
-    const initial = new Set<string>();
-    if (data.user?.login && !existing.has(data.user.login)) {
-      initial.add(data.user.login);
-    }
-    setSelected(initial);
-  }, [data]);
-
   const existingLogins = useMemo(
     () => new Set(data?.existingLogins ?? []),
     [data],
   );
+
+  const isAddOrgFlow = data?.flow === "add-org";
+
+  useEffect(() => {
+    if (!data) return;
+    const existing = new Set(data.existingLogins ?? []);
+    const initial = new Set<string>();
+    if (data.flow === "add-org") {
+      // Add-org mode: only brand-new organizations, all pre-selected
+      (data.orgs ?? []).forEach((o) => {
+        if (o.type === "ORGANIZATION" && !existing.has(o.login)) {
+          initial.add(o.login);
+        }
+      });
+    } else if (data.user?.login && !existing.has(data.user.login)) {
+      initial.add(data.user.login);
+    }
+    setSelected(initial);
+  }, [data]);
 
   const toggle = (login: string) => {
     if (existingLogins.has(login)) return;
@@ -178,7 +189,36 @@ function GithubConnectSelectContent() {
     );
   }
 
-  const allAccounts: GithubAccount[] = [data.user, ...(data.orgs ?? [])];
+  const isAddOrg = data.flow === "add-org";
+  const allAccounts: GithubAccount[] = isAddOrg
+    ? (data.orgs ?? []).filter(
+        (o) => o.type === "ORGANIZATION" && !existingLogins.has(o.login),
+      )
+    : [data.user, ...(data.orgs ?? [])];
+
+  if (isAddOrg && allAccounts.length === 0) {
+    return (
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
+        <Building2 className="h-10 w-10 text-white/30" />
+        <div>
+          <h1 className="text-lg font-bold text-white">No new organizations</h1>
+          <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-white/45">
+            None of your GitHub organizations are pending access. To add an
+            organization you own or administer, grant it access from your GitHub
+            settings, then try again.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => router.push(safeAppPath(data.returnTo))}
+          className="text-xs text-primary hover:underline"
+        >
+          Back to Nebula
+        </button>
+      </div>
+    );
+  }
+
   const newSelectionCount = selected.size;
   const alreadyCount = existingLogins.size;
   const backHref = safeAppPath(data.returnTo);
@@ -191,15 +231,20 @@ function GithubConnectSelectContent() {
             <FiGithub className="h-5 w-5 text-white" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-white">Connect GitHub accounts</h1>
+            <h1 className="text-lg font-bold text-white">
+              {isAddOrg ? "Add GitHub organizations" : "Connect GitHub accounts"}
+            </h1>
             <p className="mt-0.5 text-xs text-white/45">
-              Select which GitHub accounts to link to your{" "}
-              {data.workspace === "organization" ? "organization" : "personal"} workspace.
+              {isAddOrg
+                ? "Select the GitHub organizations you want to grant Nebula access to."
+                : `Select which GitHub accounts to link to your ${
+                    data.workspace === "organization" ? "organization" : "personal"
+                  } workspace.`}
             </p>
           </div>
         </div>
 
-        {alreadyCount > 0 && (
+        {!isAddOrg && alreadyCount > 0 && (
           <p className="mb-3 px-1 font-mono text-[11px] text-white/35">
             <CheckCircle2 className="mr-1 -mt-0.5 inline h-3 w-3 text-emerald-400" />
             {alreadyCount} account{alreadyCount !== 1 ? "s" : ""} already connected — shown below.
@@ -271,8 +316,12 @@ function GithubConnectSelectContent() {
           {isSaving
             ? "Saving..."
             : newSelectionCount === 0
-              ? "Select accounts to connect"
-              : `Connect ${newSelectionCount} account${newSelectionCount !== 1 ? "s" : ""}`}
+              ? isAddOrg
+                ? "Select organizations to add"
+                : "Select accounts to connect"
+              : isAddOrg
+                ? `Add ${newSelectionCount} organization${newSelectionCount > 1 ? "s" : ""}`
+                : `Connect ${newSelectionCount} account${newSelectionCount !== 1 ? "s" : ""}`}
         </Button>
 
         <button

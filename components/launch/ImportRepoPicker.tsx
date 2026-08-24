@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { GitBranch, Loader2, AlertCircle, Globe, Link2 } from "lucide-react";
+import { GitBranch, Loader2, AlertCircle, Globe, Link2, ArrowDownWideNarrow } from "lucide-react";
 import { FiGithub } from "react-icons/fi";
 import { Building2, UserCircle2 } from "lucide-react";
 
@@ -24,11 +24,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/components/ui/dropdown-menu";
+import {
   useGithubReposQuery,
   useImportRepoMutation,
   useImportRepoFromUrlMutation,
   GitHubRepoDetails,
 } from "@/hooks/use-repository";
+import type { GithubRepoFilterParams } from "@/hooks/use-repository";
 import {
   useUserConnectionsQuery,
   useOrgConnectionsQuery,
@@ -53,10 +61,28 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
 
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
 
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [visibility, setVisibility] = useState<"all" | "public" | "private">("all");
+  const [sort, setSort] = useState<"name" | "updated" | "default">("default");
+
+  // Debounce search input so typing doesn't spam the API
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput.trim()), 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  const filters: GithubRepoFilterParams = {
+    search: search || undefined,
+    visibility,
+    sort: sort === "default" ? undefined : sort,
+  };
+
   const { data, isLoading, error, refetch } = useGithubReposQuery({
     connectionId: selectedConnectionId ?? undefined,
     organizationId: activeOrgId,
     enabled: open,
+    ...filters,
   });
 
   const importMutation = useImportRepoMutation();
@@ -228,9 +254,69 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
                     ))}
                   </>
                 )}
+                <span className="mx-1 font-mono text-[9px] text-white/25 uppercase">|</span>
+                <ConnectGithubButton
+                  mode="add-org"
+                  organizationId={activeOrgId}
+                  size="sm"
+                  label="Add Org"
+                  returnTo="/launch?import=1"
+                  className="h-auto gap-1 rounded border border-dashed border-white/15 bg-transparent px-2 py-0.5 font-mono text-[10px] font-normal normal-case tracking-normal text-white/50 shadow-none hover:border-primary/40 hover:bg-primary/10 hover:text-primary [&_svg]:h-3 [&_svg]:w-3 [&_svg]:mr-0"
+                />
               </div>
             )}
           </div>
+
+          {hasConnections && importMode === "list" && (
+            <div
+              className="flex flex-wrap items-center justify-between gap-2"
+              onPointerDown={stopCmdk}
+              onClick={stopCmdk}
+            >
+              <div className="flex items-center gap-1">
+                <span className="mr-0.5 font-mono text-[9px] text-white/25 uppercase">Vis</span>
+                {(["all", "public", "private"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setVisibility(v)}
+                    className={cn(
+                      "rounded border px-2 py-0.5 font-mono text-[10px] capitalize transition-all",
+                      visibility === v
+                        ? "border-primary/40 bg-primary/20 font-semibold text-primary"
+                        : "border-white/5 bg-white/5 text-white/50 hover:text-white",
+                    )}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  className={cn(
+                    "flex cursor-pointer items-center gap-1 rounded border px-2 py-0.5 font-mono text-[10px] transition-all",
+                    sort !== "default"
+                      ? "border-primary/40 bg-primary/20 font-semibold text-primary"
+                      : "border-white/5 bg-white/5 text-white/50 hover:text-white",
+                  )}
+                >
+                  <ArrowDownWideNarrow className="h-3 w-3" />
+                  {sort === "name" ? "Name A–Z" : sort === "updated" ? "Recent" : "Sort"}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-40 border-white/10 bg-background text-white">
+                  <DropdownMenuRadioGroup
+                    value={sort}
+                    onValueChange={(v) => setSort(v as typeof sort)}
+                  >
+                    <DropdownMenuRadioItem value="default">Default order</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="name">Name A–Z</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="updated">Recently updated</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
 
         {importMode === "url" ? (
@@ -260,8 +346,10 @@ export function ImportRepoPicker({ open, onOpenChange }: ImportRepoPickerProps) 
             </div>
           </form>
         ) : (
-          <Command className="rounded-none bg-transparent p-0 text-white">
+          <Command shouldFilter={false} className="rounded-none bg-transparent p-0 text-white">
             <CommandInput
+              value={searchInput}
+              onValueChange={setSearchInput}
               placeholder="Search GitHub repositories..."
               className="font-mono text-xs text-white placeholder:text-white/20"
             />

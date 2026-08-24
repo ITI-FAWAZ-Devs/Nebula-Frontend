@@ -51,10 +51,6 @@ export function ModeBadge({ mode }: { mode: "fast" | "standard" | "deep" | null 
       );
     case "standard":
     default:
-      return (
-        <span className="inline-flex items-center gap-1 rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-medium text-sky-400">
-          🤖 Standard Agent
-        </span>
-      );
+      return null;
   }
 }

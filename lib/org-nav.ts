@@ -44,12 +44,12 @@ export const ORG_NAV: OrgNavItem[] = [
     description: "Repositories scoped to this organization.",
     icon: FolderGit2,
   },
-  {
-    id: "teams",
-    label: "Teams",
-    description: "Group members and assign repository access.",
-    icon: Database,
-  },
+  // {
+  //   id: "teams",
+  //   label: "Teams",
+  //   description: "Group members and assign repository access.",
+  //   icon: Database,
+  // },
   {
     id: "connections",
     label: "Connections",

@@ -23,8 +23,8 @@ const MARKETING_LINKS = [
   { label: "Features", href: "/#features" },
   { label: "How it works", href: "/#product" },
   { label: "Use cases", href: "/#agents" },
-  { label: "Docs", href: "/docs" },
-  { label: "Pricing", href: "/#cta" },
+  // { label: "Docs", href: "/docs" },
+  // { label: "Pricing", href: "/#cta" },
   { label: "Changelog", href: "/#timeline" },
 ];
 

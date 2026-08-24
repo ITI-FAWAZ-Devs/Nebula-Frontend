@@ -46,6 +46,7 @@ import {
 import {
   useAdminUsersQuery,
   useDeleteAdminUserMutation,
+  useUpdateAdminUserRoleMutation,
   type AdminUserSummary,
 } from "@/hooks/use-admin";
 import { useAuthStore } from "@/lib/store";
@@ -53,6 +54,7 @@ import { cn } from "@/lib/utils";
 import { UsersTable, type RoleFilter } from "./UsersTable";
 import { UserDetailDialog } from "./UserDetailDialog";
 import { DeleteUserDialog } from "./DeleteUserDialog";
+import { UpdateUserRoleDialog } from "./UpdateUserRoleDialog";
 
 const PAGE_SIZE = 10;
 
@@ -107,6 +109,8 @@ export function AdminUsers() {
   const [deleteTarget, setDeleteTarget] = useState<AdminUserSummary | null>(
     null
   );
+  const [roleChangeTarget, setRoleChangeTarget] =
+    useState<AdminUserSummary | null>(null);
 
   const debouncedSearch = useDebouncedValue(search.trim(), 400);
 
@@ -126,6 +130,7 @@ export function AdminUsers() {
   });
 
   const deleteMutation = useDeleteAdminUserMutation();
+  const updateRoleMutation = useUpdateAdminUserRoleMutation();
 
   const hasActiveFilters = debouncedSearch.length > 0 || role !== "ALL";
 
@@ -161,6 +166,23 @@ export function AdminUsers() {
       setDeleteTarget(null);
     } catch (err) {
       toast.error(getErrorMessage(err) || "Failed to delete user.");
+    }
+  };
+
+  const handleRoleChangeConfirm = async () => {
+    if (!roleChangeTarget) return;
+    const nextRole = roleChangeTarget.role === "ADMIN" ? "USER" : "ADMIN";
+    try {
+      await updateRoleMutation.mutateAsync({
+        userId: roleChangeTarget.id,
+        role: nextRole,
+      });
+      toast.success(
+        `${roleChangeTarget.fullName || roleChangeTarget.email} is now ${nextRole.toLowerCase()}`
+      );
+      setRoleChangeTarget(null);
+    } catch (err) {
+      toast.error(getErrorMessage(err) || "Failed to update user role.");
     }
   };
 
@@ -250,6 +272,7 @@ export function AdminUsers() {
               isFetching={isFetching}
               onView={setSelectedUser}
               onDelete={setDeleteTarget}
+              onChangeRole={setRoleChangeTarget}
             />
             <UsersTableFooter
               page={data.pagination.page}
@@ -278,6 +301,19 @@ export function AdminUsers() {
         userName={deleteTarget?.fullName || deleteTarget?.email || null}
         onConfirm={handleDeleteConfirm}
         isDeleting={deleteMutation.isPending}
+      />
+
+      <UpdateUserRoleDialog
+        open={!!roleChangeTarget}
+        onOpenChange={(open) => {
+          if (!open) setRoleChangeTarget(null);
+        }}
+        userName={
+          roleChangeTarget?.fullName || roleChangeTarget?.email || null
+        }
+        role={roleChangeTarget?.role === "ADMIN" ? "USER" : "ADMIN"}
+        onConfirm={handleRoleChangeConfirm}
+        isUpdating={updateRoleMutation.isPending}
       />
     </div>
   );

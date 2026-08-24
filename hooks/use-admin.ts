@@ -137,6 +137,28 @@ export function useDeleteAdminUserMutation() {
   });
 }
 
+export function useUpdateAdminUserRoleMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      userId,
+      role,
+    }: {
+      userId: string;
+      role: AdminUserRole;
+    }) => {
+      const response = await api.patch<AdminApiResponse<AdminUserSummary>>(
+        `/api/admin/users/${userId}/role`,
+        { role }
+      );
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+    },
+  });
+}
+
 export type AdminRepositoryStatus =
   | "IMPORTED"
   | "CLONING"

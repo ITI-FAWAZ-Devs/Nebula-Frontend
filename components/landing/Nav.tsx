@@ -68,12 +68,14 @@ export function Nav() {
           {user ? (
             <div className="flex items-center gap-3">
               {/* <WorkspaceSwitcher /> */}
-              <Link
-                className="text-sm text-white/60 transition-colors hover:text-white"
-                href="/launch"
-              >
-                Open app
-              </Link>
+              {!(user.role === "ADMIN" || user.role === "admin") && (
+                <Link
+                  className="text-sm text-white/60 transition-colors hover:text-white"
+                  href="/launch"
+                >
+                  Open app
+                </Link>
+              )}
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex cursor-pointer items-center gap-2 rounded-full border border-white/10 p-0.5 outline-none transition-colors hover:border-white/20 hover:bg-white/3">
                   <Avatar size="sm">
@@ -99,11 +101,19 @@ export function Nav() {
                     </p>
                   </div>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  <DropdownMenuItem className="cursor-pointer rounded-md text-white/80 hover:bg-white/5 focus:bg-white/5">
-                    <Link href="/launch" className="flex w-full items-center">
-                      Repositories
-                    </Link>
-                  </DropdownMenuItem>
+                  {user.role === "ADMIN" || user.role === "admin" ? (
+                    <DropdownMenuItem className="cursor-pointer rounded-md text-white/80 hover:bg-white/5 focus:bg-white/5">
+                      <Link href="/admin" className="flex w-full items-center">
+                        Admin Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem className="cursor-pointer rounded-md text-white/80 hover:bg-white/5 focus:bg-white/5">
+                      <Link href="/launch" className="flex w-full items-center">
+                        Repositories
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem className="cursor-pointer rounded-md text-white/80 hover:bg-white/5 focus:bg-white/5">
                     <Link href="/settings" className="flex w-full items-center">
                       Settings

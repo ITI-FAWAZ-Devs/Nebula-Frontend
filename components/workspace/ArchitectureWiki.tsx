@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ChevronRight, CheckCircle2, Menu } from "lucide-react";
 import { toast } from "sonner";
 import type {
@@ -243,7 +244,10 @@ export function ArchitectureWiki({
 
                   {/* Markdown content */}
                   <article className="min-w-0">
-                    <ReactMarkdown components={mdComponents as Record<string, React.ElementType>}>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={mdComponents as Record<string, React.ElementType>}
+                    >
                       {processedMarkdown}
                     </ReactMarkdown>
                   </article>

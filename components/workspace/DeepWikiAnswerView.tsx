@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   ArrowLeft,
   Cpu,
@@ -217,7 +218,10 @@ export function DeepWikiAnswerView({
                     {/* Rendered Markdown Body */}
                     {m.content.length > 0 && (
                       <div className="text-sm text-foreground/90 leading-relaxed font-sans prose prose-invert max-w-none">
-                        <ReactMarkdown components={chatMdComponents}>
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={chatMdComponents}
+                        >
                           {m.content}
                         </ReactMarkdown>
                       </div>

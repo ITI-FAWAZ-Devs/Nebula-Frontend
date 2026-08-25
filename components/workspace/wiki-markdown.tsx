@@ -17,6 +17,44 @@ function extractTextFromChildren(children: React.ReactNode): string {
   return String(children);
 }
 
+function renderTableCellContent(children: React.ReactNode): React.ReactNode {
+  const text = extractTextFromChildren(children).trim();
+
+  // Highlight HTTP methods
+  const methodUpper = text.toUpperCase();
+  if (["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"].includes(methodUpper)) {
+    const badgeColors: Record<string, string> = {
+      GET: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.15)]",
+      POST: "bg-sky-500/15 border-sky-500/30 text-sky-400 shadow-[0_0_8px_rgba(14,165,233,0.15)]",
+      PUT: "bg-indigo-500/15 border-indigo-500/30 text-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.15)]",
+      PATCH: "bg-amber-500/15 border-amber-500/30 text-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.15)]",
+      DELETE: "bg-rose-500/15 border-rose-500/30 text-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.15)]",
+      OPTIONS: "bg-purple-500/15 border-purple-500/30 text-purple-400",
+      HEAD: "bg-slate-500/15 border-slate-500/30 text-slate-300",
+    };
+    return (
+      <span
+        className={`inline-flex items-center rounded-md border px-2 py-0.5 font-mono text-[11px] font-bold tracking-wide ${
+          badgeColors[methodUpper] || "bg-white/10 border-white/20 text-white"
+        }`}
+      >
+        {methodUpper}
+      </span>
+    );
+  }
+
+  // Format endpoint paths (e.g. /users, /api/v1/auth)
+  if (text.startsWith("/") && !text.includes(" ") && text.length > 1) {
+    return (
+      <span className="font-mono text-xs font-medium text-sky-300/90 bg-sky-500/5 px-1.5 py-0.5 rounded border border-sky-500/10">
+        {children}
+      </span>
+    );
+  }
+
+  return children;
+}
+
 export function buildMarkdownComponents(
   sectionKey: string,
   repoName: string,
@@ -47,11 +85,24 @@ export function buildMarkdownComponents(
         {children}
       </h3>
     ),
+    h4: ({ children }: { children?: React.ReactNode }) => (
+      <h4
+        id={slugify(String(children))}
+        className="scroll-mt-24 text-sm font-display font-medium text-white/70 mb-2 mt-4"
+      >
+        {children}
+      </h4>
+    ),
     p: ({ children }: { children?: React.ReactNode }) => (
       <p className="text-sm text-muted-foreground leading-relaxed mb-4">{children}</p>
     ),
     ul: ({ children }: { children?: React.ReactNode }) => (
       <ul className="space-y-1.5 mb-4 ml-1">{children}</ul>
+    ),
+    ol: ({ children }: { children?: React.ReactNode }) => (
+      <ol className="list-decimal list-outside space-y-1.5 mb-4 ml-5 text-sm text-muted-foreground leading-relaxed">
+        {children}
+      </ol>
     ),
     li: ({ children }: { children?: React.ReactNode }) => (
       <li className="flex gap-2 text-sm text-muted-foreground leading-relaxed">
@@ -65,6 +116,10 @@ export function buildMarkdownComponents(
     em: ({ children }: { children?: React.ReactNode }) => (
       <em className="text-white/60 italic">{children}</em>
     ),
+    del: ({ children }: { children?: React.ReactNode }) => (
+      <del className="text-muted-foreground/50 line-through">{children}</del>
+    ),
+    hr: () => <hr className="my-6 border-white/10" />,
     a: ({ href, children }: { href?: string; children?: React.ReactNode }) => {
       const isGithub = href?.includes("github.com") || href?.includes("/blob/");
       return (
@@ -98,9 +153,41 @@ export function buildMarkdownComponents(
       );
     },
     blockquote: ({ children }: { children?: React.ReactNode }) => (
-      <blockquote className="border-l-2 border-primary/40 pl-4 my-4 text-sm text-muted-foreground italic">
+      <blockquote className="border-l-2 border-primary/40 pl-4 my-4 text-sm text-muted-foreground italic bg-primary/[0.02] py-1 rounded-r">
         {children}
       </blockquote>
+    ),
+    table: ({ children }: { children?: React.ReactNode }) => (
+      <div className="my-6 w-full overflow-x-auto rounded-xl border border-white/10 bg-slate-900/40 backdrop-blur-xs shadow-md">
+        <table className="w-full min-w-full border-collapse text-left text-sm">
+          {children}
+        </table>
+      </div>
+    ),
+    thead: ({ children }: { children?: React.ReactNode }) => (
+      <thead className="border-b border-white/10 bg-white/[0.04]">
+        {children}
+      </thead>
+    ),
+    tbody: ({ children }: { children?: React.ReactNode }) => (
+      <tbody className="divide-y divide-white/5">
+        {children}
+      </tbody>
+    ),
+    tr: ({ children }: { children?: React.ReactNode }) => (
+      <tr className="transition-colors hover:bg-white/[0.02]">
+        {children}
+      </tr>
+    ),
+    th: ({ children }: { children?: React.ReactNode }) => (
+      <th className="px-4 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-white/70">
+        {children}
+      </th>
+    ),
+    td: ({ children }: { children?: React.ReactNode }) => (
+      <td className="px-4 py-3 text-sm text-white/80 align-middle">
+        {renderTableCellContent(children)}
+      </td>
     ),
   };
 }
@@ -135,4 +222,43 @@ export const chatMdComponents = {
   ul: ({ children }: any) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
   ol: ({ children }: any) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
   li: ({ children }: any) => <li>{children}</li>,
+  table: ({ children }: any) => (
+    <div className="my-4 w-full overflow-x-auto rounded-xl border border-white/10 bg-slate-900/60 shadow-md">
+      <table className="w-full min-w-full border-collapse text-left text-xs">
+        {children}
+      </table>
+    </div>
+  ),
+  thead: ({ children }: any) => (
+    <thead className="border-b border-white/10 bg-white/[0.04]">
+      {children}
+    </thead>
+  ),
+  tbody: ({ children }: any) => (
+    <tbody className="divide-y divide-white/5">
+      {children}
+    </tbody>
+  ),
+  tr: ({ children }: any) => (
+    <tr className="transition-colors hover:bg-white/[0.02]">
+      {children}
+    </tr>
+  ),
+  th: ({ children }: any) => (
+    <th className="px-3 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-wider text-white/70">
+      {children}
+    </th>
+  ),
+  td: ({ children }: any) => (
+    <td className="px-3 py-2.5 text-xs text-white/80 align-middle">
+      {renderTableCellContent(children)}
+    </td>
+  ),
+  blockquote: ({ children }: any) => (
+    <blockquote className="border-l-2 border-primary/40 pl-3 my-2 text-xs text-muted-foreground italic">
+      {children}
+    </blockquote>
+  ),
+  hr: () => <hr className="my-4 border-white/10" />,
 };
+

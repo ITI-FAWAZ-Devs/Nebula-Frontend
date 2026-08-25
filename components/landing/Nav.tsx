@@ -68,7 +68,7 @@ export function Nav() {
           {user ? (
             <div className="flex items-center gap-3">
               {/* <WorkspaceSwitcher /> */}
-              {!(user.role === "ADMIN" || user.role === "admin") && (
+              {user.role !== "ADMIN" && (
                 <Link
                   className="text-sm text-white/60 transition-colors hover:text-white"
                   href="/launch"
@@ -101,7 +101,7 @@ export function Nav() {
                     </p>
                   </div>
                   <DropdownMenuSeparator className="bg-white/10" />
-                  {user.role === "ADMIN" || user.role === "admin" ? (
+                  {user.role === "ADMIN" ? (
                     <DropdownMenuItem className="cursor-pointer rounded-md text-white/80 hover:bg-white/5 focus:bg-white/5">
                       <Link href="/admin" className="flex w-full items-center">
                         Admin Dashboard
